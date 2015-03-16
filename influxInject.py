@@ -32,18 +32,24 @@ def main():
 	connectionPI.commit()
 	connectionPI.close()
 
-def make_serialisable(values):
+def make_serialisable(columns,values):
+	number_columns =['minrtt','avgrtt','maxrtt','packet_loss','packet_size','number_pings']
+	#columns =['ts','src','domain','domain_ip','start_time','end_time','minrtt','avgrtt','maxrtt','packet_loss','eth_mac','curr_mac','packet_size','number_pings']
 	a=[]
-	for v in values:
-		if type(v) is datetime.datetime:
-			a.append(v.strftime("%s"))
+	for i in xrange(len(columns)):
+		if type(values[i]) is datetime.datetime:
+			a.append(int(values[i].strftime("%s")))
+		elif columns[i]=="packet_loss":
+			a.append(float(values[i][:-1]))
+		elif columns[i] in number_columns:
+			a.append(float(values[i]))
 		else:
-			a.append(v)
+			a.append(values[i])
 	return a
 
 def save_influx(client, columns, values):
 	json = [{
-    "points": [make_serialisable(values) ],
+    "points": [make_serialisable(columns,values) ],
     "name": "ping",
     "columns": columns
 	}]
