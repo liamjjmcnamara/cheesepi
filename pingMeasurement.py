@@ -83,15 +83,12 @@ def pingDestination(destination):
 	#Ping ends at
 	endTime = datetime.now()
 	#Save whole ping results in file for detail information
-	fileName = "./files/" +str(startTime) +".txt"
+	fileName = "/home/pi/ping/files/" +str(startTime) +".txt"
 	myfile = open(fileName, 'w')
-	pingResult = p.stdout.read()
-	myfile.write(pingResult)
-	myfile.close()
-	
 	#Save important parameters from the ping result in the database
         line = p.stdout.readline()
-        while True:
+         myfile.write(line)
+	while True:
                 if 'PING' in line:
                         destinationStr = line.split(' ')
 			desDomain = str(destinationStr[1])
@@ -112,10 +109,10 @@ def pingDestination(destination):
                         maxRTT = float(rttData[5])
                         break
 
-                if line == "":
-                        break
                 line = p.stdout.readline()
+		myfile.write(line)
         p.stdout.flush()
+	myfile.close()
         insertToTable()
 
 #insert the ping results into the database
