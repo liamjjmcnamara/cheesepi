@@ -2,26 +2,64 @@
 # -*- coding: utf-8 -*-
 
 import MySQLdb as mdb
+import datetime
 
-connectioNDB = None
+connectionDB = None
 curMain = None
 
 def main():
+	global connectionDB
+	global curMain
+
 	connectionPI = mdb.connect('localhost', 'urban', 'basketphone', 'buffer')
 
-	with connectionPI:
-	
-		curPI = connectionPI.cursor()
-		query = """SELECT * FROM ping"""
-		curPI.execute(query)
-		rows = curPI.fetchall()
+	connectionDB = mdb.connect("localhost", "urban", "basketphone", "sicspi")
 
-		for row in rows:
-			parse(row)
+	with connectionPI:
+		curPI = connectionPI.cursor()
+		query = """SELECT distinct(EthernetMacAddress) from ping"""
+		curPI.execute(query)
+		macs = curPI.fetchall()
+
+
+	with connectionDB:
+		curMain = connectionDB.cursor()
+		for mac in macs:
+			print "Handling: ", mac[0]
+			query = """ SELECT max(startTime) FROM Operation, Ping, PI where Operation.OID=Ping.OID AND Ping.PID=PI.PID and PI.EthMAC='%s'"""%mac[0]
+			curMain.execute(query)
+			result = curMain.fetchall()
+			modifier = ""
+			if result[0][0]:
+				#print result[0][0]
+				result =  result[0][0].strftime("""%Y-%m-%d %H:%M:%S""")
+				#print result
+				modifier = """WHERE StartingTime > '%s'""" %result
+			query = """SELECT * FROM ping %s ORDER BY StartingTime"""%modifier
+			
+			with connectionPI:
+				curPI = connectionPI.cursor()
+				curPI.execute(query)
+				rows = curPI.fetchall()
+				
+				for row in rows:
+					parse(row)
+
+#	with connectionPI:#
+#	#
+#		curPI = connectionPI.cursor()
+#		query = """SELECT * FROM ping"""
+#		curPI.execute(query)
+#		rows = curPI.fetchall()
+#
+#		for row in rows:
+#			parse(row)
+	connectionDB.close()
 		
 	connectionPI.commit()
 	connectionPI.close()
 
+#mysql> select max(startTime) from Operation, Ping, PI where Operation.OID=Ping.OID and #Ping.PID=PI.PID and PI.EthMac =  "b8:27:eb:16:7d:a6";
 
 
 def parse(row):
@@ -44,20 +82,23 @@ def parse(row):
 
 #(datetime.datetime(2015, 3, 16, 11, 36, 18), '193.10.66.2', 'bbc.com', '212.58.246.104', #datetime.datetime(2015, 3, 16, 10, 36, 9), datetime.datetime(2015, 3, 16, 10, 36, 9), 36.146, #36.209, 36.301, '0%', 'b8:27:eb:16:7d:a6', 'b8:27:eb:16:7d:a6', 64L, 10L)
 
-	connectionDB = mdb.connect("localhost", "urban", "basketphone", "sicspi")
 	
 	with connectionDB:
-		curMain = connectionDB.cursor()
 		
 		PID = addPI(eth_mac)
+		connectionDB.commit()
 		CID = addConnection(PID, curr_mac)
-		OID = addOperation(CID, "Ping", start_time, end_time, "0")
+		connectionDB.commit()
 		Domain_ID = addDomain(domain, domain_ip)
-		print Domain_ID
-		#addPing(PID, OID, src, Domain_ID, minrtt, avgrtt, maxrtt, number_pings, packet_size, packet_loss, "mjau")
+		connectionDB.commit()
+
+		# check here
+
+		OID = addOperation(CID, "Ping", start_time, end_time, "0")
+		addPing(PID, OID, src, Domain_ID, minrtt, avgrtt, maxrtt, number_pings, packet_size, packet_loss, "mjau")
+		connectionDB.commit()
 
 	connectionDB.commit()
-	connectionDB.close()
 
 def addPI(eth_mac):
 	global curMain
@@ -72,11 +113,10 @@ def addPI(eth_mac):
 #			print "getting id"
 			query = """INSERT INTO PI VALUES(NULL, '%s')"""%eth_mac
 			curMain.execute(query)
-			query = """SELECT @last := LAST_INSERT_ID()"""
+			query = """SELECT LAST_INSERT_ID()"""
 			curMain.execute(query)
 			result = curMain.fetchall()
 #			print result
-		connectionDB.commit()
 		return result[0][0]
 
 def addConnection(PID, curr_mac):
@@ -90,10 +130,9 @@ def addConnection(PID, curr_mac):
 		if not result:
 			query = """INSERT INTO Connection VALUES(NULL, %s, '%s')"""%(PID, curr_mac)
 			curMain.execute(query)
-			query = """SELECT @last := LAST_INSERT_ID()"""
+			query = """SELECT LAST_INSERT_ID()"""
 			curMain.execute(query)
 			result = curMain.fetchall()
-		connectionDB.commit()	
 		return result[0][0]
 
 def addOperation(CID, Tool, start_time, end_time, status):
@@ -120,12 +159,29 @@ def addDomain(domain, domain_ip):
 		if not result:
 			query = """INSERT INTO Central_DNS VALUES(NULL, '%s', '%s')"""%(domain, domain_ip)
 			curMain.execute(query)
-			query = """SELECT @last := LAST_INSERT_ID()"""
+			query = """SELECT LAST_INSERT_ID()"""
 			curMain.execute(query)
 			result = curMain.fetchall()
-		connectionDB.commit()		
 
 
 		return result[0][0]
+
+def addPing(PID, OID, src, Domain_ID, minrtt, avgrtt, maxrtt, number_pings, packet_size, packet_loss, status):
+	global curMain
+	global connectionDB
+
+	with connectionDB:
+		query = """INSERT INTO Ping VALUES(%s, %s, '%s', %s, %s, %s, %s, %s, %s, '%s', '%s')"""%(PID, OID, src, Domain_ID, minrtt, avgrtt, maxrtt, number_pings, packet_size, packet_loss, status)
+		curMain.execute(query)
+
+
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
     main()
