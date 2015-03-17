@@ -49,8 +49,8 @@ def make_serialisable(columns,values):
 
 def save_influx(client, columns, values):
 	json = [{
-    "points": [make_serialisable(columns,values) ],
     "name": "ping",
+    "points": [make_serialisable(columns,values) ],
     "columns": columns
 	}]
 	print json
