@@ -31,11 +31,10 @@ def main():
 			result = curMain.fetchall()
 			modifier = ""
 			if result[0][0]:
-				#print result[0][0]
 				result =  result[0][0].strftime("""%Y-%m-%d %H:%M:%S""")
-				#print result
-				modifier = """WHERE StartingTime > '%s'""" %result
-			query = """SELECT * FROM ping %s ORDER BY StartingTime"""%modifier
+				query = """SELECT * FROM ping WHERE StartingTime > '%s' and ping.EthernetMacAddress = '%s' ORDER BY StartingTime""" %(result, mac[0])
+			else:
+				query = """SELECT * FROM ping WHERE ping.EthernetMacAddress = '%s' ORDER BY StartingTime""" %mac[0]
 			
 			with connectionPI:
 				curPI = connectionPI.cursor()
@@ -45,22 +44,10 @@ def main():
 				for row in rows:
 					parse(row)
 
-#	with connectionPI:#
-#	#
-#		curPI = connectionPI.cursor()
-#		query = """SELECT * FROM ping"""
-#		curPI.execute(query)
-#		rows = curPI.fetchall()
-#
-#		for row in rows:
-#			parse(row)
 	connectionDB.close()
 		
 	connectionPI.commit()
 	connectionPI.close()
-
-#mysql> select max(startTime) from Operation, Ping, PI where Operation.OID=Ping.OID and #Ping.PID=PI.PID and PI.EthMac =  "b8:27:eb:16:7d:a6";
-
 
 def parse(row):
 	global connectionDB
@@ -92,10 +79,8 @@ def parse(row):
 		Domain_ID = addDomain(domain, domain_ip)
 		connectionDB.commit()
 
-		# check here
-
 		OID = addOperation(CID, "Ping", start_time, end_time, "0")
-		addPing(PID, OID, src, Domain_ID, minrtt, avgrtt, maxrtt, number_pings, packet_size, packet_loss, "mjau")
+		addPing(PID, OID, src, Domain_ID, minrtt, avgrtt, maxrtt, number_pings, packet_size, packet_loss, "file_path_here")
 		connectionDB.commit()
 
 	connectionDB.commit()
@@ -108,15 +93,12 @@ def addPI(eth_mac):
 		query = """SELECT PID from PI where PI.EthMAC='%s'"""%eth_mac
 		curMain.execute(query)
 		result = curMain.fetchall()
-#		print "PI", result
 		if not result:
-#			print "getting id"
 			query = """INSERT INTO PI VALUES(NULL, '%s')"""%eth_mac
 			curMain.execute(query)
 			query = """SELECT LAST_INSERT_ID()"""
 			curMain.execute(query)
 			result = curMain.fetchall()
-#			print result
 		return result[0][0]
 
 def addConnection(PID, curr_mac):
@@ -173,15 +155,6 @@ def addPing(PID, OID, src, Domain_ID, minrtt, avgrtt, maxrtt, number_pings, pack
 	with connectionDB:
 		query = """INSERT INTO Ping VALUES(%s, %s, '%s', %s, %s, %s, %s, %s, %s, '%s', '%s')"""%(PID, OID, src, Domain_ID, minrtt, avgrtt, maxrtt, number_pings, packet_size, packet_loss, status)
 		curMain.execute(query)
-
-
-
-
-
-
-
-
-
 
 if __name__ == "__main__":
     main()
