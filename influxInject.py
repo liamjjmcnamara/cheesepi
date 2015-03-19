@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import datetime
+import sys
+import time
 
 import MySQLdb as mdb
 from influxdb import InfluxDBClient
@@ -19,10 +21,12 @@ def main():
 	connectionPI = mdb.connect(db_host, db_username, db_password, db_db)
 	client = InfluxDBClient('localhost', 8086, 'root', 'root', 'measurements')
 	#client.create_database('ping')
+	from_time = get_last_update(client)
 
 	with connectionPI:
 		curPI = connectionPI.cursor()
-		query = """SELECT * FROM ping"""
+		query = "SELECT * FROM ping WHERE UNIX_TIMESTAMP(ts) > "+str(from_time)
+		print query
 		curPI.execute(query)
 		rows = curPI.fetchall()
 
@@ -32,6 +36,11 @@ def main():
 
 	connectionPI.commit()
 	connectionPI.close()
+
+def get_last_update(client):
+	result = client.query('select ts from ping limit 1;')
+	from_time = result[0]['points'][0][2]
+	return from_time
 
 def make_serialisable(columns,values):
 	number_columns =['minrtt','avgrtt','maxrtt','packet_loss','packet_size','number_pings']
@@ -71,4 +80,6 @@ def save_influx(client, columns, values):
 
 
 if __name__ == "__main__":
-    main()
+	while (True):
+		main()
+		time.sleep(300)
