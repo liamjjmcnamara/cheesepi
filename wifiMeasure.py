@@ -14,7 +14,7 @@ client = InfluxDBClient('localhost', 8086, 'root', 'root', 'measurements')
 def main():
 	while(True):
 		doScan()
-		time.sleep(20)
+		time.sleep(300)
 
 def doScan():
 	start_time = time.time()
