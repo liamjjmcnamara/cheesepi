@@ -1,4 +1,4 @@
-#!/usr/bin/python 
+#!/usr/bin/python
 
 import MySQLdb
 import os
@@ -87,7 +87,7 @@ def pingDestination(destination):
 	myfile = open(fileName, 'w')
 	#Save important parameters from the ping result in the database
         line = p.stdout.readline()
-         myfile.write(line)
+        myfile.write(line)
 	while True:
                 if 'PING' in line:
                         destinationStr = line.split(' ')
@@ -132,12 +132,12 @@ def insertToTable():
         global packetSize
 	global startTime
 	global endTime
-	
-	
+
+
         with db:
                 sqlInsert = """INSERT INTO ping (sourceAddress, destinationDomain, destinationAddress,
-					        startingTime, endingTime, minimumRTT, averageRTT, maximumRTT, 
-						packetLoss, ethernetMacAddress, currentMacAddress, packetSize, 
+					        startingTime, endingTime, minimumRTT, averageRTT, maximumRTT,
+						packetLoss, ethernetMacAddress, currentMacAddress, packetSize,
 						numberOfPings) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
                 curs.execute (sqlInsert,( sourceAddr, desDomain, desAddr,startTime.strftime('%Y-%m-%d %H:%M:%S'), endTime.strftime('%Y-%m-%d %H:%M:%S'), minRTT, avgRTT,maxRTT, packetLoss, ethernetMacAddr,currentMacAddr, packetSize, numberOfPings))
                 db.commit()
