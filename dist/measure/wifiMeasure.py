@@ -12,9 +12,13 @@ interface="wlan0"
 client = InfluxDBClient('localhost', 8086, 'root', 'root', 'measurements')
 
 def main():
-	while(True):
-		doScan()
-		time.sleep(300)
+    if scanForever=False
+    if scanForever:
+        while(True):
+            doScan()
+            time.sleep(300)
+    else:
+        doScan()
 
 def doScan():
 	start_time = time.time()
@@ -43,7 +47,7 @@ def parseAp(text):
 	ap['signal']  = int(re.findall('Signal level=.*',text)[0][13:-6])
 	print ap
 	return ap
-	
+
 
 def saveScan(aps, start_time, end_time):
 	global client
@@ -55,8 +59,8 @@ def saveScan(aps, start_time, end_time):
 	apJSON = apsToJSON(aps, start_time)
 	print apJSON
 	client.write_points(apJSON)
-	
-	
+
+
 def scanToJSON(aps, start_time):
 	values = [0]*14
 	# count channel presence

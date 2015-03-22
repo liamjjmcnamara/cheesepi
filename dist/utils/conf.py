@@ -27,24 +27,45 @@ Authors: ljjm@sics.se
 Testers:
 """
 
-import subprocess
+import sys
+import os
+import re
 
-CHEESEPI_DIR = "/usr/local/cheesepi"
+parent_dir  = os.path.dirname(os.path.realpath(__file__))
+config_file = parent_dir + "/../cheesepi.conf"
 
-
-def run(cmd):
-    print "Running: "+str(cmd)
-    output = subprocess.check_output(cmd)
-    return output
-
-
-run([CHEESEPI_DIR+"/update.sh"])
-# if we updated, we should execute the new /measure.py then quit
-
-# Run the measurement suite
-run([CHEESEPI_DIR+"/measure/pingMeasurement.py"])
-run([CHEESEPI_DIR+"/measure/wifiMeasurement.py"])
+def main():
+    config = parse_config()
+    print config
 
 
+# clean the identifiers
+def s(id):
+    return id.strip().lower()
 
 
+def read_config():
+    try:
+        fd = open(config_file)
+        lines = fd.readlines()
+    except Exception as e:
+        print "Error: can not read config file: "+str(e)
+        sys.exit(1)
+    return lines
+
+
+def parse_config():
+    config = {}
+    lines  = read_config()
+    for line in lines:
+        # strip comment and badly formed lines
+        if re.match('^#', line) or not re.search('=',line):
+            continue
+        # print line
+        (key, value) = line.split("=",2)
+        config[s(key)] = s(value)
+    return config
+
+
+if __name__ == "__main__":
+	main()
