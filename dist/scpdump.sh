@@ -15,7 +15,7 @@ tablename='ping'
 mysqldump -u$dbuser -p$dbpassword $dbname $tablename> $file
 
 host='pi@grayling.sics.se'
-directory='/home/pi/Cheesepi'
+directory='/home/pi/Buffer'
 scp $file $host:$directory
 retvalue=$?
 
