@@ -26,10 +26,16 @@
 Authors: ljjm@sics.se
 Testers:
 """
-
+import sys
 import subprocess
 
-CHEESEPI_DIR = "/usr/local/cheesepi"
+# try to import cheesepi, i.e. it's on PYTHONPATH
+try:
+    import cheesepi
+except:
+    # try default location
+    sys.path.append("/usr/local/")
+    import cheesepi
 
 
 def run(cmd):
@@ -38,13 +44,20 @@ def run(cmd):
     return output
 
 
-run([CHEESEPI_DIR+"/update.sh"])
-# if we updated, we should execute the new /measure.py then quit
+def measure(config=None):
+    if config==None:
+        config=cheesepi.utils.config.parse_config()
 
-# Run the measurement suite
-run([CHEESEPI_DIR+"/measure/pingMeasurement.py"])
-run([CHEESEPI_DIR+"/measure/wifiMeasurement.py"])
+    run([config['cheesepi_dir']+"/update.sh"])
+    # if we updated, we should execute the new /measure.py then quit
+
+    # Run the measurement suite
+    run([config['cheesepi_dir']+"/measure/pingMeasurement.py"])
+    run([config['cheesepi_dir']+"/measure/wifiMeasurement.py"])
+
+    #run([config['cheesepi_dir']+"/measure/moreMeasurement.py"])
 
 
 
-
+if __name__ == "__main__":
+    measure()
