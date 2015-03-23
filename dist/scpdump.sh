@@ -12,7 +12,9 @@ dbpassword='MP4MDb'
 dbname='Measurement'
 tablename='ping'
 
-mysqldump -u$dbuser -p$dbpassword $dbname $tablename> $file
+wherecond='--where'
+condition="ts BETWEEN timestamp(DATE_SUB(NOW(), INTERVAL 24 hour)) AND timestamp(NOW())"
+mysqldump -u$dbuser -p$dbpassword $dbname $tablename $wherecond "$condition" > $file
 
 host='pi@grayling.sics.se'
 directory='/home/pi/Buffer'
