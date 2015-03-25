@@ -65,7 +65,7 @@ import re
 def measure(number_pings = 10, packet_size = 64, targets = None, saveToFile=False):
 	if targets is None:
 		targets = []
-	#print number_pings, packet_size, targets, saveToFile
+	print number_pings, packet_size, targets, saveToFile
 	
         database = MySQLdb.connect("localhost", "measurement", "MP4MDb", "Measurement")
         curs=database.cursor()
@@ -108,10 +108,10 @@ def writeFile(ret, startTime, ethmac):
 
 #ping function
 def getData(destination, packet_number, packet_size):
-	#print "calling ping"
+	print "calling ping"
 
         execute = "ping -c %s -s %s %s"%(packet_number, packet_size, destination)
-	#print execute
+	print execute
         result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
 
 	ret = result.stdout.read()
