@@ -53,8 +53,8 @@ def measure(config=None):
     # if we updated, we should execute the new /measure.py then quit
 
     # Run the measurement suite
-    run([config['cheesepi_dir']+"/measure/pingMeasurement.py"])
-    run([config['cheesepi_dir']+"/measure/wifiMeasurement.py"])
+    run([config['cheesepi_dir']+"/measure/pingMeasure.py"])
+    run([config['cheesepi_dir']+"/measure/wifiMeasure.py"])
 
     #run([config['cheesepi_dir']+"/measure/moreMeasurement.py"])
 
