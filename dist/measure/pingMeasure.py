@@ -31,7 +31,7 @@ Testers:
 
 
 Example usage:
-python pingMeasure.py -save=False -size=30 -number=100 www.bbc.com www.sics.se www.svt.se
+python pingMeasure.py -save=False -size=30 -number=100 www.bbc.	com www.sics.se www.svt.se
 This is equal to:
 ping -c 100 -s 30 www.bbc.com
 ping -c 100 -s 30 www.sics.se
@@ -67,7 +67,7 @@ def measure(number_pings = 10, packet_size = 64, targets = None, saveToFile=Fals
 		targets = []
 	print number_pings, packet_size, targets, saveToFile
 	
-        database = MySQLdb.connect("localhost", "measurement", "Measurement", "MP4MDb")
+        database = MySQLdb.connect("localhost", "measurement", "MP4MDb", "Measurement")
         curs=database.cursor()
 
         #To ignore warning from Mysql "Table already existed". Move to setup.py or something? Not exactly important to re-run every run.																																																											
@@ -83,7 +83,6 @@ def measure(number_pings = 10, packet_size = 64, targets = None, saveToFile=Fals
 
 	ethmac = getEthMAC()
 	for target in targets:
-		print "target: ", target
 		startTime = datetime.now()
 		ret = getData(target, number_pings, packet_size)
 		endTime = datetime.now()
