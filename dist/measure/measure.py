@@ -44,11 +44,12 @@ def run(cmd):
     return output
 
 
+# failure of any part of this, should log the error!
 def measure(config=None):
     if config==None:
         config=cheesepi.utils.config.parse_config()
 
-    run([config['cheesepi_dir']+"/update.sh"])
+    #run([config['cheesepi_dir']+"/update.sh"])
     # if we updated, we should execute the new /measure.py then quit
 
     # Run the measurement suite
