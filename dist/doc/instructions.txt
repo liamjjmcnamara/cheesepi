@@ -22,12 +22,12 @@ it will ask you for a Mysql root password "MP4MDb"
 Run pingMeasurement.py to run ping and put the result in the database  =
 ========================================================================
 Before you run the script create a folder called "files" in the same direcory with the script
-sudo chmod +x pingMeasurement.py
-sudo ./pingMeasurement.py
+sudo chmod +x pingMeasure.py
+sudo ./pingMeasure.py
 
 
 ========================================================================
 To run the pingMeasurement script every 2 minutes                          =
 ========================================================================
 crontab -e
-*/2 * * * * python /home/pi/ping/pingMeasurement.py
+*/2 * * * * python /usr/local/cheesepi/measure/pingMeasure.py
