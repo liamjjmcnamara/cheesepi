@@ -32,6 +32,7 @@ mysql -u push buffer < alldata.sql
 
 #Move old files to Old/<date>/
 
+now=$(date +"%m-%d-%Y-%H:%M:%S")
 DIR=/home/pi/Buffer/Old/$now
 
 mkdir $DIR
