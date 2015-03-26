@@ -53,13 +53,13 @@ def measure(config=None):
     # if we updated, we should execute the new /measure.py then quit
 
     # Run the measurement suite
+    updatecall = [config['cheesepi_dir']+"/update.sh"]
+    run(updatecall)
     
-    targets = config['domains'].split()
+    targets = config['landmarks'].split()
     pingcall = [config['cheesepi_dir']+"/measure/pingMeasure.py"]
     for target in targets:
          pingcall.append(target)
-    updatecall = [config['cheesepi_dir']+"/update.sh"]
-    run(updatecall)
     run(pingcall)
 #    run([config['cheesepi_dir']+"/measure/wifiMeasure.py"])
 

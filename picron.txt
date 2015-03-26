@@ -1,0 +1,2 @@
+0 14 * * * bash /usr/local/cheesepi/scpdump.h >> /usr/local/cheesepi/dump.log 2>> /usr/local/cheesepi/dump.err
+*/2 * * * * python /usr/local/cheesepi/measure/measure.py >> /usr/local/cheesepi/measure/measure.log 2>>/usr/local/cheesepi/measure/measure.err
