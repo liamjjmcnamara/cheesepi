@@ -55,7 +55,7 @@ def measure(config=None):
     # Run the measurement suite
     updatecall = [config['cheesepi_dir']+"/update.sh"]
     run(updatecall)
-    
+
     targets = config['landmarks'].split()
     pingcall = [config['cheesepi_dir']+"/measure/pingMeasure.py"]
     for target in targets:
