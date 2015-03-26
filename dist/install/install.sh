@@ -18,4 +18,7 @@ if [ ! -f $INSTALL_DIR/cheesepi.conf ]; then
 fi
 
 # Make mysql database and user
-$INSTALL_DIR/install/install.sh Measurement measurement MP4MDb
+# should warn about password prompt requirement
+$INSTALL_DIR/install/createDbandUser.sh Measurement measurement MP4MDb
+
+# Intall a crontab entry so that $INSTALL_DIR/measure/measure.py is run
