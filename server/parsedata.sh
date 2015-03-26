@@ -30,4 +30,13 @@ fi
 
 mysql -u push buffer < alldata.sql
 
-#Probably move old files here
+#Move old files to Old/<date>/
+
+DIR=/home/pi/Buffer/Old/$now
+
+mkdir $DIR
+
+for ((i=0; i<COUNT; i++)); do
+        mv ${ARRAY[${i}]} $DIR
+done
+

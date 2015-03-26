@@ -30,7 +30,7 @@ def main():
 	connectionDB.close()
 
 	#Purge the buffer
-	connectionBuffer = mdb.connect("localhost", "urban", "basketphone", "buffer")
+	connectionBuffer = mdb.connect("localhost", "urban", "basketphone", "Buffer")
 	with connectionBuffer:
 		cur = connectionBuffer.cursor()
 
