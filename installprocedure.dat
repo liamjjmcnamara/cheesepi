@@ -1,5 +1,6 @@
 
-pi@raspberrypi ~ $ sudo rsync -avzhe ssh  pi@grayling.sics.se:cheesepi/dist/* /usr/local/cheesepi/
+# make a local distribution
+sudo rsync -avzhe ssh  pi@grayling.sics.se:dist/* /usr/local/cheesepi/
 
 #optionallu update apt-get 
 sudo apt-get update && sudo apt-get upgrade

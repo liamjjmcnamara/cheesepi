@@ -1,15 +1,16 @@
-
 # Where shall we install CheesePi?
-INSTALL_DIR = /usr/local/cheesepi
+INSTALL_DIR=/usr/local/cheesepi/
+
+# Optionally update apt-get
+sudo apt-get update && sudo apt-get upgrade
+
+# make a local distribution
+sudo rsync -avzhe ssh  pi@grayling.sics.se:dist/* $INSTALL_DIR
 
 # Install required OS software
-apt-get install mysql ntpdate
-
-# install python software modules
-pip install MySQL-python
-
-# Make main CheesePi directory
-mkdir -p $INSTALL_DIR
+# include ntpdate ?
+sudo apt-get install mysql-client mysql-server python-mysqldb
+# no root password
 
 # Copy cheesepi.conf if it doesnt exist
 if [ ! -f $INSTALL_DIR/cheesepi.conf ]; then
@@ -17,5 +18,4 @@ if [ ! -f $INSTALL_DIR/cheesepi.conf ]; then
 fi
 
 # Make mysql database and user
-$INSTALL_DIR/install/install.sh Measure pi password
-
+$INSTALL_DIR/install/install.sh Measurement measurement MP4MDb
