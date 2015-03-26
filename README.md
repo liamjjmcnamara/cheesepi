@@ -4,6 +4,7 @@ Introduction to the source files for the CheesePI infrastructure.
 # Install
 
 To download a CheesePi distribution execute the following command
+
 `sudo rsync -avzhe ssh  pi@grayling.sics.se:dist/* /usr/local/cheesepi/`
 
 This will leave scripts in  */user/local/cheesepi* directory. To install
