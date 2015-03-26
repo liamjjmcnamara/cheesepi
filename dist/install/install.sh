@@ -3,7 +3,7 @@
 INSTALL_DIR = /usr/local/cheesepi
 
 # Install required OS software
-apt-get install mysql
+apt-get install mysql ntpdate
 
 # install python software modules
 pip install MySQL-python
