@@ -1,0 +1,18 @@
+
+pi@raspberrypi ~ $ sudo rsync -avzhe ssh  pi@grayling.sics.se:cheesepi/dist/* /usr/local/cheesepi/
+
+#optionallu update apt-get 
+sudo apt-get update && sudo apt-get upgrade
+
+sudo apt-get install mysql-client mysql-server python-mysqldb
+# no root password
+
+# Make teh Measurement database on the server
+# should include echo stating that it is prompting for the mysql root password
+./install/createDbandUser.sh Measurement measurement MP4MDb
+
+# create a local configuration file
+cp cheesepi.default.conf cheesepi.conf
+
+# measurement *should* work
+./measure/measure.py
