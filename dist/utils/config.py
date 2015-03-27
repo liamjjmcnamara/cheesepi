@@ -41,7 +41,7 @@ def main():
 
 
 # clean the identifiers
-def s(id):
+def clean(id):
     return id.strip().lower()
 
 
@@ -60,15 +60,26 @@ def parse_config():
     lines  = read_config()
     for line in lines:
         # strip comment and badly formed lines
-        if re.match('^#', line) or not re.search('=',line):
+        if re.match('^\s*#', line) or not re.search('=',line):
             continue
         # print line
         (key, value) = line.split("=",2)
-        config[s(key)] = s(value)
+        config[clean(key)] = clean(value)
     config['cheesepi_dir']= cheesepi_dir
     config['config_file'] = config_file
     return config
 
+def isTrue(config, key):
+    """Is the specified key defined and true in the config object?"""
+    key = clean(key)
+    if key in config:
+        if config[key]=="true":
+            return True
+    return False
+
+def log(message):
+    # shold actually log message to a file
+    print message
 
 if __name__ == "__main__":
 	main()

@@ -39,8 +39,13 @@ except:
 
 
 def run(cmd):
+    """Execute the given command, and log failures"""
     print "Running: "+str(cmd)
-    output = subprocess.check_output(cmd)
+    output=""
+    try:
+        output = subprocess.check_output(cmd)
+    except Exception as e:
+        cheesepi.utils.config.log("Running command %s failed: %s" % (str(cmd),str(e)))
     return output
 
 
@@ -48,23 +53,35 @@ def run(cmd):
 def measure(config=None):
     if config==None:
         config=cheesepi.utils.config.parse_config()
+    print config
+    # Update the distribution
+    if cheesepi.utils.config.isTrue(config, 'autoUpdate'):
+        cheesepi.utils.config.log("Info: performing distribution update!")
+        updatecall = [config['cheesepi_dir']+"/update.sh"]
+        run(updatecall)
+        # if we updated, we should execute the new /measure.py then quit
 
-    #run([config['cheesepi_dir']+"/update.sh"])
-    # if we updated, we should execute the new /measure.py then quit
+    pingMeasure(config)
 
     # Run the measurement suite
-    updatecall = [config['cheesepi_dir']+"/update.sh"]
-    #run(updatecall)
+    actions = ["wifiMeasure", "udpMeasure", 'voipMeasure']
+    for action in actions:
+        if cheesepi.utils.config.isTrue(config, action):
+            run([config['cheesepi_dir']+"/measure/"+action+".py"])
+
+
+def pingMeasure(config):
+    if not cheesepi.utils.config.isTrue(config, 'pingMeasure'):
+        return
+    if 'landmarks' not in config:
+        cheesepi.utils.config.log("Error: no landmarks defined!")
+        return
 
     targets = config['landmarks'].split()
     pingcall = [config['cheesepi_dir']+"/measure/pingMeasure.py"]
     for target in targets:
-         pingcall.append(target)
+        pingcall.append(target)
     run(pingcall)
-#    run([config['cheesepi_dir']+"/measure/wifiMeasure.py"])
-
-    #run([config['cheesepi_dir']+"/measure/moreMeasurement.py"])
-
 
 
 if __name__ == "__main__":

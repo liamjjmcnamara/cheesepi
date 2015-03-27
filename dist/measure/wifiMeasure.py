@@ -2,7 +2,6 @@
 
 import subprocess
 import sys
-import os
 import time
 import re
 
@@ -12,7 +11,7 @@ interface="wlan0"
 client = InfluxDBClient('localhost', 8086, 'root', 'root', 'measurements')
 
 def main():
-    if scanForever=False
+    scanForever=False
     if scanForever:
         while(True):
             doScan()
@@ -22,7 +21,11 @@ def main():
 
 def doScan():
 	start_time = time.time()
-	scan_output = subprocess.check_output(["iwlist", interface, "scanning"])
+	try:
+		scan_output = subprocess.check_output(["iwlist", interface, "scanning"])
+	except Exception as e:
+		print "Error: iwlist does not seem to run: "+str(e)
+		sys.exit(1)
 	end_time = time.time()
 	#print scan_output
 	aps = parseScan(scan_output)
