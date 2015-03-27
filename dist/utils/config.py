@@ -31,8 +31,9 @@ import sys
 import os
 import re
 
-parent_dir  = os.path.dirname(os.path.realpath(__file__))
-config_file = parent_dir + "/../cheesepi.conf"
+util_dir  = os.path.dirname(os.path.realpath(__file__))
+cheesepi_dir = os.path.dirname(util_dir)
+config_file = os.path.join(cheesepi_dir,"cheesepi.conf")
 
 def main():
     config = parse_config()
@@ -64,6 +65,8 @@ def parse_config():
         # print line
         (key, value) = line.split("=",2)
         config[s(key)] = s(value)
+    config['cheesepi_dir']= cheesepi_dir
+    config['config_file'] = config_file
     return config
 
 
