@@ -7,9 +7,9 @@ echo $eth
 file="/home/pi/$eth$now.sql"
 echo $now
 echo $file
-dbuser='urban'
-dbpassword='basketphone'
-dbname='sicspi'
+dbuser='measurement'
+dbpassword='MP4MDb'
+dbname='Measurement'
 tablename='ping'
 
 wherecond='--where'
