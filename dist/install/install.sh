@@ -9,9 +9,10 @@ sudo rsync -avzhe ssh  pi@grayling.sics.se:dist/* $INSTALL_DIR
 
 # Install required OS software
 # include ntpdate ?
+sudo apt-get update
 sudo apt-get install mysql-client mysql-server python-mysqldb
 # no root password
-
+sudo apt-get install httping
 # Copy cheesepi.conf if it doesnt exist
 if [ ! -f $INSTALL_DIR/cheesepi.conf ]; then
 	sudo cp $INSTALL_DIR/cheesepi.default.conf $INSTALL_DIR/cheesepi.conf
