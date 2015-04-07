@@ -7,7 +7,7 @@ import struct
 def main():
 	ethmac = getEthMAC()
 	prefix = ethmac + "-"
-	db = MySQLdb.connect("localhost", "temporary", "temporary", "temps")
+	db = MySQLdb.connect("localhost", "measurement", "MP4MDb", "Measurement")
 	curs=db.cursor()
 	#The auto increment id from the table is going to be concatenated the main id in traceroute table
 	#For example 04:7d:7b:36:99:79-001 to uniqly identify a traceroute
@@ -22,7 +22,7 @@ def main():
 	hop = """CREATE TABLE if not exists Hop( 
 				ID VARCHAR(100) NOT NULL, hopNumber INTEGER, packetNumber INTEGER,
 				packetDomainAddress TEXT, packetDestinationAddress TEXT, RTT FLOAT,
-				FOREIGN KEY (ID) REFERENCES Traceroute(ID));"""
+				FOREIGN KEY (ID) REFERENCES Traceroute(ID) ON DELETE CASCADE);"""
 	#This trigger is used to 
 	createTrigger = """CREATE TRIGGER Trg_Traceroute_insert BEFORE INSERT ON Traceroute
 			   FOR EACH ROW BEGIN
