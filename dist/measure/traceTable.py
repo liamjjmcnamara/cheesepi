@@ -27,7 +27,7 @@ def main():
 	createTrigger = """CREATE TRIGGER Trg_Traceroute_insert BEFORE INSERT ON Traceroute
 			   FOR EACH ROW BEGIN
   				INSERT INTO Traceroute_seq VALUES (NULL);
-  				SET NEW.ID = CONCAT('%s', LPAD(LAST_INSERT_ID(), 3, '0'));
+  				SET NEW.ID = CONCAT('%s', LPAD(LAST_INSERT_ID(), length(LAST_INSERT_ID()), '0'));
 			   END;""" %prefix
 	#insertToTable = """INSERT INTO table1 (name) 
           #                             VALUES ('Biniam'), ('Urban');"""
