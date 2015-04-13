@@ -105,6 +105,24 @@ FOREIGN KEY (Domain_ID) REFERENCES Central_DNS(Domain_ID),
 UNIQUE KEY (OID, Hop_number, Packet_number)
 )""")
 
+	#pretty much a straight up copy of the Ping table
+	cur.execute("""CREATE TABLE IF NOT EXISTS Httping(
+PID INT,
+OID BIGINT,
+SA varchar(20),
+Domain_ID INT,
+minRTT FLOAT,
+avgRTT FLOAT,
+maxRTT FLOAT,
+ival INT,
+size INT,
+packet_loss varchar(50),
+file_path varchar(50),
+FOREIGN KEY (PID) REFERENCES PI(PID),
+FOREIGN KEY (OID) REFERENCES Operation(OID),
+FOREIGN KEY (Domain_ID) REFERENCES Central_DNS(Domain_ID),
+UNIQUE KEY (OID)
+)""")
 #===================================================================
 	#warnings back on
 	cur.execute("""SET sql_notes = 1""")
