@@ -5,93 +5,97 @@ import sys
 import time
 import re
 
-from influxdb import InfluxDBClient
+import cheesepi
 
-interface="wlan0"
-client = InfluxDBClient('localhost', 8086, 'root', 'root', 'measurements')
+config = cheesepi.config.get_config()
+interface= config['wlan']
 
-def main():
-    scanForever=False
-    if scanForever:
-        while(True):
-            doScan()
-            time.sleep(300)
-    else:
-        doScan()
+def measure(dao):
+	start_time = cheesepi.utils.now()
+	op_output  = perform()
+	end_time   = cheesepi.utils.now()
+	#print op_output
+	parsed_output = parse_output(op_output, start_time, end_time)
+	#print parsed_output
+	scan_digest = digest_scan(parsed_output, start_time, end_time)
+	dao.write_op("wifi_scan", scan_digest)
+	for ap in parsed_output:
+		dao.write_op("wifi_ap", ap)
 
-def doScan():
-	start_time = time.time()
+def perform():
 	try:
 		scan_output = subprocess.check_output(["iwlist", interface, "scanning"])
 	except Exception as e:
 		print "Error: iwlist does not seem to run: "+str(e)
 		sys.exit(1)
-	end_time = time.time()
+	if "Interface doesn't support scanning" in scan_output:
+		print "Error: Interface doesn't support scanning"
+		sys.exit(1)
 	#print scan_output
-	aps = parseScan(scan_output)
-	saveScan(aps, start_time, end_time)
+	return scan_output
 
-def parseScan(text):
+def parse_output(text, start_time, end_time):
 	rv=[]
 	aps=text.split("Cell")
 	aps.pop(0) # remove first
-	for ap in aps:
+	for ap in aps: # over each AccessPoint
 		#print ap
-		ap=parseAp(ap)
+		ap=parse_ap(ap)
+		ap["start_time"] = start_time
 		rv.append(ap)
 	return rv
 
-def parseAp(text):
+def parse_ap(text):
 	ap={}
-	ap['ESSID']   = re.findall('ESSID:".*"', text)[0][7:-1]
+	try:
+		ap['ESSID']   = re.findall('ESSID:".*"', text)[0][7:-1]
+	except:
+		ap['ESSID']   = "" # No broadcast ESSID
 	ap['channel'] = int(re.findall('Channel .*', text)[0][8:-1])
 	ap['address'] = re.findall('Address: .*',text)[0][9:]
 	ap['quality'] = int(re.findall('Quality=.*? ', text)[0][8:-5])
 	ap['signal']  = int(re.findall('Signal level=.*',text)[0][13:-6])
-	print ap
+	#print ap
 	return ap
 
 
-def saveScan(aps, start_time, end_time):
-	global client
-	print "Saving...",aps
+def digest_scan(aps, start_time, end_time):
+	digest={}
+	digest["start_time"] = start_time
+	digest["end_time"]   = end_time
 
-	scanJSON = scanToJSON(aps,start_time)
-	print scanJSON
-	client.write_points(scanJSON)
-	apJSON = apsToJSON(aps, start_time)
-	print apJSON
-	client.write_points(apJSON)
-
-
-def scanToJSON(aps, start_time):
-	values = [0]*14
+	channels = [0]*14 # number of WiFi channels
 	# count channel presence
 	for ap in aps:
-		values[ap['channel']] += 1
-	values.insert(0,start_time)
-	columns = ["time"]
-	columns.extend([str(x) for x in xrange(1,14+1)])
-	json = [{ "name" : "scan",
-    		"columns" : columns,
-    		"points" : [ values ],
-  	}]
-	return json
+		if ap['channel']<15: # only 2.4Ghz
+			channels[ap['channel']] += 1
+	for c in xrange(len(channels)):
+		digest[str(c)] = channels[c]
+	return digest
 
 
-
-def apsToJSON(aps, start_time):
+def aps_to_JSON(aps, start_time):
 	values=[]
 	for ap in aps:
 		values.append([start_time, ap['ESSID'], ap['channel'], ap['address'], ap['quality'], ap['signal']])
 
 	json = [{ "name" : "ap",
-    		"columns" : ["time","ESSID","channel","address","quality","signal"],
-    		"points" : values,
-  	}]
+			"columns" : ["time","ESSID","channel","address","quality","signal"],
+			"points" : values,
+	}]
 	return json
 
 
 
 if __name__ == "__main__":
-	main()
+	# claim a database storage object
+	dao = cheesepi.config.get_dao()
+
+	scanForever=False
+	if scanForever:
+		while(True):
+			measure(dao)
+			time.sleep(300)
+	else:
+		measure(dao)
+
