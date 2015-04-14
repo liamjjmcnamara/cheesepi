@@ -37,7 +37,6 @@ try:
     from bson.json_util import dumps
 except:
     msg="Missing PyMongo python module (and GridFS and bson), use 'pip install pymongo'"
-    sys.stderr.write(msg)
     logging.error(msg)
     exit(1)
 
@@ -75,14 +74,18 @@ class DAO_mongo(dao.DAO):
         collection = self.db[op_type]
         if binary!=None:
             # save binary, check its not too big
-            dic['binary']=bson.Binary(binary)
+            dic['binary'] = bson.Binary(binary)
         config = cheesepi.config.get_config()
         dic['version'] = config['version']
         md5 = hashlib.md5(config['secret']+str(dic)).hexdigest()
         dic['sign']    = md5
 
         print "Saving %s Op: %s" % (op_type, dic)
-        id = collection.insert(dic)
+        try:
+            id = collection.insert(dic)
+        except:
+            logging.error("Database write failed!")
+            exit(1)
         return id
 
 
