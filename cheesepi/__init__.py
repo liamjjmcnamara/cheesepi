@@ -26,4 +26,7 @@ Authors: ljjm@sics.se
 Testers:
 """
 
+import config
 import utils
+import storage
+import register
