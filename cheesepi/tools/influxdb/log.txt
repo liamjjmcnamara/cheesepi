@@ -1,0 +1,46 @@
+[2015/04/09 07:35:33 UTC] [INFO] (main.setupLogging:53) Redirectoring logging to /usr/local/cheesepi/database/influxdb/log.txt
+[2015/04/09 07:35:33 UTC] [INFO] (main.main:102) Starting Influx Server 0.7.3 bound to 0.0.0.0...
+[2015/04/09 07:35:33 UTC] [INFO] (server.NewServer:38) Opening database at /opt/influxdb/shared/data/db
+[2015/04/09 07:36:55 UTC] [INFO] (main.setupLogging:53) Redirectoring logging to /usr/local/cheesepi/database/influxdb/log.txt
+[2015/04/09 07:36:55 UTC] [INFO] (main.main:102) Starting Influx Server 0.7.3 bound to 0.0.0.0...
+[2015/04/09 07:36:55 UTC] [INFO] (server.NewServer:38) Opening database at /opt/influxdb/shared/data/db
+[2015/04/09 07:38:28 UTC] [INFO] (main.setupLogging:53) Redirectoring logging to /usr/local/cheesepi/database/influxdb/log.txt
+[2015/04/09 07:38:28 UTC] [INFO] (main.main:102) Starting Influx Server 0.7.3 bound to 0.0.0.0...
+[2015/04/09 07:38:28 UTC] [INFO] (server.NewServer:38) Opening database at /usr/local/cheesepi/database/influxdb/data/db
+[2015/04/09 07:38:28 UTC] [INFO] (wal.NewWAL:40) Opening wal in /usr/local/cheesepi/database/influxdb/data/wal
+[2015/04/09 07:38:28 UTC] [INFO] (api/http.(*HttpServer).EnableSsl:62) Ssl will be disabled since the ssl port or certificate path weren't set
+[2015/04/09 07:38:28 UTC] [INFO] (coordinator.(*RaftServer).Serve:513) Initializing Raft HTTP server
+[2015/04/09 07:38:28 UTC] [INFO] (coordinator.(*RaftServer).Serve:524) Raft Server Listening at 0.0.0.0:8090
+[2015/04/09 07:38:28 UTC] [INFO] (coordinator.(*RaftServer).startRaft:353) Initializing Raft Server: http://rpi1-sics-se:8090
+[2015/04/09 07:38:28 UTC] [INFO] (coordinator.(*RaftServer).startRaft:381) Starting as new Raft leader...
+[2015/04/09 07:38:28 UTC] [INFO] (coordinator.(*RaftServer).raftEventHandler:415) (raft:9eaff0036eeca530) Selected as leader. Starting leader loop.
+[2015/04/09 07:38:28 UTC] [INFO] (coordinator.(*InfluxJoinCommand).Apply:246) Adding new server to the cluster config 9eaff0036eeca530
+[2015/04/09 07:38:28 UTC] [INFO] (cluster.(*ClusterConfiguration).AddPotentialServer:245) Added server to cluster config: 1, http://rpi1-sics-se:8090, rpi1-sics-se:8099
+[2015/04/09 07:38:28 UTC] [INFO] (cluster.(*ClusterConfiguration).AddPotentialServer:246) Checking whether this is the local server local: rpi1-sics-se:8099, new: rpi1-sics-se:8099
+[2015/04/09 07:38:28 UTC] [INFO] (cluster.(*ClusterConfiguration).AddPotentialServer:255) Added the local server
+[2015/04/09 07:38:31 UTC] [INFO] (server.(*Server).ListenAndServe:88) Waiting for local server to be added
+[2015/04/09 07:38:31 UTC] [INFO] (wal.(*WAL).SetServerId:109) Setting server id to 1 and recovering
+[2015/04/09 07:38:36 UTC] [INFO] (server.(*Server).ListenAndServe:120) Recovering from log...
+[2015/04/09 07:38:36 UTC] [INFO] (cluster.NewWriteBuffer:30) local: Initializing write buffer with buffer size of 10000
+[2015/04/09 07:38:36 UTC] [INFO] (cluster.(*ClusterConfiguration).RecoverFromWAL:1064) Waiting for servers to recover
+[2015/04/09 07:38:36 UTC] [INFO] (cluster.func·004:1046) Recovering local server
+[2015/04/09 07:38:36 UTC] [INFO] (cluster.(*ClusterConfiguration).recover:1072) No shards to recover for 1
+[2015/04/09 07:38:36 UTC] [INFO] (cluster.func·004:1048) Recovered local server
+[2015/04/09 07:38:36 UTC] [INFO] (server.(*Server).ListenAndServe:125) recovered
+[2015/04/09 07:38:36 UTC] [INFO] (coordinator.(*CoordinatorImpl).ConnectToProtobufServers:1014) Connecting to other nodes in the cluster
+[2015/04/09 07:38:36 UTC] [INFO] (server.(*Server).ListenAndServe:131) Starting admin interface on port 8083
+[2015/04/09 07:38:36 UTC] [WARN] (server.(*Server).ListenAndServe:143) Cannot start udp server. please check your configuration
+[2015/04/09 07:38:36 UTC] [WARN] (server.(*Server).ListenAndServe:143) Cannot start udp server. please check your configuration
+[2015/04/09 07:38:36 UTC] [INFO] (server.(*Server).ListenAndServe:143) Starting Http Api server on port 8086
+[2015/04/09 07:38:36 UTC] [INFO] (server.(*Server).reportStats:207) Reporting stats: &influxdb.Series{Name:"reports", Columns:[]string{"os", "arch", "id", "version"}, Points:[][]interface {}{[]interface {}{"linux", "arm", "9eaff0036eeca530", "0.7.3"}}}
+[2015/04/09 07:38:36 UTC] [INFO] (coordinator.(*ProtobufServer).ListenAndServe:62) ProtobufServer listening on 0.0.0.0:8099
+[2015/04/09 07:38:42 UTC] [INFO] (coordinator.(*ProtobufServer).handleConnection:77) ProtobufServer: client connected: 127.0.0.1:54876
+[2015/04/09 07:38:42 UTC] [EROR] (coordinator.(*ProtobufServer).handleConnection:85) Error reading from connection (127.0.0.1:54876): read tcp 127.0.0.1:54876: connection reset by peer
+[2015/04/09 08:26:08 UTC] [INFO] (coordinator.(*ProtobufServer).handleConnection:77) ProtobufServer: client connected: 127.0.0.1:56615
+[2015/04/09 08:26:08 UTC] [EROR] (coordinator.(*ProtobufServer).handleConnection:85) Error reading from connection (127.0.0.1:56615): read tcp 127.0.0.1:56615: connection reset by peer
+[2015/04/09 08:26:22 UTC] [INFO] (coordinator.(*ProtobufServer).handleConnection:77) ProtobufServer: client connected: 193.10.66.7:65358
+[2015/04/09 08:26:22 UTC] [EROR] (coordinator.(*ProtobufServer).handleConnection:85) Error reading from connection (193.10.66.7:65358): read tcp 193.10.66.7:65358: connection reset by peer
+[2015/04/09 08:28:54 UTC] [INFO] (coordinator.(*ProtobufServer).handleConnection:77) ProtobufServer: client connected: 193.10.66.7:50413
+[2015/04/09 08:28:54 UTC] [EROR] (coordinator.(*ProtobufServer).handleConnection:85) Error reading from connection (193.10.66.7:50413): read tcp 193.10.66.7:50413: connection reset by peer
+[2015/04/09 08:29:07 UTC] [INFO] (coordinator.(*ProtobufServer).handleConnection:77) ProtobufServer: client connected: 127.0.0.1:57121
+[2015/04/09 08:29:07 UTC] [EROR] (coordinator.(*ProtobufServer).handleConnection:85) Error reading from connection (127.0.0.1:57121): read tcp 127.0.0.1:57121: connection reset by peer
