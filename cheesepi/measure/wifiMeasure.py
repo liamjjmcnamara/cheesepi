@@ -53,7 +53,10 @@ def parse_ap(text):
 		ap['ESSID']   = "" # No broadcast ESSID
 	ap['channel'] = int(re.findall('Channel .*', text)[0][8:-1])
 	ap['address'] = re.findall('Address: .*',text)[0][9:]
-	ap['quality'] = int(re.findall('Quality=.*? ', text)[0][8:-5])
+	try:
+		ap['quality'] = int(re.findall('Quality=.*? ', text)[0][8:-5])
+	except:
+		ap['quality'] = -1
 	ap['signal']  = int(re.findall('Signal level=.*',text)[0][13:-6])
 	#print ap
 	return ap
