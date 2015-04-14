@@ -25,15 +25,21 @@
 Authors: ljjm@sics.se
 Testers:
 """
-
+import sys
 import logging
 import hashlib
 
 # PyMongo
-import pymongo
-import gridfs
-import bson
-from bson.json_util import dumps
+try:
+    import pymongo
+    import gridfs
+    import bson
+    from bson.json_util import dumps
+except:
+    msg="Missing PyMongo python module (and GridFS and bson), use 'pip install pymongo'"
+    sys.stderr.write(msg)
+    logging.error(msg)
+    exit(1)
 
 import cheesepi
 import dao
