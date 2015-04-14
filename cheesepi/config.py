@@ -131,10 +131,14 @@ def log(message):
 
 
 def version():
-	fd = open(version_file)
-	lines = fd.readlines()
-	fd.close()
-	version = lines[0].strip()
+	version="repos"
+	try:
+		fd = open(version_file)
+		lines = fd.readlines()
+		fd.close()
+		version = lines[0].strip()
+	except:
+		logging.warning("No version file!")
 	return version
 
 
