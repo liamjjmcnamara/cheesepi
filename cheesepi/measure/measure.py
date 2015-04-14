@@ -58,7 +58,7 @@ def measure(config=None):
         config=cheesepi.config.get_config()
     print config
     # Update the distribution
-    if cheesepi.config.isTrue(config, 'auto_update'):
+    if cheesepi.config.config_true(config, 'auto_update'):
         cheesepi.config.log("Info: performing distribution update!")
         updatecall = [config['cheesepi_dir']+"/update.sh"]
         run(updatecall)
@@ -68,12 +68,12 @@ def measure(config=None):
 
     # Run the measurement suite
     for action in actions:
-        if cheesepi.config.isTrue(config, action):
+        if cheesepi.config.config_true(config, action):
             run([config['cheesepi_dir']+"/measure/"+action+".py"])
 
 
 def pingMeasure(config):
-    if not cheesepi.config.isTrue(config, 'pingMeasure'):
+    if not cheesepi.config.config_true(config, 'pingMeasure'):
         return
     if 'landmarks' not in config:
         cheesepi.config.log("Error: no landmarks defined!")
