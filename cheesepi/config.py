@@ -104,6 +104,10 @@ def create_default_config():
 def get_dao():
 	if config_equal('database',"mongo"):
 		return cheesepi.storage.dao_mongo.DAO_mongo()
+	elif config_equal('database',"mysql"):
+		return cheesepi.storage.dao_mysql.DAO_mysql()
+	# and so on for other database engines...
+
 	print config['database']
 	msg = "Fatal error: 'database' type not set to a valid value in config file, exiting."
 	print msg
