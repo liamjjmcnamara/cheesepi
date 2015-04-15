@@ -31,76 +31,40 @@ import hashlib
 
 # PyMongo
 try:
-    import pymongo
-    import gridfs
-    import bson
-    from bson.json_util import dumps
+    import MySQLdb
 except:
-    msg="Missing PyMongo python module (and GridFS and bson), use 'pip install pymongo'"
+    msg="Missing MySQL python module, use 'pip install mysqldb'"
     logging.error(msg)
     exit(1)
 
 import cheesepi
 import dao
 
-class DAO_mongo(dao.DAO):
+class DAO_mysql(dao.DAO):
     def __init__(self):
-        try: # Get a hold of a MongoDB connection
-            self.conn = pymongo.MongoClient('localhost', 27017 )
+        try: # Get a hold of a MySQL connection
+            self.conn = MySQLdb.connect("localhost", "measurement", "MP4MDb", "Measurement")
         except:
-            msg = "Error: Connection to Mongo database failed! Ensure MongoDB is running."
+            msg = "Error: Connection to MySQL database failed! Ensure MySQL is running."
             logging.error(msg)
             print msg
             exit(1)
-        self.db = self.conn.cheesepi
-        self.fs = gridfs.GridFS(self.db)
 
 
     # user level interactions
     def read_user(self):
-        return self.db.user.find()
+        pass
 
 
     def write_user(self, user_data):
-        # check we dont already exist
-        print "Saving: ",user_data
-        return self.db.user.insert(user_data)
+        pass
 
 
     # operator level interactions
     def write_op(self, op_type, dic, binary=None):
-        if not self.validate_op(op_type):
-            return
-        collection = self.db[op_type]
-        if binary!=None:
-            # save binary, check its not too big
-            dic['binary'] = bson.Binary(binary)
-        config = cheesepi.config.get_config()
-        dic['version'] = config['version']
-        md5 = hashlib.md5(config['secret']+str(dic)).hexdigest()
-        dic['sign']    = md5
-
-        print "Saving %s Op: %s" % (op_type, dic)
-        try:
-            id = collection.insert(dic)
-        except:
-            logging.error("Database PyMongo write failed!")
-            exit(1)
-        return id
+        pass
 
 
     def read_op(self, op_type, timestamp=0, limit=100):
-        rv=""
-        if not self.validate_op(op_type):
-            return
-        collection = self.db[op_type]
-        for op in collection.find():
-            rv += str(dumps(op))
-        return rv
-
-
-    def to_bson(self, i):
-        """if not bson, convert to bson"""
-        return dumps(i)
-
+        pass
 
