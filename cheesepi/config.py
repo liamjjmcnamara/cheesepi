@@ -86,6 +86,7 @@ def create_default_config():
 	# is there already a local config file?
 	if os.path.isfile(config_file):
 		return
+	logging.warning("Copying default config file to a local version")
 	default_config = os.path.join(cheesepi_dir,"cheesepi.default.conf")
 	# Can we find the default config file?
 	if os.path.isfile(default_config):

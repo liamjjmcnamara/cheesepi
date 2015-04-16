@@ -56,7 +56,7 @@ def measure(config=None):
     global actions
     if config==None:
         config=cheesepi.config.get_config()
-    print config
+    #print config
     # Update the distribution
     if cheesepi.config.config_true(config, 'auto_update'):
         cheesepi.config.log("Info: performing distribution update!")

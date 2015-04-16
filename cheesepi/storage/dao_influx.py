@@ -42,8 +42,8 @@ import dao
 
 host     = "localhost"
 port     = 8083
-username = "user"
-password = "password"
+username = "root"
+password = "root"
 database = "cheesepi"
 
 class DAO_influx(dao.DAO):
@@ -82,12 +82,14 @@ class DAO_influx(dao.DAO):
         md5 = hashlib.md5(config['secret']+str(dic)).hexdigest()
         dic['sign']    = md5
 
-        json = to_json(op_type, dic)
+        json = self.to_json(op_type, dic)
         print "Saving Op: %s" % json
         try:
             return self.conn.write_points(json)
-        except:
-            logging.error("Database Influx Op write failed!")
+        except Exception as e:
+            msg = "Database Influx Op write failed! "+str(e)
+            logging.error(msg)
+            print msg
             exit(1)
         return id
 

@@ -55,9 +55,10 @@ def parse_ap(text):
 	ap['address'] = re.findall('Address: .*',text)[0][9:]
 	try:
 		ap['quality'] = int(re.findall('Quality=.*? ', text)[0][8:-5])
+		ap['signal']  = int(re.findall('Signal level=.*',text)[0][13:-6])
 	except:
 		ap['quality'] = -1
-	ap['signal']  = int(re.findall('Signal level=.*',text)[0][13:-6])
+		ap['signal']  = -1
 	#print ap
 	return ap
 

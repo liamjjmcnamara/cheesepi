@@ -76,7 +76,7 @@ def perform(destination, packet_number, packet_size):
 	#print "calling ping"
 
 	execute = "ping -c %s -s %s %s"%(packet_number, packet_size, destination)
-	logging.error("Executing: "+execute)
+	logging.info("Executing: "+execute)
 	#print execute
 	result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
 
