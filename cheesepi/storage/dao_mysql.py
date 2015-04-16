@@ -92,7 +92,7 @@ class DAO_mysql(dao.DAO):
 	values = ""
 	for key, value in dic.iteritems():
 		names = names + key + ", "
-		values = values + value + ", "
+		values = values + str(value) + ", "
 
 	names = names[:-2]
 	values = values[:-2]
