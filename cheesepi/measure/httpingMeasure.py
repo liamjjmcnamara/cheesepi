@@ -59,7 +59,7 @@ def measure(dao, number_httpings = 10, targets = None, save_file=False):
 	for target in targets:
 		start_time    = cheesepi.utils.now()
 		httpingResult = getData(target, number_httpings)
-		end_time       = cheesepi.utils.now()
+		end_time      = cheesepi.utils.now()
 		if save_file:
 			cheesepi.utils.write_file(httpingResult, start_time, ethmac)
 		readable = reformat(httpingResult, start_time, end_time, ethmac, number_httpings)

@@ -106,6 +106,8 @@ def get_dao():
 		return cheesepi.storage.dao_mongo.DAO_mongo()
 	elif config_equal('database',"mysql"):
 		return cheesepi.storage.dao_mysql.DAO_mysql()
+	elif config_equal('database',"null"):
+		return cheesepi.storage.dao.DAO()
 	# and so on for other database engines...
 
 	print config['database']

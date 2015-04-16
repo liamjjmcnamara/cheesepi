@@ -29,78 +29,76 @@ import sys
 import logging
 import hashlib
 
-# PyMongo
+# Influx
 try:
-    import pymongo
-    import gridfs
-    import bson
-    from bson.json_util import dumps
+    from influxdb import InfluxDBClient
 except:
-    msg="Missing PyMongo python module (and GridFS and bson), use 'pip install pymongo'"
+    msg="Missing InfluxDB python module (and GridFS and bson), use 'pip install influxdb'"
     logging.error(msg)
     exit(1)
 
 import cheesepi
 import dao
 
+host     = "localhost"
+port     = 8083
+username = "user"
+password = "password"
+database = "cheesepi"
+
 class DAO_mongo(dao.DAO):
     def __init__(self):
         try: # Get a hold of a MongoDB connection
-            self.conn = pymongo.MongoClient('localhost', 27017 )
-        except:
-            msg = "Error: Connection to Mongo database failed! Ensure MongoDB is running."
+            self.conn =  = InfluxDBClient(host, port, username, password, database)
+        except Exception as e:
+            msg = "Error: Connection to Influx database failed! Ensure InfluxDB is running. "+str(e)
             logging.error(msg)
             print msg
             exit(1)
-        self.db = self.conn.cheesepi
-        self.fs = gridfs.GridFS(self.db)
 
 
     # user level interactions
     def read_user(self):
-        return self.db.user.find()
+        user = self.conn..query('select * from user limit 1;')
+        return user
 
 
     def write_user(self, user_data):
         # check we dont already exist
         print "Saving: ",user_data
-        return self.db.user.insert(user_data)
+        json = self.to_json("user",user_data)
+        return self.conn.write_points(json)
 
 
     # operator level interactions
     def write_op(self, op_type, dic, binary=None):
-        if not self.validate_op(op_type,dic):
+        if not self.validate_op(op_type):
             return
-        collection = self.db[op_type]
-        if binary!=None:
-            # save binary, check its not too big
-            dic['binary'] = bson.Binary(binary)
+        #if binary!=None:
+        #    # save binary, check its not too big
+        #    dic['binary'] = bson.Binary(binary)
         config = cheesepi.config.get_config()
         dic['version'] = config['version']
         md5 = hashlib.md5(config['secret']+str(dic)).hexdigest()
         dic['sign']    = md5
 
-        print "Saving %s Op: %s" % (op_type, dic)
+        json = to_json(op_type, dic)
+        print "Saving Op: %s" % json
         try:
-            id = collection.insert(dic)
+            return self.conn.write_points(json)
         except:
-            logging.error("Database PyMongo write failed!")
+            logging.error("Database Influx Op write failed!")
             exit(1)
         return id
 
 
     def read_op(self, op_type, timestamp=0, limit=100):
-        rv=""
-        if not self.validate_op(op_type):
-            return
-        collection = self.db[op_type]
-        for op in collection.find():
-            rv += str(dumps(op))
-        return rv
+        op = self.conn..query('select * from '+op_type+' limit 1;')
+        return op
 
 
-    def to_bson(self, i):
-        """if not bson, convert to bson"""
-        return dumps(i)
+    def to_json(self, table, dic):
+        json = [{"name":table, "columns":dic.keys(), "points":dic.values()}]
+        return json
 
 
