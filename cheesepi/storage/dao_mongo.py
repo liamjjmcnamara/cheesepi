@@ -35,7 +35,7 @@ try:
     import gridfs
     import bson
     from bson.json_util import dumps
-except:
+except ImportError:
     msg="Missing PyMongo python module (and GridFS and bson), use 'pip install pymongo'"
     logging.error(msg)
     exit(1)

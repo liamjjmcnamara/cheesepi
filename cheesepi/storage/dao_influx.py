@@ -32,9 +32,9 @@ import json
 
 # Influx
 try:
-    #from influxdb import InfluxDBClient
-    from influxdb.influxdb08 import InfluxDBClient
-except:
+    from influxdb import InfluxDBClient
+    #from influxdb.influxdb08 import InfluxDBClient
+except ImportError:
     msg="Missing InfluxDB python module (and GridFS and bson), use 'pip install influxdb'"
     logging.error(msg)
     exit(1)

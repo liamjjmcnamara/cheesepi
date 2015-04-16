@@ -55,7 +55,7 @@ import logging
 # try to import cheesepi, i.e. it's on PYTHONPATH
 try:
     import cheesepi
-except:
+except ImportError:
     # try default location
     sys.path.append("/usr/local/")
     import cheesepi

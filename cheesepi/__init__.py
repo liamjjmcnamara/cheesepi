@@ -28,5 +28,5 @@ Testers:
 
 import config
 import utils
-import storage
 import register
+import storage
