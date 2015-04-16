@@ -52,13 +52,13 @@ class DAO_mysql(dao.DAO):
 	
         #define tables here. Ping, httping, traceroute+hops
 
-	cursor = self.conn.cursor()
 
-	with cursor:
+	with self.conn:
 	    #disable warnings
+	    cursor = self.conn.cursor()
             cursor.execute("""SET sql_notes = 0""")
 
-	    pingquery = """create table if not exists ping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	    pingquery = """CREATE TABLE IF NOT EXISTS ping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                                        	 sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
 							 startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
                                                          averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
@@ -66,7 +66,7 @@ class DAO_mysql(dao.DAO):
 							 numberOfPings INTEGER);"""
 	    cursor.execute(pingquery)
 
-            httpquery = """create table if not exists httping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            httpquery = """CREATE TABLE IF NOT EXISTS httping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                                          sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
                                                          startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
                                                          averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
@@ -88,7 +88,20 @@ class DAO_mysql(dao.DAO):
 
     # operator level interactions
     def write_op(self, op_type, dic, binary=None):
-        pass
+	names = ""
+	values = ""
+	for key, value in dic.iteritems():
+		names = names + key + ", "
+		values = values + value + ", "
+
+	names = names[:-2]
+	values = values[:-2]
+
+        query = """INSERT INTO %s (%s) VALUES (%s)""" % (op_type, stuff, values)
+	with self.conn:
+            cursor = self.conn.cursor();
+	    cursor.execute(query)
+            self.conn.commit()
 
 
     def read_op(self, op_type, timestamp=0, limit=100):
