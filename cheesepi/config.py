@@ -104,6 +104,8 @@ def create_default_config():
 def get_dao():
 	if config_equal('database',"mongo"):
 		return cheesepi.storage.dao_mongo.DAO_mongo()
+	elif config_equal('database',"influx"):
+		return cheesepi.storage.dao_influx.DAO_influx()
 	elif config_equal('database',"mysql"):
 		return cheesepi.storage.dao_mysql.DAO_mysql()
 	elif config_equal('database',"null"):
