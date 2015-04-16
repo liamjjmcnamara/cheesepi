@@ -46,10 +46,10 @@ username = "user"
 password = "password"
 database = "cheesepi"
 
-class DAO_mongo(dao.DAO):
+class DAO_influx(dao.DAO):
     def __init__(self):
-        try: # Get a hold of a MongoDB connection
-            self.conn =  = InfluxDBClient(host, port, username, password, database)
+        try: # Get a hold of a Influx connection
+            self.conn = InfluxDBClient(host, port, username, password, database)
         except Exception as e:
             msg = "Error: Connection to Influx database failed! Ensure InfluxDB is running. "+str(e)
             logging.error(msg)
@@ -59,7 +59,7 @@ class DAO_mongo(dao.DAO):
 
     # user level interactions
     def read_user(self):
-        user = self.conn..query('select * from user limit 1;')
+        user = self.conn.query('select * from user limit 1;')
         return user
 
 
@@ -93,7 +93,7 @@ class DAO_mongo(dao.DAO):
 
 
     def read_op(self, op_type, timestamp=0, limit=100):
-        op = self.conn..query('select * from '+op_type+' limit 1;')
+        op = self.conn.query('select * from '+op_type+' limit 1;')
         return op
 
 
