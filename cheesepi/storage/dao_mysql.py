@@ -48,8 +48,34 @@ class DAO_mysql(dao.DAO):
             msg = "Error: Connection to MySQL database failed! Ensure MySQL is running."
             logging.error(msg)
             print msg
-            exit(1)
+            exit(1)	
+	
+        #define tables here. Ping, httping, traceroute+hops
 
+	cursor = self.conn.cursor()
+
+	with cursor:
+	    #disable warnings
+            cursor.execute("""SET sql_notes = 0""")
+
+	    pingquery = """create table if not exists ping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                                       	 sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
+							 startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
+                                                         averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
+							 ethernetMacAddress TEXT, currentMacAddress TEXT, packetSize INTEGER,
+							 numberOfPings INTEGER);"""
+	    cursor.execute(pingquery)
+
+            httpquery = """create table if not exists httping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                                         sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
+                                                         startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
+                                                         averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
+                                                         ethernetMacAddress TEXT, currentMacAddress TEXT, packetSize INTEGER,
+                                                         numberOfHttpings INTEGER);"""
+	    cursor.execute(httpquery)
+ 	    
+	    #enable warnings
+	    cursor.execute("""SET sql_notes = 1""")
 
     # user level interactions
     def read_user(self):
