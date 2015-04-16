@@ -20,15 +20,15 @@ define(['settings'], function(Settings) {
       datasources: {
         influxdb: {
           type: 'influxdb',
-          url: "http://localhost:8086/db/cheesepi",
-          username: 'admin',
-          password: 'admin',
+          url: "http://rpi4.sics.se:8086/db/cheesepi",
+          username: 'root',
+          password: 'root',
         },
         grafana: {
           type: 'influxdb',
-          url: "http://localhost:8086/db/grafana",
-          username: 'admin',
-          password: 'admin',
+          url: "http://rpi4.sics.se:8086/db/grafana",
+          username: 'root',
+          password: 'root',
           grafanaDB: true
         },
       },

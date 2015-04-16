@@ -13,7 +13,7 @@ serveroot = os.path.dirname(os.path.realpath(__file__))
 confpath = os.path.join(serveroot,'cherrypy.conf')
 print "Server root: "+serveroot
 
-dao = cheesepi.storage.DAO()
+dao = cheesepi.config.get_dao()
 
 def setup_server():
 
