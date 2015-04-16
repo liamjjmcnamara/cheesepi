@@ -108,7 +108,7 @@ def parse_output(data, start_time, end_time, ethmac, packet_size, number_pings):
 	for line in lines[1:]:
 		if "packet loss" in line:
 			tmp = line.split()[5]
-			ret["packet_loss"] = str(tmp)[:-1] #INTEGER LATER ON PLEASE ;_;
+			ret["packet_loss"] = str(tmp)[:-1]å #INTEGER LATER ON PLEASE ;_;
 		if "min/avg/max" in line:
 			tmp = line.split()[3].split("/")
 			ret["minimum_RTT"] = float(tmp[0])
