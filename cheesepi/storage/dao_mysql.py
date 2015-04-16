@@ -52,7 +52,6 @@ class DAO_mysql(dao.DAO):
 	
         #define tables here. Ping, httping, traceroute+hops
 
-
 	with self.conn:
 	    #disable warnings
 	    cursor = self.conn.cursor()
@@ -105,5 +104,6 @@ class DAO_mysql(dao.DAO):
 
 
     def read_op(self, op_type, timestamp=0, limit=100):
+	#check last push and grab the rest?
         pass
 

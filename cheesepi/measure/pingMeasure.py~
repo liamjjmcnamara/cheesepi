@@ -1,17 +1,16 @@
-#!/usr/bin/python 
 #!/usr/bin/env python
 """ Copyright (c) 2015, Swedish Institute of Computer Science
   All rights reserved.
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
-      * Redistributions of source code must retain the above copyright
-        notice, this list of conditions and the following disclaimer.
-      * Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
-      * Neither the name of The Swedish Institute of Computer Science nor the
-        names of its contributors may be used to endorse or promote products
-        derived from this software without specific prior written permission.
+	  * Redistributions of source code must retain the above copyright
+		notice, this list of conditions and the following disclaimer.
+	  * Redistributions in binary form must reproduce the above copyright
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
+	  * Neither the name of The Swedish Institute of Computer Science nor the
+		names of its contributors may be used to endorse or promote products
+		derived from this software without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -31,7 +30,7 @@ Testers:
 
 
 Example usage:
-python pingMeasure.py -save=False -size=30 -number=100 www.bbc.	com www.sics.se www.svt.se
+python pingMeasure.py -save=False -size=30 -number=100 www.bbc.com www.sics.se www.svt.se
 This is equal to:
 ping -c 100 -s 30 www.bbc.com
 ping -c 100 -s 30 www.sics.se
@@ -48,146 +47,89 @@ measure(number_pings=30, saveToFile=True, targets = ["www.bbc.com", "www.sics.se
 This will ping the two sites 30 times and save each ping result to a separate file.
 """
 
-import MySQLdb
-import os
 import sys
-from subprocess import Popen, PIPE, STDOUT
-import urllib2
-import warnings
-import uuid
-import socket
-import fcntl
-import struct
-from datetime import datetime
+from subprocess import Popen, PIPE
 import re
+import logging
+
+# try to import cheesepi, i.e. it's on PYTHONPATH
+try:
+    import cheesepi
+except:
+    # try default location
+    sys.path.append("/usr/local/")
+    import cheesepi
 
 #main measure funtion
-def measure(number_pings = 10, packet_size = 64, targets = None, saveToFile=False):
+def measure(dao, number_pings=10, packet_size=64, targets=None, save_file=False):
 	if targets is None:
-		targets = []
-	print number_pings, packet_size, targets, saveToFile
-	
-        database = MySQLdb.connect("localhost", "measurement", "MP4MDb", "Measurement")
-        curs=database.cursor()
+		return
 
-        #To ignore warning from Mysql "Table already existed". Move to setup.py or something? Not exactly important to re-run every run.																																																											
-	with warnings.catch_warnings():
-		warnings.simplefilter("ignore")
-		sqlTable = """create table if not exists ping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                                                       	 sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
-							 startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
-                                                         averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
-							 ethernetMacAddress TEXT, currentMacAddress TEXT, packetSize INTEGER,
-							 numberOfPings INTEGER);"""
-                curs.execute(sqlTable)
-
-	ethmac = getEthMAC()
+	ethmac = cheesepi.utils.get_MAC()
 	for target in targets:
-		startTime = datetime.now()
-		ret = getData(target, number_pings, packet_size)
-		endTime = datetime.now()
-		
-		if saveToFile:
-			writeFile(ret, startTime, ethmac)
-		readable = reformat(ret, startTime, endTime, ethmac, packet_size, number_pings)
-		insertData(database, curs, readable)
+		print target
+		start_time = cheesepi.utils.now()
+		op_output = perform(target, number_pings, packet_size)
+		end_time = cheesepi.utils.now()
 
-	database.close()
-
-	#general logging here? unable to connect etc
-
-
-#file function
-def writeFile(ret, startTime, ethmac):
-	fileName = "./" + ethmac+str(startTime) +".txt"
-	#print fileName
-	myfile = open(fileName, 'w')
-	
-	myfile.write(ret)
-	myfile.close()
+		if save_file:
+			cheesepi.utils.write_file(op_output, start_time, ethmac)
+		parsed_output = parse_output(op_output, start_time, end_time, ethmac, packet_size, number_pings)
+		dao.write_op("ping", parsed_output)
 
 #ping function
-def getData(destination, packet_number, packet_size):
-	print "calling ping"
+def perform(destination, packet_number, packet_size):
+	#print "calling ping"
 
-        execute = "ping -c %s -s %s %s"%(packet_number, packet_size, destination)
-	print execute
-        result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
+	execute = "ping -c %s -s %s %s"%(packet_number, packet_size, destination)
+	logging.info("Executing: "+execute)
+	#print execute
+	result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
 
 	ret = result.stdout.read()
 	result.stdout.flush()
 	return ret
 
 #read the data from ping and reformat for database entry
-def reformat(data, startTime, endTime, ethmac, packet_size, number_pings):
+def parse_output(data, start_time, end_time, ethmac, packet_size, number_pings):
 	ret = {}
-	ret["startingTime"] = startTime
-	ret["endingTime"] = endTime
-	ret["ethernetMacAddress"] = ethmac
-	ret["packetSize"] = packet_size
-	ret["numberOfPings"] = number_pings
-	ret["currentMacAddress"] = getCurrMAC() 
-	ret["sourceAddress"] = getSA()
+	ret["start_time"]    = start_time
+	ret["ending_time"]   = end_time
+	ret["packet_size"]   = int(packet_size)
+	ret["ping_count"]    = int(number_pings)
+	ret["ethernet_MAC"]  = ethmac
+	ret["current_MAC"]   = cheesepi.utils.get_MAC()
+	ret["source_address"]= cheesepi.utils.get_SA()
 
 	lines = data.split("\n")
 	tmp = lines[0].split()
-	ret["destinationDomain"] = tmp[1]
-	ret["destinationAddress"] = re.sub("[()]", "", str(tmp[2]))
+	ret["destination_domain"] = tmp[1]
+	ret["destination_address"] = re.sub("[()]", "", str(tmp[2]))
 	for line in lines[1:]:
 		if "packet loss" in line:
 			tmp = line.split()[5]
 			ret["packet_loss"] = str(tmp) #INTEGER LATER ON PLEASE ;_;
 		if "min/avg/max" in line:
 			tmp = line.split()[3].split("/")
-			ret["minimumRTT"] = float(tmp[0])
-			ret["averageRTT"] = float(tmp[1])
-			ret["maximumRTT"] = float(tmp[2])
-	
+			ret["minimum_RTT"] = float(tmp[0])
+			ret["average_RTT"] = float(tmp[1])
+			ret["maximum_RTT"] = float(tmp[2])
+
 	return ret
 
-#insert the ping results into the database, looks awful, just awful
-def insertData(database, cursor, readable):
-	
-        with database:
-                sqlInsert = """INSERT INTO ping (sourceAddress, destinationDomain, destinationAddress,
-					        startingTime, endingTime, minimumRTT, averageRTT, maximumRTT, 
-						packetLoss, ethernetMacAddress, currentMacAddress, packetSize, 
-						numberOfPings) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-                cursor.execute (sqlInsert,( readable["sourceAddress"], readable["destinationDomain"], readable["destinationAddress"], readable["startingTime"].strftime('%Y-%m-%d %H:%M:%S'), readable["endingTime"].strftime('%Y-%m-%d %H:%M:%S'), readable["minimumRTT"], readable["averageRTT"], readable["maximumRTT"], readable["packet_loss"], readable["ethernetMacAddress"], readable["currentMacAddress"], readable["packetSize"], readable["numberOfPings"]))
 
-                database.commit()
-
-#get the ethernet mac address of this device
-def getEthMAC(ifname = "eth0"):
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', ifname[:15]))
-    return ''.join(['%02x:' % ord(char) for char in info[18:24]])[:-1]
-
-#get our currently used MAC address
-def getCurrMAC():
-	ret =':'.join(['{:02x}'.format((uuid.getnode() >> i) & 0xff) for i in range(0,8*6,8)][::-1])
-	return ret
-	
-#get our source address
-def getSA():
-	ret = urllib2.urlopen('http://ip.42.pl/raw').read()
-	return ret
-
-#parses arguments
 if __name__ == "__main__":
-	#if len(sys.argv) < 3:
-	#	print "too few parameters"
-	#	sys.exit(1)
+	#general logging here? unable to connect etc
+	dao = cheesepi.config.get_dao()
 
 	args = (sys.argv)
 	args = args[1:]
-	
 	number = 10
 	size = 64
 	destinations = []
 	save = False
 
-	#should make this check better, could easily have a problem with some websites	
+	#should make this check better, could easily have a problem with some websites
 	for arg in args:
 		if "-number=" in arg:
 			number = arg.split("=")[1]
@@ -198,8 +140,6 @@ if __name__ == "__main__":
 			save = (arg.split("=")[1] in ['True', 'true'])
 		else:
 			destinations.append(str(arg))
-	
-	measure(number_pings = number, packet_size = size, targets = destinations, saveToFile=save)
 
-
+	measure(dao, number_pings=number, packet_size=size, targets=destinations, save_file=save)
 
