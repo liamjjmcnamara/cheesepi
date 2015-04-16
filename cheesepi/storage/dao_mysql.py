@@ -25,17 +25,10 @@
 Authors: ljjm@sics.se
 Testers:
 """
-import sys
 import logging
-import hashlib
 
 # PyMongo
-try:
-    import MySQLdb
-except:
-    msg="Missing MySQL python module, use 'pip install mysqldb'"
-    logging.error(msg)
-    exit(1)
+import MySQLdb
 
 import cheesepi
 import dao
@@ -48,8 +41,8 @@ class DAO_mysql(dao.DAO):
             msg = "Error: Connection to MySQL database failed! Ensure MySQL is running."
             logging.error(msg)
             print msg
-            exit(1)	
-	
+            exit(1)
+
         #define tables here. Ping, httping, traceroute+hops
 
 	with self.conn:
@@ -72,7 +65,7 @@ class DAO_mysql(dao.DAO):
                                                          ethernetMacAddress TEXT, currentMacAddress TEXT, packetSize INTEGER,
                                                          numberOfHttpings INTEGER);"""
 	    cursor.execute(httpquery)
- 	    
+
 	    #enable warnings
 	    cursor.execute("""SET sql_notes = 1""")
 

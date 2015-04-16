@@ -1,5 +1,17 @@
 import dao
-import dao_mongo
-import dao_influx
-import dao_mysql
+
+try:
+	import dao_mongo
+except ImportError:
+	print "Missing InfluxDB python module (and GridFS and bson), use 'pip install influxdb'"
+
+try:
+	import dao_influx
+except ImportError:
+	print "Missing InfluxDB python module (and GridFS and bson), use 'pip install influxdb'"
+
+try:
+	import dao_mysql
+except ImportError:
+	print "Missing InfluxDB python module (and GridFS and bson), use 'pip install influxdb'"
 
