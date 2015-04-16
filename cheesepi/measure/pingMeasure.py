@@ -52,7 +52,13 @@ from subprocess import Popen, PIPE
 import re
 import logging
 
-import cheesepi
+# try to import cheesepi, i.e. it's on PYTHONPATH
+try:
+    import cheesepi
+except:
+    # try default location
+    sys.path.append("/usr/local/")
+    import cheesepi
 
 #main measure funtion
 def measure(dao, number_pings=10, packet_size=64, targets=None, save_file=False):

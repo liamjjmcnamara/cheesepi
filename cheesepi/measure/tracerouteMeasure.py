@@ -37,13 +37,12 @@ traceroute www.diretube.com
 and do not save the results in a file
 
 
-If -save=True the program will attempt to write the the result of 
-each traceroute in a separate file named after the device's 
-ethernet mac address + the current date. 
+If -save=True the program will attempt to write the the result of
+each traceroute in a separate file named after the device's
+ethernet mac address + the current date.
 For example 00:aa:bb:cc:dd:ee 20-2015-14:00:01.txt
 
 """
-import MySQLdb
 import os
 import sys
 from subprocess import Popen, PIPE, STDOUT
@@ -55,6 +54,16 @@ import struct
 from datetime import datetime
 import re
 import copy
+
+import MySQLdb
+
+# try to import cheesepi, i.e. it's on PYTHONPATH
+try:
+    import cheesepi
+except:
+    # try default location
+    sys.path.append("/usr/local/")
+    import cheesepi
 
 #A Traceroute class to represent the Traceroute table
 class Traceroute(object):
@@ -78,13 +87,13 @@ class Hop(object):
 def measure(targets = None, saveToFile=False):
 	trc = Traceroute()
 	#hop = Hop()
-	hoplist = []        
+	hoplist = []
 	if targets is None:
                 targets = []
 	database = MySQLdb.connect("localhost", "measurement", "MP4MDb", "Measurement")
         curs=database.cursor()
 
-        #Extract the ethernet MAC address of the PI        
+        #Extract the ethernet MAC address of the PI
         ethmac = getEthMAC()
         for target in targets:
                 startTime = datetime.now()
@@ -138,7 +147,7 @@ def reformat(data, startTime, endTime, ethmac):
 	tmp = lines[0].split()
         trc.DestinationDomain = str(tmp[2])
 	trc.DestinationAddress = re.sub("[(),]", "", str(tmp[3]))
-	#print len(lines)     
+	#print len(lines)
         for line in lines[1:len(lines)-1]:
 		i = 1 # Line length counter
 		j = 1 #packet counter
@@ -181,7 +190,7 @@ def reformat(data, startTime, endTime, ethmac):
 				j = j + 1
 			ip = hop.PacketDestinationAddress
 			domain = hop.PacketDestinationDomain
-           
+
 	return trc,hoplist
 
 
@@ -206,16 +215,16 @@ def insertData(database, cursor, trc, hoplist):
 	print "Inserting the results in to the database"
         with database:
                 insertIntoTraceroute = """INSERT INTO Traceroute(sourceAddress, destinationDomain, destinationAddress,
-						startingTime, endingTime, ethernetMacAddress, currentMacAddress) 
+						startingTime, endingTime, ethernetMacAddress, currentMacAddress)
 						values (%s,%s,%s,%s,%s,%s,%s)"""
 		insertIntoHop = """INSERT INTO Hop(ID, hopNumber, packetNumber, packetDomainAddress, packetDestinationAddress,
 						RTT) values (%s,%s,%s,%s,%s,%s)"""
 		print "Writting to the Traceroute tabele"
-		cursor.execute(insertIntoTraceroute,(trc.SourceAddress, trc.DestinationDomain, trc.DestinationAddress, 
+		cursor.execute(insertIntoTraceroute,(trc.SourceAddress, trc.DestinationDomain, trc.DestinationAddress,
 						      trc.StartingTime.strftime('%Y-%m-%d %H:%M:%S'),
 						      trc.EndingTime.strftime('%Y-%m-%d %H:%M:%S'),
 						      trc.EthernetMacAddress, trc.CurrentMacAddress))
-		#Assigning the traceroute id to the hops  
+		#Assigning the traceroute id to the hops
 		lastTracerouteID = "SELECT ID FROM Traceroute ORDER BY ID DESC LIMIT 1"
 		cursor.execute(lastTracerouteID)
 		id = cursor.fetchone()
@@ -223,21 +232,21 @@ def insertData(database, cursor, trc, hoplist):
 		for hop in hoplist:
 			cursor.execute(insertIntoHop, (id[0], hop.HopNumber, hop.PacketNumber, hop.PacketDestinationDomain,
 						       hop.PacketDestinationAddress, hop.RTT))
- 
+
 
                 database.commit()
 
 
 #parses arguments
 if __name__ == "__main__":
-        
+
 	args = (sys.argv)
         args = args[1:]
 	destinations = []
         save = False
 
         for arg in args:
-                
+
                 if "-save=" in arg:
                         print "save!"
                         save = (arg.split("=")[1] in ['True', 'true'])
