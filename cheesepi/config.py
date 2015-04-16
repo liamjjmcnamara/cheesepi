@@ -187,7 +187,7 @@ def clean(id):
 config  = get_config()
 if config_defined('logfile'):
 	logfile = os.path.join(cheesepi_dir, config['logfile'])
-	logging.basicConfig(filename=logfile, level=logging.INFO, format="%(asctime)s;%(levelname)s;%(message)s")
+	logging.basicConfig(filename=logfile, level=logging.INFO, format="%(asctime)s;%(levelname)s; %(message)s")
 
 
 if __name__ == "__main__":

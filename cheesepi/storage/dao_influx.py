@@ -28,10 +28,12 @@ Testers:
 import sys
 import logging
 import hashlib
+import json
 
 # Influx
 try:
-    from influxdb import InfluxDBClient
+    #from influxdb import InfluxDBClient
+    from influxdb.influxdb08 import InfluxDBClient
 except:
     msg="Missing InfluxDB python module (and GridFS and bson), use 'pip install influxdb'"
     logging.error(msg)
@@ -41,13 +43,14 @@ import cheesepi
 import dao
 
 host     = "localhost"
-port     = 8083
+port     = 8086
 username = "root"
 password = "root"
 database = "cheesepi"
 
 class DAO_influx(dao.DAO):
     def __init__(self):
+	logging.info("Connecting to influx: %s %s %s" % (username,password,database))
         try: # Get a hold of a Influx connection
             self.conn = InfluxDBClient(host, port, username, password, database)
         except Exception as e:
@@ -73,6 +76,7 @@ class DAO_influx(dao.DAO):
     # operator level interactions
     def write_op(self, op_type, dic, binary=None):
         if not self.validate_op(op_type):
+            logging.warning("Operation of type %s not valid: " % (op_type, str(dic)))
             return
         #if binary!=None:
         #    # save binary, check its not too big
@@ -87,7 +91,7 @@ class DAO_influx(dao.DAO):
         try:
             return self.conn.write_points(json)
         except Exception as e:
-            msg = "Database Influx Op write failed! "+str(e)
+            msg = "Database Influx "+op_type+" Op write failed! "+str(e)
             logging.error(msg)
             print msg
             exit(1)
@@ -100,7 +104,11 @@ class DAO_influx(dao.DAO):
 
 
     def to_json(self, table, dic):
-        json = [{"name":table, "columns":dic.keys(), "points":dic.values()}]
-        return json
+	for k in dic.keys():
+		dic[k]=str(dic[k])
+        json_dic = [{"name":table, "columns":dic.keys(), "points":[dic.values()]}]
+        json_str = '[{"name":"%s", "columns":%s, "points":[%s]}]' % (table,json.dumps(dic.keys()),json.dumps(dic.values()))
+	#json_str = '[{"name":"ping", "columns":["test"], "points":["value"]}]'
+        return json_str
 
 
