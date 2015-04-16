@@ -1,19 +1,25 @@
 
 # make a local distribution
-sudo rsync -avzhe ssh  pi@grayling.sics.se:dist/* /usr/local/cheesepi/
+#sudo rsync -avzhe ssh  pi@grayling.sics.se:dist/* /usr/local/cheesepi/
 
-#optionallu update apt-get 
+#optionally update apt-get 
 sudo apt-get update && sudo apt-get upgrade
 
-sudo apt-get install mysql-client mysql-server python-mysqldb
+sudo apt-get install python-influxdb httping python-pip
 # no root password
+
+pip install cherrypy
 
 # Make teh Measurement database on the server
 # should include echo stating that it is prompting for the mysql root password
 ./install/createDbandUser.sh Measurement measurement MP4MDb
 
-# create a local configuration file
-cp cheesepi.default.conf cheesepi.conf
+# create a local configuration file for Influx
+
+# add crontab entry to call measure.py frequently, should avoid duplication...
+echo -e "#cheesepi measurement\n*/5 * * * * python /usr/local/cheesepi/measure/measure.py &" >> /etc/crontab
 
 # measurement *should* work
-./measure/measure.py
+/usr/local/cheesepi/measure/measure.py
+
+

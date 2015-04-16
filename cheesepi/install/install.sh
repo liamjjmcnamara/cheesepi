@@ -1,25 +1,24 @@
 # Where shall we install CheesePi?
 INSTALL_DIR=/usr/local/cheesepi/
 
-# Optionally update apt-get
-#sudo apt-get update && sudo apt-get upgrade
-
-# make a local distribution
-sudo rsync -avzhe ssh  pi@grayling.sics.se:dist/* $INSTALL_DIR
-
+echo "Please enter root pass to enable apt-get software install:"
 # Install required OS software
 # include ntpdate ?
 sudo apt-get update
-sudo apt-get install mysql-client mysql-server python-mysqldb
-# no root password
-sudo apt-get install httping
-# Copy cheesepi.conf if it doesnt exist
-if [ ! -f $INSTALL_DIR/cheesepi.conf ]; then
-	sudo cp $INSTALL_DIR/cheesepi.default.conf $INSTALL_DIR/cheesepi.conf
-fi
+sudo apt-get install httping python-pip
 
-# Make mysql database and user
-# should warn about password prompt requirement
-$INSTALL_DIR/install/createDbandUser.sh Measurement measurement MP4MDb
+# add python modules
+sudo pip install cherrypy influxdb
+
+# Copy influx config if it doesnt exist
+#if [ ! -f $INSTALL_DIR/cheesepi.conf ]; then
+#	sudo cp $INSTALL_DIR/cheesepi.default.conf $INSTALL_DIR/cheesepi.conf
+#fi
+
 
 # Intall a crontab entry so that $INSTALL_DIR/measure/measure.py is run
+# should avoid duplication...
+echo -e "#cheesepi measurement\n*/5 * * * * python $INSTALL_DIR/measure/measure.py &" >> /etc/crontab
+
+# Try to run it
+$INSTALL_DIR/measure/measure.py 
