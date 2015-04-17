@@ -28,8 +28,11 @@ if ! grep --quiet influxdb /etc/inittab; then
 	echo "C1:2345:boot:$INFLUX_CMD" | sudo tee --append /etc/inittab
 fi
 
-# Create 'cheesepi' database
-#$INSTALL_DIR/install/makeDB.py
+# Create Influx 'cheesepi' database
+#$INSTALL_DIR/install/makeInfluxDB.py
+# Very quick and dirty solution:
+curl -s "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"cheesepi\"}"
+curl -s "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"grafana\"}"
 
 
 # Intall a crontab entry so that $INSTALL_DIR/measure/measure.py is run

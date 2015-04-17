@@ -32,6 +32,9 @@ class DAO:
 	def __init__(self):
 		pass
 
+	def close(self):
+		pass
+
 	# user level interactions
 	def write_user(self):
 		pass
