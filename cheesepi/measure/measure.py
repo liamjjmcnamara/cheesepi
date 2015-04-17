@@ -29,13 +29,8 @@ Testers:
 import sys
 import subprocess
 
-# try to import cheesepi, i.e. it's on PYTHONPATH
-try:
-    import cheesepi
-except:
-    # try default location
-    sys.path.append("/usr/local/")
-    import cheesepi
+sys.path.append("/usr/local/")
+import cheesepi
 
 # all scripts that should be run
 actions = ["wifiMeasure", "udpMeasure", 'voipMeasure']

@@ -57,7 +57,7 @@ def get_config():
 		if re.match('^\s*#', line) or not re.search('=',line):
 			continue
 		# print line
-		(key, value) = line.split("=",2)
+		(key, value) = line.split("=",1)
 		config[clean(key)] = clean(value)
 	config['cheesepi_dir']= cheesepi_dir
 	config['config_file'] = config_file
