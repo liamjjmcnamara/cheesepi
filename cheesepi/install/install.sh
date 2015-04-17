@@ -29,7 +29,8 @@ INFLUX_DIR=$INSTALL_DIR/tools/influxdb
 INFLUX_CMD="$INFLUX_DIR/influxdb -config=$INFLUX_DIR/config.toml"
 nohup $INFLUX_CMD &
 # and the webserver serving a grafana dashboard
-nohup $INSTALL_DIR/webserver/webserver.py &
+sleep 5
+$INSTALL_DIR/webserver/webserver.py &
 
 # ..and have both start on boot
 #sudo echo $INFLUX_CMD >> /etc/rc.local
