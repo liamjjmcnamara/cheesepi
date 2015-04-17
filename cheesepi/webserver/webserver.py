@@ -1,9 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import os
+import sys
 import logging
 import cherrypy
 
+sys.path.append("/usr/local")
 import cheesepi
 
 resultLimit = 5 # number of results per page
