@@ -42,7 +42,7 @@ fi
 
 # Intall a crontab entry so that $INSTALL_DIR/measure/measure.py is run
 if ! grep --quiet measure.py /etc/crontab; then
-	echo -e "\n*/5 * * * * python $INSTALL_DIR/measure/measure.py" | sudo tee --append /etc/crontab
+	echo -e "\n*/5 *   * * *   root    /usr/local/cheesepi/measure/measure.py" | sudo tee --append /etc/crontab
 fi
 
 # Create Influx 'cheesepi' and 'grafana' databases
