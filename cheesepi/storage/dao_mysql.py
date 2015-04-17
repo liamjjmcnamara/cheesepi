@@ -2,14 +2,14 @@
   All rights reserved.
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
-      * Redistributions of source code must retain the above copyright
-        notice, this list of conditions and the following disclaimer.
-      * Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
-      * Neither the name of The Swedish Institute of Computer Science nor the
-        names of its contributors may be used to endorse or promote products
-        derived from this software without specific prior written permission.
+	  * Redistributions of source code must retain the above copyright
+		notice, this list of conditions and the following disclaimer.
+	  * Redistributions in binary form must reproduce the above copyright
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
+	  * Neither the name of The Swedish Institute of Computer Science nor the
+		names of its contributors may be used to endorse or promote products
+		derived from this software without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -30,73 +30,72 @@ import logging
 # PyMongo
 import MySQLdb
 
-import cheesepi
 import dao
 
 class DAO_mysql(dao.DAO):
-    def __init__(self):
-        try: # Get a hold of a MySQL connection
-            self.conn = MySQLdb.connect("localhost", "measurement", "MP4MDb", "Measurement")
-        except:
-            msg = "Error: Connection to MySQL database failed! Ensure MySQL is running."
-            logging.error(msg)
-            print msg
-            exit(1)
+	def __init__(self):
+		try: # Get a hold of a MySQL connection
+			self.conn = MySQLdb.connect("localhost", "measurement", "MP4MDb", "Measurement")
+		except:
+			msg = "Error: Connection to MySQL database failed! Ensure MySQL is running."
+			logging.error(msg)
+			print msg
+			exit(1)
 
-        #define tables here. Ping, httping, traceroute+hops
+		#define tables here. Ping, httping, traceroute+hops
 
-	with self.conn:
-	    #disable warnings
-	    cursor = self.conn.cursor()
-            cursor.execute("""SET sql_notes = 0""")
+		with self.conn:
+			#disable warnings
+			cursor = self.conn.cursor()
+			cursor.execute("""SET sql_notes = 0""")
 
-	    pingquery = """CREATE TABLE IF NOT EXISTS ping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                                                       	 sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
-							 startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
-                                                         averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
-							 ethernetMacAddress TEXT, currentMacAddress TEXT, packetSize INTEGER,
-							 numberOfPings INTEGER);"""
-	    cursor.execute(pingquery)
+			pingquery = """CREATE TABLE IF NOT EXISTS ping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
+				startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
+				averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
+				ethernetMacAddress TEXT, currentMacAddress TEXT, packetSize INTEGER,
+				numberOfPings INTEGER);"""
+			cursor.execute(pingquery)
 
-            httpquery = """CREATE TABLE IF NOT EXISTS httping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                                                         sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
-                                                         startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
-                                                         averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
-                                                         ethernetMacAddress TEXT, currentMacAddress TEXT, packetSize INTEGER,
-                                                         numberOfHttpings INTEGER);"""
-	    cursor.execute(httpquery)
+			httpquery = """CREATE TABLE IF NOT EXISTS httping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
+				startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
+				averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
+				ethernetMacAddress TEXT, currentMacAddress TEXT, packetSize INTEGER,
+				numberOfHttpings INTEGER);"""
+			cursor.execute(httpquery)
 
-	    #enable warnings
-	    cursor.execute("""SET sql_notes = 1""")
+			#enable warnings
+			cursor.execute("""SET sql_notes = 1""")
 
-    # user level interactions
-    def read_user(self):
-        pass
-
-
-    def write_user(self, user_data):
-        pass
+	# user level interactions
+	def read_user(self):
+		pass
 
 
-    # operator level interactions
-    def write_op(self, op_type, dic, binary=None):
-	names = ""
-	values = ""
-	for key, value in dic.iteritems():
-		names = names + key + ", "
-		values = values + str(value) + ", "
-
-	names = names[:-2]
-	values = values[:-2]
-
-        query = """INSERT INTO %s (%s) VALUES (%s)""" % (op_type, stuff, values)
-	with self.conn:
-            cursor = self.conn.cursor();
-	    cursor.execute(query)
-            self.conn.commit()
+	def write_user(self, user_data):
+		pass
 
 
-    def read_op(self, op_type, timestamp=0, limit=100):
+	# operator level interactions
+	def write_op(self, op_type, dic, binary=None):
+		names = ""
+		values = ""
+		for key, value in dic.iteritems():
+			names = names + key + ", "
+			values = values + str(value) + ", "
+
+		names = names[:-2]
+		values = values[:-2]
+
+		query = """INSERT INTO %s (%s) VALUES (%s)""" % (op_type, stuff, values)
+		with self.conn:
+			cursor = self.conn.cursor();
+			cursor.execute(query)
+			self.conn.commit()
+
+
+	def read_op(self, op_type, timestamp=0, limit=100):
 	#check last push and grab the rest?
-        pass
+		pass
 

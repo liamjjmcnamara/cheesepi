@@ -4,11 +4,11 @@ INSTALL_DIR=/usr/local/cheesepi
 echo "Enter root pass to enable apt-get software install if prompted..."
 # Install required OS software
 #sudo apt-get update
-sudo apt-get install httping python-pip
+sudo apt-get install httping python-pip python-mysqldb
 # include ntpdate ?
 
 # add python modules
-pip install cherrypy influxdb
+sudo pip install cherrypy influxdb pymongo
 
 
 # Copy Influx config if it doesnt exist
@@ -19,12 +19,14 @@ fi
 # Start Influx database server
 INFLUX_DIR=$INSTALL_DIR/tools/influxdb
 INFLUX_CMD="$INFLUX_DIR/influxdb -config=$INFLUX_DIR/config.toml"
-$INFLUX_CMD
+$INFLUX_CMD &
 
 # ..and have it start on boot
 #sudo echo $INFLUX_CMD >> /etc/rc.local
 #echo $INFLUX_CMD | sudo tee --append /etc/rc.local
-#echo "C1:2345:boot:$INFLUX_CMD" >> /etc/inittab
+if ! grep --quiet influxdb /etc/inittab; then
+	echo "C1:2345:boot:$INFLUX_CMD" | sudo tee --append /etc/inittab
+fi
 
 # Create 'cheesepi' database
 #$INSTALL_DIR/install/makeDB.py
@@ -33,7 +35,11 @@ $INFLUX_CMD
 # Intall a crontab entry so that $INSTALL_DIR/measure/measure.py is run
 # should avoid duplication...
 #sudo echo "*/5 * * * * python $INSTALL_DIR/measure/measure.py" >> /etc/crontab
-echo "*/5 * * * * python $INSTALL_DIR/measure/measure.py" | sudo tee --append /etc/crontab
+if ! grep --quiet measure.py /etc/crontab; then
+	echo "*/5 * * * * python $INSTALL_DIR/measure/measure.py" | sudo tee --append /etc/crontab
+fi
 
 # Try to run the measure script
-$INSTALL_DIR/measure/measure.py 
+#$INSTALL_DIR/measure/measure.py 
+
+echo -e "\nAdd '/usr/local' to your python search path, append the following to ~/.profile\nexport PYTHONPATH=/usr/local\n"

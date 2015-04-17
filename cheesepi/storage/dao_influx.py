@@ -32,6 +32,7 @@ import json
 
 # Influx
 from influxdb import InfluxDBClient
+# legacy module
 #from influxdb.influxdb08 import InfluxDBClient
 
 import cheesepi
