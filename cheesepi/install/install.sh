@@ -8,6 +8,8 @@ LOCAL_IP=`hostname -I |head -n1| tr -d '[[:space:]]'`
 echo "Enter root pass to enable apt-get software install if prompted..."
 # Install required OS software
 #sudo apt-get update
+# Speed improvements (through a binary module)
+#sudo apt-get install build-essential python-dev
 sudo apt-get install httping python-pip python-mysqldb
 # include ntpdate ?
 
