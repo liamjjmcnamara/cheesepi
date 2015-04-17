@@ -21,7 +21,7 @@ if [ ! -f $INSTALL_DIR/tools/influxdb/config.toml ]; then
 fi
 # Copy the Grafana config file, adding the local IP address
 if [ ! -f $INSTALL_DIR/webserver/dashboard/config.js ]; then
-	cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_inflxdb_server/$LOCAL_IP/" >$INSTALL_DIR/webserver/dashboard/config.js
+	cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_influxdb_server/$LOCAL_IP/" >$INSTALL_DIR/webserver/dashboard/config.js
 fi
 
 # Start Influx database server
