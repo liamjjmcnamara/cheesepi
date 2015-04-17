@@ -1,5 +1,9 @@
 # Where shall we install CheesePi?
+# This can be changed but will currently break the Influx and Grafana config files
 INSTALL_DIR=/usr/local/cheesepi
+
+# To be used in the grafana configuration (so it knows where the Influx DB is)
+LOCAL_IP=`hostname -I`
 
 echo "Enter root pass to enable apt-get software install if prompted..."
 # Install required OS software
@@ -13,7 +17,11 @@ sudo pip install cherrypy influxdb pymongo
 
 # Copy Influx config if it doesnt exist
 if [ ! -f $INSTALL_DIR/tools/influxdb/config.toml ]; then
-	sudo cp $INSTALL_DIR/tools/influxdb/config.sample.toml $INSTALL_DIR/tools/influxdb/config.toml
+	cp $INSTALL_DIR/tools/influxdb/config.sample.toml $INSTALL_DIR/tools/influxdb/config.toml
+fi
+# Copy the Grafana config file, adding the local IP address
+if [ ! -f $INSTALL_DIR/webserver/dashboard/config.js ]; then
+	cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_inflxdb_server/$LOCAL_IP/" >$INSTALL_DIR/webserver/dashboard/config.js
 fi
 
 # Start Influx database server
