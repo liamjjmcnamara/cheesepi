@@ -2,14 +2,14 @@
   All rights reserved.
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
-      * Redistributions of source code must retain the above copyright
-        notice, this list of conditions and the following disclaimer.
-      * Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
-      * Neither the name of The Swedish Institute of Computer Science nor the
-        names of its contributors may be used to endorse or promote products
-        derived from this software without specific prior written permission.
+	  * Redistributions of source code must retain the above copyright
+		notice, this list of conditions and the following disclaimer.
+	  * Redistributions in binary form must reproduce the above copyright
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
+	  * Neither the name of The Swedish Institute of Computer Science nor the
+		names of its contributors may be used to endorse or promote products
+		derived from this software without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -45,66 +45,66 @@ password = "root"
 database = "cheesepi"
 
 class DAO_influx(dao.DAO):
-    def __init__(self):
-	logging.info("Connecting to influx: %s %s %s" % (username,password,database))
-        try: # Get a hold of a Influx connection
-            self.conn = InfluxDBClient(host, port, username, password, database)
-        except Exception as e:
-            msg = "Error: Connection to Influx database failed! Ensure InfluxDB is running. "+str(e)
-            logging.error(msg)
-            print msg
-            exit(1)
+	def __init__(self):
+		logging.info("Connecting to influx: %s %s %s" % (username,password,database))
+		try: # Get a hold of a Influx connection
+			self.conn = InfluxDBClient(host, port, username, password, database)
+		except Exception as e:
+			msg = "Error: Connection to Influx database failed! Ensure InfluxDB is running. "+str(e)
+			logging.error(msg)
+			print msg
+			exit(1)
 
 
-    # user level interactions
-    def read_user(self):
-        user = self.conn.query('select * from user limit 1;')
-        return user
+	# user level interactions
+	def read_user(self):
+		user = self.conn.query('select * from user limit 1;')
+		return user
 
 
-    def write_user(self, user_data):
-        # check we dont already exist
-        print "Saving: ",user_data
-        json = self.to_json("user",user_data)
-        return self.conn.write_points(json)
+	def write_user(self, user_data):
+		# check we dont already exist
+		print "Saving: ",user_data
+		json = self.to_json("user",user_data)
+		return self.conn.write_points(json)
 
 
-    # operator level interactions
-    def write_op(self, op_type, dic, binary=None):
-        if not self.validate_op(op_type):
-            logging.warning("Operation of type %s not valid: " % (op_type, str(dic)))
-            return
-        #if binary!=None:
-        #    # save binary, check its not too big
-        #    dic['binary'] = bson.Binary(binary)
-        config = cheesepi.config.get_config()
-        dic['version'] = config['version']
-        md5 = hashlib.md5(config['secret']+str(dic)).hexdigest()
-        dic['sign']    = md5
+	# operator level interactions
+	def write_op(self, op_type, dic, binary=None):
+		if not self.validate_op(op_type):
+			logging.warning("Operation of type %s not valid: " % (op_type, str(dic)))
+			return
+		#if binary!=None:
+		#	 # save binary, check its not too big
+		#	 dic['binary'] = bson.Binary(binary)
+		config = cheesepi.config.get_config()
+		dic['version'] = config['version']
+		md5 = hashlib.md5(config['secret']+str(dic)).hexdigest()
+		dic['sign']    = md5
 
-        json = self.to_json(op_type, dic)
-        print "Saving Op: %s" % json
-        try:
-            return self.conn.write_points(json)
-        except Exception as e:
-            msg = "Database Influx "+op_type+" Op write failed! "+str(e)
-            logging.error(msg)
-            print msg
-            exit(1)
-        return id
-
-
-    def read_op(self, op_type, timestamp=0, limit=100):
-        op = self.conn.query('select * from '+op_type+' limit 1;')
-        return op
+		json = self.to_json(op_type, dic)
+		print "Saving Op: %s" % json
+		try:
+			return self.conn.write_points(json)
+		except Exception as e:
+			msg = "Database Influx "+op_type+" Op write failed! "+str(e)
+			logging.error(msg)
+			print msg
+			exit(1)
+		return id
 
 
-    def to_json(self, table, dic):
-	for k in dic.keys():
-		dic[k]=str(dic[k])
-        json_dic = [{"name":table, "columns":dic.keys(), "points":[dic.values()]}]
-        json_str = '[{"name":"%s", "columns":%s, "points":[%s]}]' % (table,json.dumps(dic.keys()),json.dumps(dic.values()))
-	#json_str = '[{"name":"ping", "columns":["test"], "points":["value"]}]'
-        return json_str
+	def read_op(self, op_type, timestamp=0, limit=100):
+		op = self.conn.query('select * from '+op_type+' limit 1;')
+		return op
+
+
+	def to_json(self, table, dic):
+		for k in dic.keys():
+				dic[k]=dic[k]
+		json_dic = [{"name":table, "columns":dic.keys(), "points":[dic.values()]}]
+		json_str = '[{"name":"%s", "columns":%s, "points":[%s]}]' % (table,json.dumps(dic.keys()),json.dumps(dic.values()))
+		#json_str = '[{"name":"ping", "columns":["test"], "points":["value"]}]'
+		return json_str
 
 
