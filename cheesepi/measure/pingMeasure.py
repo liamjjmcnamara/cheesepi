@@ -53,12 +53,8 @@ import re
 import logging
 
 # try to import cheesepi, i.e. it's on PYTHONPATH
-try:
-    import cheesepi
-except ImportError:
-    # try default location
-    sys.path.append("/usr/local/")
-    import cheesepi
+sys.path.append("/usr/local/")
+import cheesepi
 
 #main measure funtion
 def measure(dao, number_pings=10, packet_size=64, targets=None, save_file=False):
@@ -94,7 +90,7 @@ def perform(destination, packet_number, packet_size):
 def parse_output(data, start_time, end_time, ethmac, packet_size, number_pings):
 	ret = {}
 	ret["start_time"]    = start_time
-	ret["ending_time"]   = end_time
+	ret["end_time"]   = end_time
 	ret["packet_size"]   = int(packet_size)
 	ret["ping_count"]    = int(number_pings)
 	ret["ethernet_MAC"]  = ethmac
