@@ -1,61 +1,136 @@
 {
   "id": null,
-  "title": "Grafana",
+  "title": "CheesePi Dashboard",
   "originalTitle": "Grafana",
   "tags": [],
   "style": "dark",
   "timezone": "browser",
   "editable": true,
   "hideControls": false,
-  "sharedCrosshair": false,
+  "sharedCrosshair": true,
   "rows": [
     {
       "title": "New row",
       "height": "150px",
-      "collapse": false,
       "editable": true,
+      "collapse": false,
       "panels": [
         {
-          "id": 1,
-          "span": 12,
+          "title": "no title (click here)",
+          "error": false,
+          "span": 4,
           "editable": true,
           "type": "text",
-          "mode": "html",
-          "content": "<div class=\"text-center\" style=\"padding-top: 15px\">\n<img src=\"img/logo_transparent_200x.png\"> \n</div>",
+          "id": 8,
+          "mode": "markdown",
+          "content": "Dashboard",
           "style": {},
-          "title": "Welcome to"
-        }
-      ]
-    },
-    {
-      "title": "Welcome to Grafana",
-      "height": "210px",
-      "collapse": false,
-      "editable": true,
-      "panels": [
-        {
-          "id": 2,
-          "span": 6,
-          "type": "text",
-          "mode": "html",
-          "content": "<br/>\n\n<div class=\"row-fluid\">\n  <div class=\"span6\">\n    <ul>\n      <li>\n        <a href=\"http://grafana.org/docs#configuration\" target=\"_blank\">Configuration</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/troubleshooting\" target=\"_blank\">Troubleshooting</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/support\" target=\"_blank\">Support</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/features/intro\" target=\"_blank\">Getting started</a>  (Must read!)\n      </li>\n    </ul>\n  </div>\n  <div class=\"span6\">\n    <ul>\n      <li>\n        <a href=\"http://grafana.org/docs/features/graphing\" target=\"_blank\">Graphing</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/features/annotations\" target=\"_blank\">Annotations</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/features/graphite\" target=\"_blank\">Graphite</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/features/influxdb\" target=\"_blank\">InfluxDB</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/features/opentsdb\" target=\"_blank\">OpenTSDB</a>\n      </li>\n    </ul>\n  </div>\n</div>",
-          "style": {},
-          "title": "Documentation Links"
+          "links": []
         },
         {
-          "id": 3,
-          "span": 6,
-          "type": "text",
-          "mode": "html",
-          "content": "<br/>\n\n<div class=\"row-fluid\">\n  <div class=\"span12\">\n    <ul>\n      <li>Ctrl+S saves the current dashboard</li>\n      <li>Ctrl+F Opens the dashboard finder</li>\n      <li>Ctrl+H Hide/show row controls</li>\n      <li>Click and drag graph title to move panel</li>\n      <li>Hit Escape to exit graph when in fullscreen or edit mode</li>\n      <li>Click the colored icon in the legend to change series color</li>\n      <li>Ctrl or Shift + Click legend name to hide other series</li>\n    </ul>\n  </div>\n</div>\n",
-          "style": {},
-          "title": "Tips & Shortcuts"
+          "title": "Packet Loss",
+          "error": false,
+          "span": 4,
+          "editable": true,
+          "type": "singlestat",
+          "id": 7,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select packet_loss from ping",
+              "hide": false
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "avg",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(71, 212, 59, 0.4)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(225, 40, 40, 0.59)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "Connection status",
+          "error": false,
+          "span": 4,
+          "editable": true,
+          "type": "singlestat",
+          "id": 9,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value"
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "avg",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(71, 212, 59, 0.4)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(225, 40, 40, 0.59)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
         }
       ]
     },
     {
       "title": "test",
-      "height": "250px",
+      "height": "200px",
       "editable": true,
       "collapse": false,
       "panels": [
@@ -151,6 +226,196 @@
           "links": []
         }
       ]
+    },
+    {
+      "title": "New row",
+      "height": "200px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "title": "HTTP Ping",
+          "error": false,
+          "span": 12,
+          "editable": true,
+          "type": "graph",
+          "id": 6,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "ms",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": true,
+          "pointradius": 2,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select average_RTT from httping where destination_domain='www.sics.se'",
+              "hide": false,
+              "alias": "SICS"
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "links": [],
+          "leftYAxisLabel": ""
+        }
+      ]
+    },
+    {
+      "title": "New row",
+      "height": "200px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "title": "Wifi Access Points",
+          "error": false,
+          "span": 12,
+          "editable": true,
+          "type": "graph",
+          "id": 5,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select channel0 from wifi_scan",
+              "alias": "channel0",
+              "hide": false
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select channel1 from wifi_scan",
+              "alias": "channel1",
+              "hide": false
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select channel2 from wifi_scan",
+              "alias": "channel2",
+              "hide": false
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select channel3 from wifi_scan",
+              "alias": "channel3",
+              "hide": false
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select channel4 from wifi_scan",
+              "alias": "channel4",
+              "hide": false
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select channel5 from wifi_scan",
+              "alias": "channel5",
+              "hide": false
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select channel6 from wifi_scan",
+              "alias": "channel6",
+              "hide": false
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "links": [],
+          "leftYAxisLabel": "Number of APs"
+        }
+      ]
     }
   ],
   "nav": [
@@ -187,7 +452,7 @@
     }
   ],
   "time": {
-    "from": "now-15m",
+    "from": "now-6h",
     "to": "now"
   },
   "templating": {
@@ -196,6 +461,7 @@
   "annotations": {
     "list": []
   },
+  "refresh": false,
   "version": 6,
   "hideAllLegends": false
 }

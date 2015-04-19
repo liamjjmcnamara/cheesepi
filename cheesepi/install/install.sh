@@ -5,6 +5,15 @@ INSTALL_DIR=/usr/local/cheesepi
 # To be used in the grafana configuration (so it knows where the Influx DB is)
 LOCAL_IP=`hostname -I |head -n1| tr -d '[[:space:]]'`
 
+# Start Influx database server and webserver in the background
+# Do this first, as Influx needs to spool up
+INFLUX_DIR=$INSTALL_DIR/tools/influxdb
+INFLUX_CMD="$INFLUX_DIR/influxdb -config=$INFLUX_DIR/config.toml"
+nohup $INFLUX_CMD &
+# and the webserver serving a grafana dashboard
+sleep 10
+$INSTALL_DIR/webserver/webserver.py &
+
 echo "Enter root pass to enable apt-get software install if prompted..."
 # Install required OS software
 #sudo apt-get update
@@ -26,13 +35,6 @@ if [ ! -f $INSTALL_DIR/webserver/dashboard/config.js ]; then
 	cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_influxdb_server/$LOCAL_IP/" >$INSTALL_DIR/webserver/dashboard/config.js
 fi
 
-# Start Influx database server and webserver in the background
-INFLUX_DIR=$INSTALL_DIR/tools/influxdb
-INFLUX_CMD="$INFLUX_DIR/influxdb -config=$INFLUX_DIR/config.toml"
-nohup $INFLUX_CMD &
-# and the webserver serving a grafana dashboard
-sleep 5
-$INSTALL_DIR/webserver/webserver.py &
 
 # ..and have both start on boot
 #sudo echo $INFLUX_CMD >> /etc/rc.local
@@ -51,10 +53,11 @@ fi
 # Create Influx 'cheesepi' and 'grafana' databases
 # Very quick and dirty solution
 echo "Waiting 20s for Influx to startup..."
-sleep 20
+sleep 15
 curl -s "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"cheesepi\"}"
 curl -s "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"grafana\"}"
 
 
 # Ensure the "cheesepi" module can be imported
 echo -e "\nAdd '/usr/local' to your python search path, append the following to ~/.profile\nexport PYTHONPATH=/usr/local\n"
+

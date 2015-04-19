@@ -26,21 +26,6 @@
 Authors: guulay@kth.se
 Testers:
 
-Example usage:
-python httpingMeasure.py -save=False -number=10 www.bbc. com www.sics.se www.diretube.com
-
-This is equal to:
-httping -c 10 www.bbc.com
-httping -c 10 www.sics.se
-httping -c 10 www.svt.se
-
-and do not save the resuls in file
-
-
-If -save=True the program will attempt to write the the result of
-each http in a separate file named after the device's
-ethernet mac address + the current date.
-For example 00:aa:bb:cc:dd:ee 20-2015-14:00:01.txt
 
 """
 
@@ -49,12 +34,8 @@ from subprocess import Popen, PIPE
 import re
 
 # try to import cheesepi, i.e. it's on PYTHONPATH
-try:
-    import cheesepi
-except:
-    # try default location
-    sys.path.append("/usr/local/")
-    import cheesepi
+sys.path.append("/usr/local/")
+import cheesepi
 
 #main measure funtion
 def measure(dao, number_httpings = 10, targets = None, save_file=False):
@@ -102,19 +83,18 @@ def reformat(data, start_time, end_time, ethmac, number_httpings):
 	ret["destination_domain"] = re.sub("[:80]", "", str(tmp[1]))
 
 	for line in lines[1:]:
-		if "bytes)," in line:
 			tmp = line.split()
-			ret["destination_address"] = re.sub("[:80]", "", str(tmp[2]))
-			ret["packet_size"] = int(re.sub("[(bytes),]", "", str(tmp[3])))
+			#ret["destination_address"] = re.sub("[:80]", "", str(tmp[2]))
+			#ret["packet_size"] = int(re.sub("[(bytes),]", "", str(tmp[3])))
 			#print "Packet size = %s" %ret["packetSize"]
 			if "% failed" in line:
-					tmp = line.split()[4]
-					ret["packet_loss"] = str(tmp)[:-1]
+				tmp = line.split()[4]
+				ret["packet_loss"] = int(str(tmp)[:-1])
 			if "min/avg/max" in line:
-					tmp = line.split()[3].split("/")
-					ret["minimum_RTT"] = float(tmp[0])
-					ret["average_RTT"] = float(tmp[1])
-					ret["maximum_RTT"] = float(tmp[2])
+				tmp = line.split()[3].split("/")
+				ret["minimum_RTT"] = float(tmp[0])
+				ret["average_RTT"] = float(tmp[1])
+				ret["maximum_RTT"] = float(tmp[2])
 	return ret
 
 
@@ -122,22 +102,9 @@ if __name__ == "__main__":
 	#general logging here? unable to connect etc
 	dao = cheesepi.config.get_dao()
 
-	args = (sys.argv)
-	args = args[1:]
 	number = 10
-	destinations = []
+	destinations = ["www.bbc.com","www.sics.se","www.diretube.com"]
 	save = False
-
-	#should make this check better, could easily have a problem with some websites
-	for arg in args:
-		if "-number=" in arg:
-			number = arg.split("=")[1]
-			print number
-		elif "-save=" in arg:
-			print "save!"
-			save = (arg.split("=")[1] in ['True', 'true'])
-		else:
-			destinations.append(str(arg))
 
 	measure(dao, number_httpings=number, targets=destinations, save_file=save)
 

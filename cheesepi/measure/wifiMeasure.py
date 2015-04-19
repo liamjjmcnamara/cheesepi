@@ -6,12 +6,8 @@ import time
 import re
 
 # try to import cheesepi, i.e. it's on PYTHONPATH
-try:
-    import cheesepi
-except:
-    # try default location
-    sys.path.append("/usr/local/")
-    import cheesepi
+sys.path.append("/usr/local/")
+import cheesepi
 
 config = cheesepi.config.get_config()
 interface= config['wlan']
@@ -80,7 +76,7 @@ def digest_scan(aps, start_time, end_time):
 		if ap['channel']<15: # only 2.4Ghz
 			channels[ap['channel']] += 1
 	for c in xrange(len(channels)):
-		digest[str(c)] = channels[c]
+		digest["channel"+str(c)] = channels[c]
 	return digest
 
 
