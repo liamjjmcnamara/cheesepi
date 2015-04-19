@@ -1,7 +1,7 @@
 {
   "id": null,
   "title": "CheesePi Dashboard",
-  "originalTitle": "Grafana",
+  "originalTitle": "CheesePi Dashboard",
   "tags": [],
   "style": "dark",
   "timezone": "browser",
@@ -16,21 +16,121 @@
       "collapse": false,
       "panels": [
         {
-          "title": "no title (click here)",
+          "title": "",
           "error": false,
-          "span": 4,
+          "span": 2,
           "editable": true,
           "type": "text",
           "id": 8,
-          "mode": "markdown",
-          "content": "Dashboard",
+          "mode": "html",
+          "content": "<img style=\"display: block; margin-left: auto; margin-right: auto\" src=\"http://192.168.0.136:8080/dashboard/cheesepi.png\" />\n",
           "style": {},
-          "links": []
+          "links": [
+            {
+              "type": "absolute",
+              "name": "Drilldown dashboard",
+              "title": "CheesePi Homepage",
+              "url": "http://www.cheesepi.sics.se"
+            }
+          ]
+        },
+        {
+          "title": "Uptime",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 15,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value"
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "avg",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "",
+          "colorBackground": false,
+          "colorValue": false,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "no title (click here)",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 13,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {}
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "avg",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "",
+          "colorBackground": false,
+          "colorValue": false,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
         },
         {
           "title": "Packet Loss",
           "error": false,
-          "span": 4,
+          "span": 2,
           "editable": true,
           "type": "singlestat",
           "id": 7,
@@ -42,7 +142,7 @@
               "function": "mean",
               "column": "value",
               "rawQuery": true,
-              "query": "select packet_loss from ping",
+              "query": "SELECT SUM(packet_loss) FROM ping",
               "hide": false
             }
           ],
@@ -79,9 +179,57 @@
           }
         },
         {
+          "title": "no title (click here)",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 14,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value"
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "avg",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "",
+          "colorBackground": false,
+          "colorValue": false,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
           "title": "Connection status",
           "error": false,
-          "span": 4,
+          "span": 2,
           "editable": true,
           "type": "singlestat",
           "id": 9,
@@ -136,7 +284,7 @@
       "panels": [
         {
           "id": 4,
-          "span": 12,
+          "span": 6,
           "type": "graph",
           "x-axis": true,
           "y-axis": true,
@@ -216,7 +364,7 @@
           ],
           "aliasColors": {},
           "aliasYAxis": {},
-          "title": "Delay",
+          "title": "Network Delay",
           "datasource": "graphite",
           "renderer": "flot",
           "annotate": {
@@ -224,19 +372,11 @@
           },
           "seriesOverrides": [],
           "links": []
-        }
-      ]
-    },
-    {
-      "title": "New row",
-      "height": "200px",
-      "editable": true,
-      "collapse": false,
-      "panels": [
+        },
         {
           "title": "HTTP Ping",
           "error": false,
-          "span": 12,
+          "span": 6,
           "editable": true,
           "type": "graph",
           "id": 6,
@@ -286,6 +426,22 @@
               "function": "mean",
               "column": "value",
               "rawQuery": true,
+              "query": "select average_RTT from httping where destination_domain='www.bbc.com'",
+              "hide": false,
+              "alias": "BBC"
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select average_RTT from httping where destination_domain='www.diretube.com'",
+              "hide": false,
+              "alias": "DireTube"
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
               "query": "select average_RTT from httping where destination_domain='www.sics.se'",
               "hide": false,
               "alias": "SICS"
@@ -305,9 +461,89 @@
       "collapse": false,
       "panels": [
         {
+          "title": "Access Point",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 11,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 3,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "rightSide": false
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select quality from wifi_ap where ESSID='RivalTheory'",
+              "hide": false,
+              "alias": "Quality"
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select signal from wifi_ap where ESSID='RivalTheory'",
+              "hide": false,
+              "alias": "Signal"
+            }
+          ],
+          "aliasColors": {
+            "Signal": "#BF1B00",
+            "Quality": "#1F78C1"
+          },
+          "seriesOverrides": [
+            {
+              "alias": "Signal",
+              "yaxis": 2
+            }
+          ],
+          "leftYAxisLabel": "Quality",
+          "links": []
+        },
+        {
           "title": "Wifi Access Points",
           "error": false,
-          "span": 12,
+          "span": 6,
           "editable": true,
           "type": "graph",
           "id": 5,
@@ -323,6 +559,176 @@
             "leftMax": null,
             "rightMax": null,
             "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 3,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "function": "mean",
+              "column": "channel1",
+              "rawQuery": false,
+              "query": "select mean(channel1) from \"wifi_scan\" where $timeFilter group by time($interval) order asc",
+              "alias": "channel1",
+              "hide": false,
+              "series": "wifi_scan",
+              "interval": "15m"
+            },
+            {
+              "function": "mean",
+              "column": "channel6",
+              "rawQuery": false,
+              "query": "select mean(channel6) from \"wifi_scan\" where $timeFilter group by time($interval) order asc",
+              "alias": "channel6",
+              "hide": false,
+              "series": "wifi_scan",
+              "interval": "15m"
+            },
+            {
+              "function": "mean",
+              "column": "channel11",
+              "rawQuery": false,
+              "query": "select mean(channel11) from \"wifi_scan\" where $timeFilter group by time($interval) order asc",
+              "alias": "channel11",
+              "hide": false,
+              "series": "wifi_scan",
+              "interval": "15m"
+            }
+          ],
+          "aliasColors": {
+            "channel1": "#447EBC",
+            "channel6": "#EAB839",
+            "channel11": "#962D82"
+          },
+          "seriesOverrides": [],
+          "links": [],
+          "leftYAxisLabel": "Number of APs"
+        }
+      ]
+    },
+    {
+      "title": "New row",
+      "height": "150px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "title": "Packet Loss",
+          "error": false,
+          "span": 12,
+          "editable": true,
+          "type": "graph",
+          "id": 10,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "leftMax": 40,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": 10,
+            "threshold2": 20,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": false,
+          "fill": 0,
+          "linewidth": 2,
+          "points": true,
+          "pointradius": 3,
+          "bars": true,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select packet_loss from ping limit 100",
+              "hide": false,
+              "alias": "Loss"
+            }
+          ],
+          "aliasColors": {
+            "Loss": "#BF1B00"
+          },
+          "seriesOverrides": [],
+          "links": [],
+          "leftYAxisLabel": "Percent lost"
+        }
+      ]
+    },
+    {
+      "title": "New row",
+      "height": "250px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "title": "no title (click here)",
+          "error": false,
+          "span": 12,
+          "editable": true,
+          "type": "graph",
+          "id": 12,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": null,
             "rightMin": null,
             "threshold1": null,
             "threshold2": null,
@@ -352,68 +758,9 @@
             "value_type": "cumulative",
             "shared": false
           },
-          "targets": [
-            {
-              "function": "mean",
-              "column": "value",
-              "rawQuery": true,
-              "query": "select channel0 from wifi_scan",
-              "alias": "channel0",
-              "hide": false
-            },
-            {
-              "function": "mean",
-              "column": "value",
-              "rawQuery": true,
-              "query": "select channel1 from wifi_scan",
-              "alias": "channel1",
-              "hide": false
-            },
-            {
-              "function": "mean",
-              "column": "value",
-              "rawQuery": true,
-              "query": "select channel2 from wifi_scan",
-              "alias": "channel2",
-              "hide": false
-            },
-            {
-              "function": "mean",
-              "column": "value",
-              "rawQuery": true,
-              "query": "select channel3 from wifi_scan",
-              "alias": "channel3",
-              "hide": false
-            },
-            {
-              "function": "mean",
-              "column": "value",
-              "rawQuery": true,
-              "query": "select channel4 from wifi_scan",
-              "alias": "channel4",
-              "hide": false
-            },
-            {
-              "function": "mean",
-              "column": "value",
-              "rawQuery": true,
-              "query": "select channel5 from wifi_scan",
-              "alias": "channel5",
-              "hide": false
-            },
-            {
-              "function": "mean",
-              "column": "value",
-              "rawQuery": true,
-              "query": "select channel6 from wifi_scan",
-              "alias": "channel6",
-              "hide": false
-            }
-          ],
+          "targets": [],
           "aliasColors": {},
-          "seriesOverrides": [],
-          "links": [],
-          "leftYAxisLabel": "Number of APs"
+          "seriesOverrides": []
         }
       ]
     }
@@ -452,7 +799,7 @@
     }
   ],
   "time": {
-    "from": "now-6h",
+    "from": "now-12h",
     "to": "now"
   },
   "templating": {

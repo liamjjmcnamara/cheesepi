@@ -89,7 +89,7 @@ def reformat(data, start_time, end_time, ethmac, number_httpings):
 			#print "Packet size = %s" %ret["packetSize"]
 			if "% failed" in line:
 				tmp = line.split()[4]
-				ret["packet_loss"] = int(str(tmp)[:-1])
+				ret["packet_loss"] = float(str(tmp)[:-1])
 			if "min/avg/max" in line:
 				tmp = line.split()[3].split("/")
 				ret["minimum_RTT"] = float(tmp[0])
