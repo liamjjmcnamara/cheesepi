@@ -38,6 +38,7 @@ import sys
 from subprocess import Popen, PIPE
 import re
 import logging
+import socket
 
 # try to import cheesepi, i.e. it's on PYTHONPATH
 sys.path.append("/usr/local/")
@@ -46,6 +47,7 @@ import cheesepi
 #main measure funtion
 def measure(dao, landmarks, ping_count, packet_size, save_file=False):
 	for landmark in landmarks:
+		socket.gethostbyname(landmark) # we dont care, just populate the cache
 		start_time = cheesepi.utils.now()
 		op_output = perform(landmark, ping_count, packet_size)
 		end_time = cheesepi.utils.now()
@@ -58,9 +60,9 @@ def measure(dao, landmarks, ping_count, packet_size, save_file=False):
 			dao.write_op("ping", parsed_output)
 
 #ping function
-def perform(destination, ping_count, packet_size):
+def perform(landmark, ping_count, packet_size):
 	packet_size -= 8 # change packet size to payload length!
-	execute = "ping -c %s -s %s %s"%(ping_count, packet_size, destination)
+	execute = "ping -c %s -s %s %s"%(ping_count, packet_size, landmark)
 	logging.info("Executing: "+execute)
 	print execute
 	result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
