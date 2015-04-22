@@ -93,7 +93,7 @@ def parse_output(data, start_time, end_time, packet_size, number_pings):
 			#print sequence_num,delay
 			# only save returned pings!
 			delays[int(sequence_num)]=float(delay)
-	ret['delays'] = delays
+	ret['delays'] = str(delays)
 
 	# probably should not reiterate over lines...
 	for line in lines:
