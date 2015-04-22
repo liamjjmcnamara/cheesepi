@@ -25,15 +25,13 @@
 
 Original authors: guulay@kth.se
 Re-written by: urbanpe@kth.se
+Re-written by: ljjm@sics.se
 Testers:
-
-
 
 Example usage:
 $ python pingMeasure.py
 
 This will ping each of the 'landmarks' from the cheesepi.conf.
-
 """
 
 import sys
@@ -71,12 +69,12 @@ def perform(destination, ping_count, packet_size):
 	return ret
 
 #read the data from ping and reformat for database entry
-def parse_output(data, start_time, end_time, packet_size, number_pings):
+def parse_output(data, start_time, end_time, packet_size, ping_count):
 	ret = {}
 	ret["start_time"]  = start_time
 	ret["end_time"]    = end_time
 	ret["packet_size"] = int(packet_size)
-	ret["ping_count"]  = int(number_pings)
+	ret["ping_count"]  = int(ping_count)
 	delays=[]
 
 	lines = data.split("\n")
@@ -84,15 +82,22 @@ def parse_output(data, start_time, end_time, packet_size, number_pings):
 	ret["destination_domain"]  = first_line[1]
 	ret["destination_address"] = re.sub("[()]", "", str(first_line[2]))
 
-	delays = [-1.0] * number_pings # initialise storage
+	delays = [-1.0] * ping_count# initialise storage
 	for line in lines:
-		if "icmp_seq=" in line:
-			# does this string wrangling always hold? what if not "X ms" ?
-			sequence_num = re.findall('icmp_seq=[\d]+ ',line)[0][9:-1]
+		if "time=" in line: # is this a PING return line?
+			# does the following string wrangling always hold? what if not "X ms" ?
+			# also need to check whether we are on linux-like or BSD-like ping
+			if "icmp_req" in line: # BSD counts from 1
+				sequence_num = int(re.findall('icmp_.eq=[\d]+ ',line)[0][9:-1]) -1
+			elif "icmp_seq" in line: # Linux counts from 0
+				sequence_num = int(re.findall('icmp_.eq=[\d]+ ',line)[0][9:-1])
+			else:
+				logging.error("ping parse error:"+line)
+				exit(1)
 			delay = re.findall('time=.*? ms',line)[0][5:-3]
 			#print sequence_num,delay
 			# only save returned pings!
-			delays[int(sequence_num)]=float(delay)
+			delays[sequence_num]=float(delay)
 	ret['delays'] = str(delays)
 
 	# probably should not reiterate over lines...
