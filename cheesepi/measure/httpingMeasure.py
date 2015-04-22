@@ -63,7 +63,7 @@ def measure(dao, landmarks, ping_count, packet_size, save_file=False):
 def perform(landmark, ping_count, packet_size):
 	execute = "httping -c %s %s"%(ping_count, landmark)
 	logging.info("Executing: "+execute)
-	print execute
+	#print execute
 	result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
 	ret = result.stdout.read()
 	result.stdout.flush()
@@ -77,7 +77,6 @@ def parse_output(data, start_time, end_time, packet_size, ping_count):
 	ret["packet_size"] = int(packet_size)
 	ret["ping_count"]  = int(ping_count)
 	delays=[]
-	print data
 
 	lines = data.split("\n")
 	first_line = lines.pop(0).split()
@@ -90,7 +89,6 @@ def parse_output(data, start_time, end_time, packet_size, ping_count):
 			# also need to check whether we are on linux-like or BSD-like ping
 			sequence_num = int(re.findall('seq=[\d]+ ',line)[0][4:-1])
 			delay = re.findall('time= ?.*? ms',line)[0][6:-3]
-			print sequence_num,delay
 			# only save returned pings!
 			delays[sequence_num]=float(delay)
 	ret['delays'] = str(delays)
