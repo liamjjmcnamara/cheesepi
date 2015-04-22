@@ -30,21 +30,10 @@ Testers:
 
 
 Example usage:
-python pingMeasure.py -save=False -size=30 -number=100 www.bbc.com www.sics.se www.svt.se
-This is equal to:
-ping -c 100 -s 30 www.bbc.com
-ping -c 100 -s 30 www.sics.se
-ping -c 100 -s 30 www.svt.se
+$ python pingMeasure.py
 
-If -save=True the program will attempt to write to a file named after the device's ethernet mac address + the current date. For example 00:aa:bb:cc:dd:ee 01:23:45.678901.txt if the mac address
-for the ethernet is 00:aa:bb:cc:dd:ee and the current time is 01:23 in the morning. A separate file
-will be created for each site pinged.
+This will ping each of the 'landmarks' from the cheesepi.conf.
 
-The function measure() can also be called with parameters number_pings, packet_size as well as saveToFile. All of these are optional. The parameter targets is an array of strings describing the sites you want to perform measurements on.
-
-Example usage:
-measure(number_pings=30, saveToFile=True, targets = ["www.bbc.com", "www.sics.se"])
-This will ping the two sites 30 times and save each ping result to a separate file.
 """
 
 import sys
@@ -57,85 +46,86 @@ sys.path.append("/usr/local/")
 import cheesepi
 
 #main measure funtion
-def measure(dao, number_pings=10, packet_size=64, targets=None, save_file=False):
-	if targets is None:
-		return
-
-	ethmac = cheesepi.utils.get_MAC()
-	for target in targets:
-		print target
+def measure(dao, landmarks, ping_count, packet_size, save_file=False):
+	for landmark in landmarks:
 		start_time = cheesepi.utils.now()
-		op_output = perform(target, number_pings, packet_size)
+		op_output = perform(landmark, ping_count, packet_size)
 		end_time = cheesepi.utils.now()
+		#print op_output
 
-		if save_file:
-			cheesepi.utils.write_file(op_output, start_time, ethmac)
-		parsed_output = parse_output(op_output, start_time, end_time, ethmac, packet_size, number_pings)
-		dao.write_op("ping", parsed_output)
+		parsed_output = parse_output(op_output, start_time, end_time, packet_size, ping_count)
+		if save_file: # should we save the whole output?
+			dao.write_op("ping", parsed_output, op_output)
+		else:
+			dao.write_op("ping", parsed_output)
 
 #ping function
-def perform(destination, packet_number, packet_size):
-	#print "calling ping"
-
-	execute = "ping -c %s -s %s %s"%(packet_number, packet_size, destination)
+def perform(destination, ping_count, packet_size):
+	packet_size -= 8 # change packet size to payload length!
+	execute = "ping -c %s -s %s %s"%(ping_count, packet_size, destination)
 	logging.info("Executing: "+execute)
-	#print execute
+	print execute
 	result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
-
 	ret = result.stdout.read()
 	result.stdout.flush()
 	return ret
 
 #read the data from ping and reformat for database entry
-def parse_output(data, start_time, end_time, ethmac, packet_size, number_pings):
+def parse_output(data, start_time, end_time, packet_size, number_pings):
 	ret = {}
-	ret["start_time"]    = start_time
-	ret["end_time"]   = end_time
-	ret["packet_size"]   = int(packet_size)
-	ret["ping_count"]    = int(number_pings)
-	ret["ethernet_MAC"]  = ethmac
-	ret["current_MAC"]   = cheesepi.utils.get_MAC()
-	ret["source_address"]= cheesepi.utils.get_SA()
+	ret["start_time"]  = start_time
+	ret["end_time"]    = end_time
+	ret["packet_size"] = int(packet_size)
+	ret["ping_count"]  = int(number_pings)
+	delays=[]
 
 	lines = data.split("\n")
-	tmp = lines[0].split()
-	ret["destination_domain"] = tmp[1]
-	ret["destination_address"] = re.sub("[()]", "", str(tmp[2]))
-	for line in lines[1:]:
-		if "packet loss" in line:
-			tmp = line.split()[5]
-			ret["packet_loss"] = int(str(tmp)[:-1])
-		if "min/avg/max" in line:
-			tmp = line.split()[3].split("/")
-			ret["minimum_RTT"] = float(tmp[0])
-			ret["average_RTT"] = float(tmp[1])
-			ret["maximum_RTT"] = float(tmp[2])
+	first_line = lines.pop(0).split()
+	ret["destination_domain"]  = first_line[1]
+	ret["destination_address"] = re.sub("[()]", "", str(first_line[2]))
 
+	delays = [-1.0] * number_pings # initialise storage
+	for line in lines:
+		if "icmp_seq=" in line:
+			# does this string wrangling always hold? what if not "X ms" ?
+			sequence_num = re.findall('icmp_seq=[\d]+ ',line)[0][9:-1]
+			delay = re.findall('time=.*? ms',line)[0][5:-3]
+			#print sequence_num,delay
+			# only save returned pings!
+			delays[int(sequence_num)]=float(delay)
+	ret['delays'] = delays
+
+	# probably should not reiterate over lines...
+	for line in lines:
+		if "packet loss" in line:
+			loss = re.findall('[\d]+% packet loss',line)[0][:-13]
+			ret["packet_loss"] = float(loss)
+		elif "min/avg/max/" in line:
+			fields = line.split()[3].split("/")
+			ret["minimum_RTT"] = float(fields[0])
+			ret["average_RTT"] = float(fields[1])
+			ret["maximum_RTT"] = float(fields[2])
+			ret["stddev_RTT"]  = float(fields[3])
 	return ret
 
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
 	dao = cheesepi.config.get_dao()
+	config = cheesepi.config.get_config()
 
-	args = (sys.argv)
-	args = args[1:]
-	number = 10
-	size = 64
-	destinations = []
-	save = False
+	landmarks = cheesepi.config.get_landmarks()
 
-	#should make this check better, could easily have a problem with some websites
-	for arg in args:
-		if "-number=" in arg:
-			number = arg.split("=")[1]
-		elif "-size=" in arg:
-			size = arg.split("=")[1]
-		elif "-save=" in arg:
-			print "save!"
-			save = (arg.split("=")[1] in ['True', 'true'])
-		else:
-			destinations.append(str(arg))
+	ping_count = 10
+	if cheesepi.config.config_defined("ping_count"):
+		ping_count = int(cheesepi.config.get("ping_count"))
 
-	measure(dao, number_pings=number, packet_size=size, targets=destinations, save_file=save)
+	packet_size = 64 # this is total packet size, not contents! (check ping man page)
+	if cheesepi.config.config_defined("ping_packet_size"):
+		packet_size= int(cheesepi.config.get("ping_packet_size"))
+
+	save_file = cheesepi.config.config_equal("ping_save_file","true")
+
+	print "Landmarks: ",landmarks
+	measure(dao, landmarks, ping_count, packet_size, save_file)
 

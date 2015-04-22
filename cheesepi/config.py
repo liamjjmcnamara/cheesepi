@@ -151,6 +151,20 @@ def version():
 	return version
 
 
+def get(key):
+	key = clean(key)
+	if key in config:
+		return config[key]
+	return None
+
+
+def get_landmarks():
+	if not config_defined('landmarks'):
+		return []
+	landmark_string = config['landmarks']
+	landmarks = landmark_string.split()
+	return landmarks
+
 def config_defined(key):
 	"""Is the specified key defined and true in the config object?"""
 	key = clean(key)
