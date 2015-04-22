@@ -33,7 +33,7 @@ sys.path.append("/usr/local/")
 import cheesepi
 
 # all scripts that should be run
-actions = ["wifiMeasure", "httpingMeasure", "localMeasure"] #"udpMeasure", 'voipMeasure']
+actions = ["pingMeasure", "httpingMeasure", "localMeasure", "wifiMeasure"] #"udpMeasure", 'voipMeasure']
 
 def run(cmd):
     """Execute the given command, and log failures"""
@@ -59,26 +59,10 @@ def measure(config=None):
         run(updatecall)
         # if we updated, we should execute the new /measure.py then quit
 
-    pingMeasure(config)
-
     # Run the measurement suite
     for action in actions:
         if cheesepi.config.config_true(config, action):
             run([config['cheesepi_dir']+"/measure/"+action+".py"])
-
-
-def pingMeasure(config):
-    if not cheesepi.config.config_true(config, 'pingMeasure'):
-        return
-    if 'landmarks' not in config:
-        cheesepi.config.log("Error: no landmarks defined!")
-        return
-
-    targets = config['landmarks'].split()
-    pingcall = [config['cheesepi_dir']+"/measure/pingMeasure.py"]
-    for target in targets:
-        pingcall.append(target)
-    run(pingcall)
 
 
 if __name__ == "__main__":
