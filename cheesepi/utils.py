@@ -57,5 +57,30 @@ def getCurrMAC():
 
 #get our source address
 def get_SA():
+    # this probably needs a try catch around it when offline...
 	ret = urllib2.urlopen('http://ip.42.pl/raw').read()
 	return ret
+
+
+# Simple statistics to avoid numpy
+def mean(data):
+    """Return the sample arithmetic mean of data."""
+    n = len(data)
+    if n < 1:
+        raise ValueError('mean requires at least one data point')
+    return sum(data)/n # in Python 2 use sum(data)/float(n)
+
+def sumsq(data):
+    """Return sum of square deviations of sequence data."""
+    c = mean(data)
+    ss = sum((x-c)**2 for x in data)
+    return ss
+
+def stdev(data):
+    """Calculates the population standard deviation."""
+    n = len(data)
+    if n < 2:
+        raise ValueError('variance requires at least two data points')
+    ss = sumsq(data)
+    pvar = ss/n # the population variance
+    return pvar**0.5

@@ -23,88 +23,109 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Authors: guulay@kth.se
+Original authors: guulay@kth.se
+Re-written by: urbanpe@kth.se
+Re-written by: ljjm@sics.se
 Testers:
 
+Example usage:
+$ python httpingMeasure.py
 
+This will httping each of the 'landmarks' from the cheesepi.conf.
 """
 
 import sys
 from subprocess import Popen, PIPE
 import re
+import logging
+import socket
 
 # try to import cheesepi, i.e. it's on PYTHONPATH
 sys.path.append("/usr/local/")
 import cheesepi
 
 #main measure funtion
-def measure(dao, number_httpings = 10, targets = None, save_file=False):
-	if targets is None:
-		return
+def measure(dao, landmarks, ping_count, packet_size, save_file=False):
+	for landmark in landmarks:
+		socket.gethostbyname(landmark) # we dont care, just populate the cache
+		start_time = cheesepi.utils.now()
+		op_output = perform(landmark, ping_count, packet_size)
+		end_time = cheesepi.utils.now()
+		#print op_output
 
-	ethmac = cheesepi.utils.get_MAC()
-	for target in targets:
-		start_time    = cheesepi.utils.now()
-		httpingResult = getData(target, number_httpings)
-		end_time      = cheesepi.utils.now()
-		if save_file:
-			cheesepi.utils.write_file(httpingResult, start_time, ethmac)
-		readable = reformat(httpingResult, start_time, end_time, ethmac, number_httpings)
-		print readable
-		dao.write_op("httping",readable)
+		parsed_output = parse_output(op_output, start_time, end_time, packet_size, ping_count)
+		if save_file: # should we save the whole output?
+			dao.write_op("httping", parsed_output, op_output)
+		else:
+			dao.write_op("httping", parsed_output)
 
+#ping function
+def perform(landmark, ping_count, packet_size):
+	execute = "httping -c %s %s"%(ping_count, landmark)
+	logging.info("Executing: "+execute)
+	print execute
+	result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
+	ret = result.stdout.read()
+	result.stdout.flush()
+	return ret
 
-#Execute httping function
-def getData(destination, packet_number):
-		#httping command"
-
-		execute = "httping -c %s %s"%(packet_number, destination)
-		#Executing the above shell command in with pipe
-		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
-	#Read the data from the pipe
-		ret = result.stdout.read()
-		result.stdout.flush()
-		return ret
-
-
-#read the data from httping and reformat for database entry
-def reformat(data, start_time, end_time, ethmac, number_httpings):
+#read the data from ping and reformat for database entry
+def parse_output(data, start_time, end_time, packet_size, ping_count):
 	ret = {}
-	ret["start_time"] = start_time
-	ret["end_time"]   = end_time
-	ret["numberOfHttpings"] = int(number_httpings)
-#print "numberOfHttpings = %s" % ret["numberOfHttpings"]
-	ret["ethernet_MAC"]   = ethmac
-	ret["current_MAC"]    = cheesepi.utils.get_MAC()
-	ret["source_address"] = cheesepi.utils.get_SA()
+	ret["start_time"]  = start_time
+	ret["end_time"]    = end_time
+	ret["packet_size"] = int(packet_size)
+	ret["ping_count"]  = int(ping_count)
+	delays=[]
+	print data
 
 	lines = data.split("\n")
-	tmp = lines[0].split()
-	ret["destination_domain"] = re.sub("[:80]", "", str(tmp[1]))
+	first_line = lines.pop(0).split()
+	ret["destination_domain"]  = first_line[1]
 
-	for line in lines[1:]:
-			tmp = line.split()
-			#ret["destination_address"] = re.sub("[:80]", "", str(tmp[2]))
-			#ret["packet_size"] = int(re.sub("[(bytes),]", "", str(tmp[3])))
-			#print "Packet size = %s" %ret["packetSize"]
-			if "% failed" in line:
-				tmp = line.split()[4]
-				ret["packet_loss"] = float(str(tmp)[:-1])
-			if "min/avg/max" in line:
-				tmp = line.split()[3].split("/")
-				ret["minimum_RTT"] = float(tmp[0])
-				ret["average_RTT"] = float(tmp[1])
-				ret["maximum_RTT"] = float(tmp[2])
+	delays = [-1.0] * ping_count# initialise storage
+	for line in lines:
+		if "time=" in line: # is this a PING return line?
+			# does the following string wrangling always hold? what if not "X ms" ?
+			# also need to check whether we are on linux-like or BSD-like ping
+			sequence_num = int(re.findall('seq=[\d]+ ',line)[0][4:-1])
+			delay = re.findall('time= ?.*? ms',line)[0][6:-3]
+			print sequence_num,delay
+			# only save returned pings!
+			delays[sequence_num]=float(delay)
+	ret['delays'] = str(delays)
+	ret["stddev_RTT"]  = cheesepi.utils.stdev(delays)
+
+	# probably should not reiterate over lines...
+	for line in lines:
+		if "packet loss" in line:
+			loss = re.findall('[\d]+% packet loss',line)[0][:-13]
+			ret["packet_loss"] = float(loss)
+		elif "min/avg/max" in line:
+			fields = line.split()[3].split("/")
+			ret["minimum_RTT"] = float(fields[0])
+			ret["average_RTT"] = float(fields[1])
+			ret["maximum_RTT"] = float(fields[2])
 	return ret
 
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
 	dao = cheesepi.config.get_dao()
+	config = cheesepi.config.get_config()
 
-	number = 10
-	destinations = ["www.bbc.com","www.sics.se","www.diretube.com"]
-	save = False
+	landmarks = cheesepi.config.get_landmarks()
 
-	measure(dao, number_httpings=number, targets=destinations, save_file=save)
+	ping_count = 10
+	if cheesepi.config.config_defined("httping_count"):
+		ping_count = int(cheesepi.config.get("httping_count"))
+
+	packet_size = 103 # this is total packet size, not contents! (check ping man page)
+	if cheesepi.config.config_defined("httping_packet_size"):
+		packet_size= int(cheesepi.config.get("httping_packet_size"))
+
+	save_file = cheesepi.config.config_equal("httping_save_file","true")
+
+	print "Landmarks: ",landmarks
+	measure(dao, landmarks, ping_count, packet_size, save_file)
 
