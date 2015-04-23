@@ -1,93 +1,501 @@
 {
-  "title": "Grafana",
+  "id": null,
+  "title": "CheesePi Dashboard",
+  "originalTitle": "CheesePi Dashboard",
   "tags": [],
   "style": "dark",
   "timezone": "browser",
   "editable": true,
+  "hideControls": false,
+  "sharedCrosshair": true,
   "rows": [
     {
       "title": "New row",
       "height": "150px",
-      "collapse": false,
       "editable": true,
+      "collapse": false,
       "panels": [
         {
-          "id": 1,
-          "span": 12,
+          "title": "",
+          "error": false,
+          "span": 2,
           "editable": true,
           "type": "text",
+          "id": 8,
           "mode": "html",
-          "content": "<div class=\"text-center\" style=\"padding-top: 15px\">\n<img src=\"img/logo_transparent_200x.png\"> \n</div>",
+          "content": "<img style=\"display: block; margin-left: auto; margin-right: auto\" src=\"./cheesepi.png\" />\n",
           "style": {},
-          "title": "Welcome to"
-        }
-      ]
-    },
-    {
-      "title": "Welcome to Grafana",
-      "height": "210px",
-      "collapse": false,
-      "editable": true,
-      "panels": [
-        {
-          "id": 2,
-          "span": 6,
-          "type": "text",
-          "mode": "html",
-          "content": "<br/>\n\n<div class=\"row-fluid\">\n  <div class=\"span6\">\n    <ul>\n      <li>\n        <a href=\"http://grafana.org/docs#configuration\" target=\"_blank\">Configuration</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/troubleshooting\" target=\"_blank\">Troubleshooting</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/support\" target=\"_blank\">Support</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/features/intro\" target=\"_blank\">Getting started</a>  (Must read!)\n      </li>\n    </ul>\n  </div>\n  <div class=\"span6\">\n    <ul>\n      <li>\n        <a href=\"http://grafana.org/docs/features/graphing\" target=\"_blank\">Graphing</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/features/annotations\" target=\"_blank\">Annotations</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/features/graphite\" target=\"_blank\">Graphite</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/features/influxdb\" target=\"_blank\">InfluxDB</a>\n      </li>\n      <li>\n        <a href=\"http://grafana.org/docs/features/opentsdb\" target=\"_blank\">OpenTSDB</a>\n      </li>\n    </ul>\n  </div>\n</div>",
-          "style": {},
-          "title": "Documentation Links"
+          "links": [
+            {
+              "type": "absolute",
+              "name": "Drilldown dashboard",
+              "title": "CheesePi Homepage",
+              "url": "http://www.cheesepi.sics.se"
+            }
+          ]
         },
         {
-          "id": 3,
-          "span": 6,
+          "title": "",
+          "error": false,
+          "span": 2,
+          "editable": true,
           "type": "text",
-          "mode": "html",
-          "content": "<br/>\n\n<div class=\"row-fluid\">\n  <div class=\"span12\">\n    <ul>\n      <li>Ctrl+S saves the current dashboard</li>\n      <li>Ctrl+F Opens the dashboard finder</li>\n      <li>Ctrl+H Hide/show row controls</li>\n      <li>Click and drag graph title to move panel</li>\n      <li>Hit Escape to exit graph when in fullscreen or edit mode</li>\n      <li>Click the colored icon in the legend to change series color</li>\n      <li>Ctrl or Shift + Click legend name to hide other series</li>\n    </ul>\n  </div>\n</div>\n",
+          "id": 17,
+          "mode": "markdown",
+          "content": "",
           "style": {},
-          "title": "Tips & Shortcuts"
+          "links": []
+        },
+        {
+          "title": "Uptime",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 15,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "function": "last",
+              "column": "uptime",
+              "rawQuery": true,
+              "query": "select last(uptime) from \"local\" where $timeFilter group by time($interval) order asc",
+              "hide": false,
+              "series": "local"
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "avg",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "",
+          "colorBackground": false,
+          "colorValue": false,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "Packet Loss",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 7,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "function": "max",
+              "column": "packet_loss",
+              "rawQuery": false,
+              "query": "select max(packet_loss) from \"ping\" where $timeFilter group by time($interval) order asc",
+              "hide": false,
+              "series": "ping",
+              "interval": "1h"
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "current",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(71, 212, 59, 0.4)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(225, 40, 40, 0.59)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "CPU Load",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 13,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "function": "last",
+              "column": "load5",
+              "series": "local",
+              "query": "select last(load5) from \"local\" where $timeFilter group by time($interval) order asc"
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "avg",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "0,0.19,0.25",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(71, 212, 59, 0.4)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(225, 40, 40, 0.59)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "Connection status",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 9,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value",
+              "series": "ping",
+              "query": "select sum(packet_loss) from \"ping\"  where time > now() - 6m",
+              "rawQuery": true
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "0",
+              "op": "=",
+              "text": "Online"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "avg",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(71, 212, 59, 0.4)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(225, 40, 40, 0.59)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
         }
       ]
     },
     {
       "title": "test",
-      "height": "250px",
+      "height": "200px",
       "editable": true,
       "collapse": false,
       "panels": [
         {
-          "id": 4,
-          "span": 12,
+          "title": "Network delay",
+          "error": false,
+          "span": 6,
+          "editable": true,
           "type": "graph",
+          "id": 12,
+          "datasource": null,
+          "renderer": "flot",
           "x-axis": true,
           "y-axis": true,
-          "scale": 1,
           "y_formats": [
-            "short",
+            "ms",
             "short"
           ],
           "grid": {
-            "max": null,
-            "min": null,
             "leftMax": null,
             "rightMax": null,
-            "leftMin": null,
+            "leftMin": 0,
             "rightMin": null,
             "threshold1": null,
             "threshold2": null,
             "threshold1Color": "rgba(216, 200, 27, 0.27)",
             "threshold2Color": "rgba(234, 112, 112, 0.22)"
           },
-          "resolution": 100,
-          "lines": true,
-          "fill": 1,
-          "linewidth": 2,
+          "lines": false,
+          "fill": 0,
+          "linewidth": 1,
           "points": false,
-          "pointradius": 5,
+          "pointradius": 1,
           "bars": false,
-          "stack": true,
-          "spyable": true,
-          "options": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "alignAsTable": false
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "target": "",
+              "function": "last",
+              "column": "average_RTT",
+              "series": "ping",
+              "query": "select maximum_RTT from \"ping\" where landmark='www.sics.se'",
+              "condition": "domain='sics.se'",
+              "hide": false,
+              "rawQuery": true,
+              "alias": "sics_max"
+            },
+            {
+              "target": "",
+              "function": "last",
+              "column": "average_RTT",
+              "series": "ping",
+              "query": "select average_RTT from \"ping\" where landmark='www.sics.se'",
+              "condition": "domain='sics.se'",
+              "hide": false,
+              "rawQuery": true,
+              "alias": "sics_avg"
+            },
+            {
+              "target": "",
+              "function": "last",
+              "column": "average_RTT",
+              "series": "ping",
+              "query": "select minimum_RTT from \"ping\" where landmark='www.sics.se'",
+              "condition": "domain='sics.se'",
+              "hide": false,
+              "rawQuery": true,
+              "alias": "sics_min"
+            },
+            {
+              "target": "",
+              "function": "last",
+              "column": "average_RTT",
+              "series": "ping",
+              "query": "select maximum_RTT from \"ping\" where landmark='www.bbc.com'",
+              "condition": "domain='sics.se'",
+              "hide": false,
+              "rawQuery": true,
+              "alias": "bbc_max"
+            },
+            {
+              "target": "",
+              "function": "last",
+              "column": "average_RTT",
+              "series": "ping",
+              "query": "select average_RTT from \"ping\" where landmark='www.bbc.com'",
+              "condition": "domain='sics.se'",
+              "hide": false,
+              "rawQuery": true,
+              "alias": "bbc_avg"
+            },
+            {
+              "target": "",
+              "function": "last",
+              "column": "average_RTT",
+              "series": "ping",
+              "query": "select minimum_RTT from \"ping\" where landmark='www.bbc.com'",
+              "condition": "domain='sics.se'",
+              "hide": false,
+              "rawQuery": true,
+              "alias": "bbc_min"
+            },
+            {
+              "target": "",
+              "function": "last",
+              "column": "average_RTT",
+              "series": "ping",
+              "query": "select maximum_RTT from \"ping\" where landmark='www.facebook.com'",
+              "condition": "domain='sics.se'",
+              "hide": false,
+              "rawQuery": true,
+              "alias": "facebook_max"
+            },
+            {
+              "target": "",
+              "function": "last",
+              "column": "average_RTT",
+              "series": "ping",
+              "query": "select average_RTT from \"ping\" where landmark='www.facebook.com'",
+              "condition": "domain='sics.se'",
+              "hide": false,
+              "rawQuery": true,
+              "alias": "facebook_avg"
+            },
+            {
+              "target": "",
+              "function": "last",
+              "column": "average_RTT",
+              "series": "ping",
+              "query": "select minimum_RTT from \"ping\" where landmark='www.facebook.com'",
+              "condition": "domain='sics.se'",
+              "hide": false,
+              "rawQuery": true,
+              "alias": "facebook_min"
+            }
+          ],
+          "aliasColors": {
+            "min": "#EAB839",
+            "max": "#EAB839",
+            "sics_avg": "#7EB26D",
+            "diretube_min": "#6ED0E0",
+            "diretube_max": "#447EBC",
+            "bbc_max": "#EA6460",
+            "bbc_min": "#E24D42",
+            "diretube_avg": "#64B0C8",
+            "bbc_avg": "#EA6460",
+            "sics_min": "#7EB26D",
+            "facebook_min": "#1F78C1",
+            "facebook_avg": "#1F78C1",
+            "facebook_max": "#1F78C1"
+          },
+          "seriesOverrides": [
+            {
+              "alias": "sics_max",
+              "lines": false,
+              "fillBelowTo": "sics_min"
+            },
+            {
+              "alias": "sics_avg",
+              "lines": true,
+              "points": true
+            },
+            {
+              "alias": "bbc_max",
+              "fillBelowTo": "bbc_min",
+              "lines": false
+            },
+            {
+              "alias": "bbc_avg",
+              "lines": true,
+              "points": true
+            },
+            {
+              "alias": "facebook_max",
+              "lines": false,
+              "fillBelowTo": "facebook_min"
+            },
+            {
+              "alias": "facebook_avg",
+              "points": true,
+              "lines": true
+            },
+            {
+              "alias": "facebook_min",
+              "lines": false
+            }
+          ],
+          "links": []
+        },
+        {
+          "title": "HTTP Ping",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 6,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "ms",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": true,
+          "pointradius": 2,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
           "legend": {
             "show": true,
             "values": false,
@@ -97,33 +505,393 @@
             "total": false,
             "avg": false
           },
-          "interactive": true,
-          "legend_counts": true,
-          "timezone": "browser",
-          "percentage": false,
           "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "cumulative",
-            "query_as_alias": true
+            "shared": false
           },
           "targets": [
             {
-              "target": "randomWalk('random walk')",
               "function": "mean",
-              "column": "value"
+              "column": "value",
+              "rawQuery": true,
+              "query": "select average_RTT from httping where landmark='www.sics.se'",
+              "hide": false,
+              "alias": "SICS"
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select average_RTT from httping where landmark='www.bbc.com'",
+              "hide": false,
+              "alias": "BBC"
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select average_RTT from httping where landmark='www.facebook.com'",
+              "hide": false,
+              "alias": "Facebook"
             }
           ],
-          "aliasColors": {},
-          "aliasYAxis": {},
-          "title": "First Graph (click title to edit)",
-          "datasource": "graphite",
-          "renderer": "flot",
-          "annotate": {
-            "enable": false
-          }
+          "aliasColors": {
+            "BBC": "#E24D42",
+            "SICS": "#7EB26D",
+            "DireTube": "#1F78C1",
+            "Facebook": "#1F78C1"
+          },
+          "seriesOverrides": [],
+          "links": [],
+          "leftYAxisLabel": ""
         }
       ]
+    },
+    {
+      "title": "New row",
+      "height": "200px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "title": "My Access Point",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 11,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 3,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "rightSide": false
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select signal from wifi_ap where ESSID='SICS'",
+              "hide": false,
+              "alias": "Signal"
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select quality from wifi_ap where ESSID='SICS'",
+              "hide": false,
+              "alias": "Quality"
+            }
+          ],
+          "aliasColors": {
+            "Signal": "#C15C17",
+            "Quality": "#64B0C8"
+          },
+          "seriesOverrides": [
+            {
+              "alias": "Signal",
+              "yaxis": 2
+            }
+          ],
+          "leftYAxisLabel": "Quality",
+          "links": []
+        },
+        {
+          "title": "Wifi Access Points",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 5,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 3,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": true
+          },
+          "targets": [
+            {
+              "function": "mean",
+              "column": "channel1",
+              "rawQuery": false,
+              "query": "select mean(channel1) from \"wifi_scan\" where $timeFilter group by time($interval) order asc",
+              "alias": "channel1",
+              "hide": false,
+              "series": "wifi_scan",
+              "interval": "10m"
+            },
+            {
+              "function": "mean",
+              "column": "channel6",
+              "rawQuery": false,
+              "query": "select mean(channel6) from \"wifi_scan\" where $timeFilter group by time($interval) order asc",
+              "alias": "channel6",
+              "hide": false,
+              "series": "wifi_scan",
+              "interval": "10m"
+            },
+            {
+              "function": "mean",
+              "column": "channel11",
+              "rawQuery": false,
+              "query": "select mean(channel11) from \"wifi_scan\" where $timeFilter group by time($interval) order asc",
+              "alias": "channel11",
+              "hide": false,
+              "series": "wifi_scan",
+              "interval": "10m"
+            }
+          ],
+          "aliasColors": {
+            "channel1": "#F4D598",
+            "channel6": "#EAB839",
+            "channel11": "#967302"
+          },
+          "seriesOverrides": [],
+          "links": [],
+          "leftYAxisLabel": "Number of APs"
+        }
+      ]
+    },
+    {
+      "title": "New row",
+      "height": "200px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "title": "Packet Loss",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 10,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": 5,
+            "threshold2": 20,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": false,
+          "fill": 0,
+          "linewidth": 2,
+          "points": false,
+          "pointradius": 2,
+          "bars": true,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false
+          },
+          "nullPointMode": "null as zero",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select mean(packet_loss) from ping group by time(1m)",
+              "hide": false,
+              "alias": "Loss",
+              "interval": ""
+            }
+          ],
+          "aliasColors": {
+            "Loss": "#BF1B00"
+          },
+          "seriesOverrides": [],
+          "links": [],
+          "leftYAxisLabel": "Percent lost",
+          "interval": ""
+        },
+        {
+          "title": "Pi CPU Load",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 16,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": null,
+            "rightMin": null,
+            "threshold1": 0.2,
+            "threshold2": 0.5,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 1,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select load1 from local",
+              "alias": "1minute"
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select load5 from local",
+              "alias": "5minute"
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select load15 from local",
+              "alias": "15minute"
+            }
+          ],
+          "aliasColors": {
+            "1minute": "#F9D9F9",
+            "5minute": "#AEA2E0",
+            "15minute": "#BA43A9"
+          },
+          "seriesOverrides": [
+            {
+              "alias": "15minute",
+              "linewidth": 6
+            }
+          ],
+          "links": [],
+          "leftYAxisLabel": "Load"
+        }
+      ]
+    },
+    {
+      "title": "New row",
+      "height": "200px",
+      "editable": true,
+      "collapse": false,
+      "panels": []
     }
   ],
   "nav": [
@@ -144,7 +912,6 @@
         "30d"
       ],
       "refresh_intervals": [
-        "5s",
         "10s",
         "30s",
         "1m",
@@ -155,7 +922,8 @@
         "2h",
         "1d"
       ],
-      "now": true
+      "now": true,
+      "notice": false
     }
   ],
   "time": {
@@ -165,5 +933,10 @@
   "templating": {
     "list": []
   },
-  "version": 5
+  "annotations": {
+    "list": []
+  },
+  "refresh": false,
+  "version": 6,
+  "hideAllLegends": false
 }
