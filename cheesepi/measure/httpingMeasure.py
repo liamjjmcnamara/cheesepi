@@ -53,7 +53,7 @@ def measure(dao, landmarks, ping_count, packet_size, save_file=False):
 		end_time = cheesepi.utils.now()
 		#print op_output
 
-		parsed_output = parse_output(op_output, start_time, end_time, packet_size, ping_count)
+		parsed_output = parse_output(op_output, landmark, start_time, end_time, packet_size, ping_count)
 		if save_file: # should we save the whole output?
 			dao.write_op("httping", parsed_output, op_output)
 		else:
@@ -70,8 +70,9 @@ def perform(landmark, ping_count, packet_size):
 	return ret
 
 #read the data from ping and reformat for database entry
-def parse_output(data, start_time, end_time, packet_size, ping_count):
+def parse_output(data, landmark, start_time, end_time, packet_size, ping_count):
 	ret = {}
+	ret["landmark"]    = landmark
 	ret["start_time"]  = start_time
 	ret["end_time"]    = end_time
 	ret["packet_size"] = int(packet_size)

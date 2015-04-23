@@ -33,7 +33,7 @@ sys.path.append("/usr/local/")
 import cheesepi
 
 # all scripts that should be run
-actions = ["pingMeasure", "httpingMeasure", "localMeasure", "wifiMeasure"] #"udpMeasure", 'voipMeasure']
+actions = ["localMeasure", "pingMeasure", "httpingMeasure", "wifiMeasure"] #"udpMeasure", 'voipMeasure']
 
 def run(cmd):
     """Execute the given command, and log failures"""
