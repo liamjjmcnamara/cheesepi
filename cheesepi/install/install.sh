@@ -2,41 +2,49 @@
 # This can be changed but will currently break the Influx and Grafana config files
 INSTALL_DIR=/usr/local/cheesepi
 
+# Quit if any command fails...
+set -e
+
+# Discover local IP address
 # To be used in the grafana configuration (so it knows where the Influx DB is)
 LOCAL_IP=`hostname -I |head -n1| tr -d '[[:space:]]'`
 
-
 # Copy Influx config if it doesnt exist
+echo "Starting InfluxDB..."
 if [ ! -f $INSTALL_DIR/tools/influxdb/config.toml ]; then
 	cp $INSTALL_DIR/tools/influxdb/config.sample.toml $INSTALL_DIR/tools/influxdb/config.toml
 fi
-# Copy the Grafana config file, adding the local IP address
-if [ ! -f $INSTALL_DIR/webserver/dashboard/config.js ]; then
-	cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_influxdb_server/$LOCAL_IP/" >$INSTALL_DIR/webserver/dashboard/config.js
-fi
-# Start Influx database server and webserver in the background
-# Do this first, as Influx needs to spool up
+# Influx needs to spool up
 INFLUX_DIR=$INSTALL_DIR/tools/influxdb
 INFLUX_CMD="$INFLUX_DIR/influxdb -config=$INFLUX_DIR/config.toml"
 nohup $INFLUX_CMD &
-# and the webserver serving a grafana dashboard
-$INSTALL_DIR/webserver/webserver.py &
 sleep 5
 
 
-# Install required OS software
+# # Install required OS software
 echo "Enter root pass to enable apt-get software install if prompted..."
-#sudo apt-get update
-# Speed improvements (through a binary module)
-#sudo apt-get install build-essential python-dev
+# Ensure we have uptodate package definition
+sudo apt-get update
+
+# Optional software for speed improvements (through a binary module)
+sudo apt-get install build-essential python-dev
+
 sudo apt-get install httping python-pip python-mysqldb
 # include ntpdate ?
 # add python modules
 sudo pip install cherrypy influxdb pymongo
 
+
+## Copy the Grafana config file, adding the local IP address
+if [ ! -f $INSTALL_DIR/webserver/dashboard/config.js ]; then
+	cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_influxdb_server/$LOCAL_IP/" >$INSTALL_DIR/webserver/dashboard/config.js
+fi
+# and the webserver serving a grafana dashboard
+$INSTALL_DIR/webserver/webserver.py &
 sleep 5
 
-# ..and have both start on boot
+
+## Have both Influx and webserver start on boot
 #sudo echo $INFLUX_CMD >> /etc/rc.local
 #echo $INFLUX_CMD | sudo tee --append /etc/rc.local
 if ! grep --quiet influxdb /etc/inittab; then
@@ -45,19 +53,20 @@ if ! grep --quiet influxdb /etc/inittab; then
 fi
 
 
-# Intall a crontab entry so that $INSTALL_DIR/measure/measure.py is run
+## Install a crontab entry so that $INSTALL_DIR/measure/measure.py is run
 if ! grep --quiet measure.py /etc/crontab; then
 	echo -e "\n*/5 *   * * *   root    /usr/local/cheesepi/measure/measure.py" | sudo tee --append /etc/crontab
 fi
 
-# Create Influx 'cheesepi' and 'grafana' databases
+
+## Create Influx 'cheesepi' and 'grafana' databases
 # Very quick and dirty solution
-echo "Waiting for Influx to startup..."
-sleep 15
+echo "Waiting for Influx to definitely be started..."
+sleep 20
 curl -s "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"cheesepi\"}"
 curl -s "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"grafana\"}"
 
 
-
-echo -e "\nVisit $LOCAL_IP:8080/dashboard to see your dashboard!\n"
+## Inform user of dashboard website
+echo -e "\nInstalled!\nVisit $LOCAL_IP:8080/dashboard to see your dashboard!\n"
 
