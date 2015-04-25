@@ -27,6 +27,7 @@ Testers:
 Description: Abstract class to be subclassed by specific database storage engine
 """
 
+import logging
 
 class DAO:
 	def __init__(self):
@@ -40,14 +41,21 @@ class DAO:
 		pass
 
 	def read_user(self, user_data):
-		pass
+		logging.error("Method not implemented in this DAO class")
+		return None
 
 	# operator level interactions
 	def write_op(self, op_type, dic, binary=None):
 		pass
 
 	def read_op(self, op_type, timestamp=0, limit=100):
-		pass
+		logging.error("Method not implemented in this DAO class")
+		return None
+
+	def dump(self, since=None):
+		msg ="Method not implemented in DAO class"
+		logging.error(msg)
+		return msg
 
 	def validate_op(self, op_type):
 		# should check the op is structured correctly

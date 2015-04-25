@@ -99,10 +99,26 @@ class DAO_influx(dao.DAO):
 		return op
 
 
+	def dump(self, since=None):
+		#series = self.conn.get_list_series()
+		series = self.conn.query("list series")
+		dumped_db = ""
+		# maybe prune series?
+		print "series",series
+
+		for s in series:
+			print s['name']
+			series_name = s['name']
+			dumped_series = self.conn.query('select * from '+series_name+' where time > now() - 1d limit 1;')
+			print dumped_series
+			dumped_db += json.dumps(dumped_series)+"\n"
+		return dumped_db
+
+
 	def to_json(self, table, dic):
 		for k in dic.keys():
 				dic[k]=dic[k]
-		json_dic = [{"name":table, "columns":dic.keys(), "points":[dic.values()]}]
+		#json_dic = [{"name":table, "columns":dic.keys(), "points":[dic.values()]}]
 		json_str = '[{"name":"%s", "columns":%s, "points":[%s]}]' % (table,json.dumps(dic.keys()),json.dumps(dic.values()))
 		#json_str = '[{"name":"ping", "columns":["test"], "points":["value"]}]'
 		return json_str
