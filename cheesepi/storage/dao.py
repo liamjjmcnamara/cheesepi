@@ -57,13 +57,6 @@ class DAO:
 		logging.error("Method not implemented in this DAO class")
 		return None
 
-	# user level interactions
-	def write_user(self):
-		pass
-
-	def read_user(self, user_data):
-		logging.error("Method not implemented in this DAO class")
-		return None
 
 
 # The following need not be reimplemented in subclasses
