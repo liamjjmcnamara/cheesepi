@@ -56,20 +56,23 @@ class DAO_influx(dao.DAO):
 			exit(1)
 
 
-	# user level interactions
-	def read_user(self):
-		user = self.conn.query('select * from user limit 1;')
-		return user
+	def dump(self, since=None):
+		#series = self.conn.get_list_series()
+		series = self.conn.query("list series")
+		dumped_db = ""
+		# maybe prune series?
+		print "series",series
+
+		for s in series:
+			print s['name']
+			series_name = s['name']
+			dumped_series = self.conn.query('select * from '+series_name+' where time > now() - 1d limit 1;')
+			print dumped_series
+			dumped_db += json.dumps(dumped_series)+"\n"
+		return dumped_db
 
 
-	def write_user(self, user_data):
-		# check we dont already exist
-		print "Saving: ",user_data
-		json = self.to_json("user",user_data)
-		return self.conn.write_points(json)
-
-
-	# operator level interactions
+	# Operator interactions
 	def write_op(self, op_type, dic, binary=None):
 		if not self.validate_op(op_type):
 			logging.warning("Operation of type %s not valid: " % (op_type, str(dic)))
@@ -99,20 +102,21 @@ class DAO_influx(dao.DAO):
 		return op
 
 
-	def dump(self, since=None):
-		#series = self.conn.get_list_series()
-		series = self.conn.query("list series")
-		dumped_db = ""
-		# maybe prune series?
-		print "series",series
 
-		for s in series:
-			print s['name']
-			series_name = s['name']
-			dumped_series = self.conn.query('select * from '+series_name+' where time > now() - 1d limit 1;')
-			print dumped_series
-			dumped_db += json.dumps(dumped_series)+"\n"
-		return dumped_db
+	## User level interactions
+	# Note that assignments are not deleted, but the most recent assignemtn
+	# is always returned
+	def read_user_attribute(self, attribute):
+		user = self.conn.query('select %s from user limit 1;' % attribute)
+		return user
+
+
+	def write_user_attribute(self, attribute, value):
+		# check we dont already exist
+		print "Saving user attribute: %s to %s " % (attribute, value)
+		json = self.to_json("user", {attribute:value})
+		return self.conn.write_points(json)
+
 
 
 	def to_json(self, table, dic):

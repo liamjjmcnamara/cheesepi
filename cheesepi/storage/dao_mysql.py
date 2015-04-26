@@ -42,39 +42,35 @@ class DAO_mysql(dao.DAO):
 			print msg
 			exit(1)
 
-		#define tables here. Ping, httping, traceroute+hops
+		if not self.conn:
+			logging.error("MySQL database connnection failed")
+			exit(1)
 
-		with self.conn:
-			#disable warnings
-			cursor = self.conn.cursor()
-			cursor.execute("""SET sql_notes = 0""")
+		#disable warnings
+		cursor = self.conn.cursor()
+		cursor.execute("""SET sql_notes = 0""")
 
-			pingquery = """CREATE TABLE IF NOT EXISTS ping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-				sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
-				startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
-				averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
-				ethernetMacAddress TEXT, currentMacAddress TEXT, packetSize INTEGER,
-				numberOfPings INTEGER);"""
-			cursor.execute(pingquery)
+		pingquery = """CREATE TABLE IF NOT EXISTS ping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
+			startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
+			averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
+			ethernetMacAddress TEXT, currentMacAddress TEXT, packetSize INTEGER,
+			numberOfPings INTEGER);"""
+		cursor.execute(pingquery)
 
-			httpquery = """CREATE TABLE IF NOT EXISTS httping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-				sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
-				startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
-				averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
-				ethernetMacAddress TEXT, currentMacAddress TEXT, packetSize INTEGER,
-				numberOfHttpings INTEGER);"""
-			cursor.execute(httpquery)
+		httpquery = """CREATE TABLE IF NOT EXISTS httping(ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			sourceAddress TEXT, destinationDomain TEXT, destinationAddress TEXT,
+			startingTime DATETIME, endingTime DATETIME, minimumRTT FLOAT,
+			averageRTT FLOAT, maximumRTT FLOAT, packetLoss TEXT,
+			ethernetMacAddress TEXT, currentMacAddress TEXT, packetSize INTEGER,
+			numberOfHttpings INTEGER);"""
+		cursor.execute(httpquery)
 
-			#enable warnings
-			cursor.execute("""SET sql_notes = 1""")
+		#enable warnings
+		cursor.execute("""SET sql_notes = 1""")
 
-	# user level interactions
-	def read_user(self):
-		pass
-
-
-	def write_user(self, user_data):
-		pass
+	def close(self):
+		self.conn.close()
 
 
 	# operator level interactions
@@ -97,5 +93,14 @@ class DAO_mysql(dao.DAO):
 
 	def read_op(self, op_type, timestamp=0, limit=100):
 	#check last push and grab the rest?
+		pass
+
+
+	# user level interactions
+	def read_user_attribute(self):
+		pass
+
+
+	def write_user_attribute(self, attribute, value):
 		pass
 

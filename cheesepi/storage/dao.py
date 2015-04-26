@@ -36,6 +36,27 @@ class DAO:
 	def close(self):
 		pass
 
+	def dump(self, since=None):
+		msg ="Method not implemented in DAO class"
+		logging.error(msg)
+		return msg
+
+	# Operator interactions
+	def write_op(self, op_type, dic, binary=None):
+		pass
+
+	def read_op(self, op_type, timestamp=0, limit=100):
+		logging.error("Method not implemented in this DAO class")
+		return None
+
+	# user level interactions
+	def write_user_attribute(self, attribute, value):
+		pass
+
+	def read_user_attribute(self, attribute):
+		logging.error("Method not implemented in this DAO class")
+		return None
+
 	# user level interactions
 	def write_user(self):
 		pass
@@ -44,18 +65,8 @@ class DAO:
 		logging.error("Method not implemented in this DAO class")
 		return None
 
-	# operator level interactions
-	def write_op(self, op_type, dic, binary=None):
-		pass
 
-	def read_op(self, op_type, timestamp=0, limit=100):
-		logging.error("Method not implemented in this DAO class")
-		return None
-
-	def dump(self, since=None):
-		msg ="Method not implemented in DAO class"
-		logging.error(msg)
-		return msg
+# The following need not be reimplemented in subclasses
 
 	def validate_op(self, op_type):
 		# should check the op is structured correctly

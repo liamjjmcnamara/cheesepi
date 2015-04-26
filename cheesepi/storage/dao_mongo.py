@@ -50,19 +50,13 @@ class DAO_mongo(dao.DAO):
         self.db = self.conn.cheesepi
         self.fs = gridfs.GridFS(self.db)
 
-
-    # user level interactions
-    def read_user(self):
-        return self.db.user.find()
-
-
-    def write_user(self, user_data):
-        # check we dont already exist
-        print "Saving: ",user_data
-        return self.db.user.insert(user_data)
+    def close(self):
+        # the following does not close() permenantly, reusing the
+        # connection object will reopen it
+        self.conn.close()
 
 
-    # operator level interactions
+    # Operator interactions
     def write_op(self, op_type, dic, binary=None):
         if not self.validate_op(op_type,dic):
             return
@@ -92,6 +86,18 @@ class DAO_mongo(dao.DAO):
         for op in collection.find():
             rv += str(dumps(op))
         return rv
+
+
+    # user level interactions
+    def read_user_attribute(self, attribute):
+        return self.db.user.find()
+
+
+    def write_user_attribute(self, attribute, value):
+        print "Setting %s to %s " % (attribute, value)
+        where = {'attribute': attribute}
+        data  = {'attribute': attribute, 'value': value}
+        return self.db.user.update(where, data, {'upsert': True})
 
 
     def to_bson(self, i):
