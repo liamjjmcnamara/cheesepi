@@ -52,18 +52,25 @@ def measure(config=None):
     if config==None:
         config=cheesepi.config.get_config()
     #print config
-    # Update the distribution
-    if cheesepi.config.config_true(config, 'auto_update'):
-        cheesepi.config.log("Info: performing distribution update!")
-        updatecall = [config['cheesepi_dir']+"/update.sh"]
-        run(updatecall)
-        # if we updated, we should execute the new /measure.py then quit
 
     # Run the measurement suite
+    # TODO: convert this from program execution into mathod calling
     for action in actions:
         if cheesepi.config.config_true(config, action):
             run([config['cheesepi_dir']+"/measure/"+action+".py"])
 
+    # should we upload a dump of collected data to the server?
+    if cheesepi.config.should_dump():
+        # in another process! (will take a while)
+        print "Should dump data!"
+        dumpcall = [config['cheesepi_dir']+"/storage/dump.sh"]
+        run(dumpcall)
+
+    # Update the chesepi distribution?
+    if cheesepi.config.should_update():
+        cheesepi.config.log("Info: performing distribution update!")
+        updatecall = [config['cheesepi_dir']+"/update.py"]
+        run(updatecall)
 
 if __name__ == "__main__":
     measure()

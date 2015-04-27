@@ -96,7 +96,6 @@ class DAO_influx(dao.DAO):
 			exit(1)
 		return id
 
-
 	def read_op(self, op_type, timestamp=0, limit=100):
 		op = self.conn.query('select * from '+op_type+' limit 1;')
 		return op
@@ -109,7 +108,6 @@ class DAO_influx(dao.DAO):
 	def read_user_attribute(self, attribute):
 		user = self.conn.query('select %s from user limit 1;' % attribute)
 		return user
-
 
 	def write_user_attribute(self, attribute, value):
 		# check we dont already exist

@@ -42,7 +42,7 @@ import cheesepi
 cheesepi_dir  = os.path.dirname(os.path.realpath(__file__))
 config_file   = os.path.join(cheesepi_dir,"cheesepi.conf")
 version_file  = os.path.join(cheesepi_dir,"version")
-config        = None # instantiated later!
+config		  = None # instantiated filelevel later!
 
 
 def main():
@@ -61,7 +61,7 @@ def get_config():
 		config[clean(key)] = clean(value)
 	config['cheesepi_dir']= cheesepi_dir
 	config['config_file'] = config_file
-	config['version']     = version()
+	config['version']	  = version()
 	return config
 
 
@@ -120,6 +120,51 @@ def get_dao():
 	exit(1)
 
 
+def get_last_updated(dao):
+	"""When did we last update our code from the central server?"""
+	if dao==None:
+		dao = get_dao()
+	last_updated = dao.read_user_attribute("last_updated")
+
+	# convert to seconds
+	return last_updated
+
+def get_update_period():
+	"""How frequently should we update?"""
+	return 259200
+
+def should_update(dao=None):
+	"""Should we update our code?"""
+	if not config_true('auto_update'):
+		return False
+	last_updated = get_last_updated(dao)
+	update_period = get_update_period()
+	if (last_updated < (cheesepi.utils.now()-update_period)):
+		return True
+	return False
+
+
+def get_last_dumped(dao):
+	"""When did we last dump our data to the central server?"""
+	if dao==None:
+		dao = get_dao()
+	last_dumped = dao.read_user_attribute("last_dumped")
+	# convert to seconds
+	return last_dumped
+
+def get_dump_period():
+	"""How frequently should we dump?"""
+	return 86400
+
+def should_dump(dao=None):
+	"""Should we update our code?"""
+	last_dumped = get_last_dumped(dao)
+	dump_period = get_dump_period()
+	if (last_dumped < (cheesepi.utils.now()-dump_period)):
+		return True
+	return False
+
+
 def copyfile(from_file, to_file, occurance, replacement):
 	"""Copy a file <from_file> to <to_file> replacing all occurrences"""
 	print from_file, to_file, occurance, replacement
@@ -130,16 +175,18 @@ def copyfile(from_file, to_file, occurance, replacement):
 
 
 def generate_secret():
-	"""Make a secret for this node, to use in signing data"""
+	"""Make a secret for this node, to use in signing data dumps"""
 	return str(uuid.uuid4())
 
 
 def log(message):
-	# should actually log message to a file
+	# should log message to a file
+	logging.info(message)
 	print message
 
 
 def version():
+	"""Which version of the code are we running?"""
 	version="repos"
 	try:
 		fd = open(version_file)
@@ -157,8 +204,8 @@ def get(key):
 		return config[key]
 	return None
 
-
 def get_landmarks():
+	"""Who shall we ping/httping?"""
 	if not config_defined('landmarks'):
 		return []
 	landmark_string = config['landmarks']
@@ -172,7 +219,6 @@ def config_defined(key):
 		return True
 	return False
 
-
 def config_equal(key, value):
 	"""Is the specified key equal to the given value?"""
 	key   = clean(key)
@@ -182,8 +228,7 @@ def config_equal(key, value):
 			return True
 	return False
 
-
-def config_true(config, key):
+def config_true(key):
 	"""Is the specified key defined and true in the config object?"""
 	key = clean(key)
 	if key in config:
@@ -198,7 +243,7 @@ def clean(id):
 
 
 # Some accounting to happen on every import (mostly for config file making)
-config  = get_config()
+config	= get_config()
 if config_defined('logfile'):
 	logfile = os.path.join(cheesepi_dir, config['logfile'])
 	logging.basicConfig(filename=logfile, level=logging.INFO, format="%(asctime)s;%(levelname)s; %(message)s")
