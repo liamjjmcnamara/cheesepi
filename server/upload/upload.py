@@ -12,17 +12,21 @@ def index(req):
 	if not 'file' in req.form or not req.form['file'].filename:
 		return "Error: Please upload a file"
 
+	ethmac   = "unset"
+	password = "unset" 
+	if 'ethmac' in   req.form: ethmac   = req.form['ethmac']
+	if 'password' in req.form: password = req.form['password']
+	
+	user = auth_user(ethmac,password)
+
 	# Record which IP send this file
 	ip = req.get_remote_host(apache.REMOTE_NOLOOKUP)
 	
-	user = auth_user(req.form['ethmac'],"pass?")
 	return save_file(req.form['file'], ip, user)
 
-def ensure_dir(path):
-	if not os.path.exists(path):
-		os.makedirs(path)
+def auth_user(mac, password):
+	# shoulc check if this really is the user's MAC address
 
-def auth_user(mac,path):
 	return mac
 
 def save_file(fileitem, ip, user=None):
@@ -37,11 +41,17 @@ def save_file(fileitem, ip, user=None):
 	ensure_dir(host_dir)
 	filepath = os.path.join(host_dir, filename)
 
+	if os.path.exists(filepath):
+		return "Error: file already exists"
+
 	fd = open(filepath, 'wb')
 	while 1:
         	chunk = fileitem.file.read(100000)
         	if not chunk: break
         	fd.write (chunk)
-	message = 'The file "%s" was uploaded successfully from  %s' % (filepath, ip)
+	return 'The file "%s" was uploaded successfully from  %s' % (filepath, ip)
 
-	return message
+def ensure_dir(path):
+	if not os.path.exists(path):
+		os.makedirs(path)
+
