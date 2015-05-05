@@ -45,99 +45,158 @@ For example 00:aa:bb:cc:dd:ee 20-2015-14:00:01.txt
 """
 import sys
 from subprocess import Popen, PIPE
-import urllib2
-import uuid
-import socket
-import fcntl
-import struct
-from datetime import datetime
 import re
 import copy
-
-import MySQLdb
 
 # try to import cheesepi, i.e. it's on PYTHONPATH
 sys.path.append("/usr/local/")
 import cheesepi
 
+
+def measure(dao, landmarks, saveToFile=False):
+	trc = Traceroute()
+	hoplist = []
+	#Extract the ethernet MAC address of the PI
+	for landmark in landmarks:
+		startTime = cheesepi.utils.now()
+		tracerouteResult = getData(landmark)
+		endTime = cheesepi.utils.now()
+		trc, hoplist = reformat(tracerouteResult, startTime, endTime)
+		insertData(dao, trc, hoplist)
+
+#Execute traceroute function
+def getData(target):
+	#traceroute command"
+	execute = "traceroute %s"%(target)
+	#Executing the above shell command with pipe
+	result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
+	ret = result.stdout.read()
+	result.stdout.flush()
+	return ret
+
 #A Traceroute class to represent the Traceroute table
 class Traceroute(object):
 	StartingTime = None
 	EndingTime = None
-	EthernetMacAddress = None
-	CurrentMacAddress = None
 	SourceAddress = None
 	DestinationDomain = None
 	DestinationAddress = None
 
 #A Hop class to represent the Hop table
 class Hop(object):
+	_id = None
 	HopNumber = None
 	PacketNumber = None
 	PacketDestinationAddress = None
 	PacketDestinationDomain = None
 	RTT = None
 
-#main measure funtion
-def measure(targets = None, saveToFile=False):
-	trc = Traceroute()
-	#hop = Hop()
-	hoplist = []
-	if targets is None:
-				targets = []
-	database = MySQLdb.connect("localhost", "measurement", "MP4MDb", "Measurement")
-	curs=database.cursor()
 
-	#Extract the ethernet MAC address of the PI
-	ethmac = getEthMAC()
-	for target in targets:
-		startTime = datetime.now()
-		print "Traceroute for target started"
-		tracerouteResult = getData(target)
-		endTime = datetime.now()
-		print "Traceroute for target done"
-		if saveToFile:
-			"Writing to traceroute results to file"
-			writeFile(tracerouteResult, startTime, ethmac)
-		trc, hoplist = reformat(tracerouteResult, startTime, endTime, ethmac)
-		insertData(database, curs, trc, hoplist)
+#########################
+## Mac traceroute
+########################
+def parse_null(hop_count):
+	return {'hop_count': hop_count,
+		'domain1': "*", 'domain2': "*", 'domain3': "*",
+		'ip1'    : "*", 'ip2'    : "*", 'ip3'    : "*",
+		'delay1': -1, 'delay2': -1, 'delay3': -1, }
 
-	database.close()
+def parse_hop_1host(hop_count, host_fields):
+	return {'hop_count': hop_count,
+		'domain1': host_fields[0],
+		'domain2': host_fields[0],
+		'domain3': host_fields[0],
+		'ip1'    : host_fields[1],
+		'ip2'    : host_fields[1],
+		'ip3'    : host_fields[1],
+		'delay1': host_fields[2],
+		'delay2': host_fields[4],
+		'delay3': host_fields[6],
+		}
 
-		#general logging here? unable to connect etc
+def parse_hop_3host(hop_count, retry1, retry2, retry3):
+	retry1_fields = retry1.split()
+	retry2_fields = retry2.split()
+	retry3_fields = retry3.split()
+	return {'hop_count': hop_count,
+		'domain1': retry1_fields[0],
+		'domain2': retry1_fields[0],
+		'domain3': retry1_fields[0],
+		'ip1'   : retry1_fields[1],
+		'ip2'   : retry2_fields[1],
+		'ip3'   : retry3_fields[1],
+		'delay1': retry1_fields[2],
+		'delay2': retry2_fields[2],
+		'delay3': retry3_fields[2],
+		}
 
+def parse_mac(data):
+	hops=[]
+	lines = data.split()
+	lines.pop(0)
+	while (len(lines)>0):
+		line = lines.pop(0)
+		hop_count = int(line[:3].strip())
+		print hop_count
+		host_line = line[4:] # extract everything after hopcount
+		host_fields = host_line.split()
+		if len(host_fields)==3:
+			hops.extend(parse_null(hop_count))
+		elif len(host_fields)==8: # the same host responds for each retry
+			hop_entries = parse_hop_1host(hop_count,host_fields)
+			hops.extend(hop_entries)
+		elif len(host_fields)==4: # multiple hosts respond at this hop
+			retry2 = lines.pop(0)[4:] #pop the next 2 lines
+			retry3 = lines.pop(0)[4:]
+			hop_entries = parse_hop_3host(hop_count,host_line, retry2, retry3)
+			hops.extend(hop_entries)
+	print hops
+	return hops
+#############################
 
-#Writing traceroute results to file function
-def writeFile(tracerouteResult, startTime, ethmac):
-		fileName = "./" + ethmac+str(startTime) +".txt"
-		#print fileName
-		myfile = open(fileName, 'w')
+def parse(data):
+	hops=[]
+	lines = data.split()
+	lines.pop(0)
+	hop_count=-1
+	for line in lines:
+		hop_count = int(line[:3].strip())
+		host_fields = line[3:].split()
+		if len(host_fields)==3:
+			hops.extend(parse_null(hop_count))
+		elif len(host_fields)==8: # the same host responds for each retry
+			hop_entries = parse_hop_1host(hop_count,host_fields)
+			hops.extend(hop_entries)
+		elif len(host_fields)==11: # multiple hosts respond at this hop
+			hop_entries = parse_hop_3host(hop_count,host_line, retry2, retry3)
+			hops.extend(hop_entries)
 
-		myfile.write(tracerouteResult)
-		myfile.close()
-
-#Execute traceroute function
-def getData(target):
-		#traceroute command"
-		execute = "traceroute %s"%(target)
-		#Executing the above shell command with pipe
-		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
-	#Read the data from the pipe
-		ret = result.stdout.read()
-		result.stdout.flush()
-		return ret
+	while (len(lines)>0):
+		line = lines.pop(0)
+		print hop_count
+		host_line = line[4:] # extract everything after hopcount
+		host_fields = host_line.split()
+		if len(host_fields)==3:
+			hops.extend(parse_null(hop_count))
+		elif len(host_fields)==8: # the same host responds for each retry
+			hop_entries = parse_hop_1host(hop_count,host_fields)
+			hops.extend(hop_entries)
+		elif len(host_fields)==4: # multiple hosts respond at this hop
+			retry2 = lines.pop(0)[4:] #pop the next 2 lines
+			retry3 = lines.pop(0)[4:]
+			hop_entries = parse_hop_3host(hop_count,host_line, retry2, retry3)
+			hops.extend(hop_entries)
+	print hops
+	return hops
 
 #read the data from traceroute and reformat for database entry
-def reformat(data, startTime, endTime, ethmac):
+def reformat(data, startTime, endTime):
 	trc = Traceroute()
 	#hop = Hop()
 	hoplist = []
 	print "Structuring the traceroute result"
 	trc.StartingTime = startTime
 	trc.EndingTime = endTime
-	trc.EthernetMacAddress = ethmac
-	trc.CurrentMacAddress = getCurrMAC()
-	trc.SourceAddress = getSA()
 	#print data
 	lines = data.split("\n")
 	tmp = lines[0].split()
@@ -190,63 +249,34 @@ def reformat(data, startTime, endTime, ethmac):
 	return trc,hoplist
 
 
-#get the ethernet mac address of this device
-def getEthMAC(ifname = "eth0"):
-	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	info = fcntl.ioctl(s.fileno(), 0x8927,	struct.pack('256s', ifname[:15]))
-	return ''.join(['%02x:' % ord(char) for char in info[18:24]])[:-1]
-
-#get the currently using MAC address
-def getCurrMAC():
-		ret =':'.join(['{:02x}'.format((uuid.getnode() >> i) & 0xff) for i in range(0,8*6,8)][::-1])
-		return ret
-
-#get our source address
-def getSA():
-		ret = urllib2.urlopen('http://ip.42.pl/raw').read()
-		return ret
-
 #insert the tracetoute results into the database
-def insertData(database, cursor, trc, hoplist):
-	print "Inserting the results in to the database"
-	with database:
-		insertIntoTraceroute = """INSERT INTO Traceroute(sourceAddress, destinationDomain, destinationAddress,
-			startingTime, endingTime, ethernetMacAddress, currentMacAddress)
-			values (%s,%s,%s,%s,%s,%s,%s)"""
-		insertIntoHop = """INSERT INTO Hop(ID, hopNumber, packetNumber, packetDomainAddress, packetDestinationAddress,
-			RTT) values (%s,%s,%s,%s,%s,%s)"""
-		print "Writting to the Traceroute tabele"
-		cursor.execute(insertIntoTraceroute,(trc.SourceAddress, trc.DestinationDomain, trc.DestinationAddress,
-			trc.StartingTime.strftime('%Y-%m-%d %H:%M:%S'),
-			trc.EndingTime.strftime('%Y-%m-%d %H:%M:%S'),
-			trc.EthernetMacAddress, trc.CurrentMacAddress))
-		#Assigning the traceroute id to the hops
-		lastTracerouteID = "SELECT ID FROM Traceroute ORDER BY ID DESC LIMIT 1"
-		cursor.execute(lastTracerouteID)
-		id = cursor.fetchone()
-		print "writing to the Hop table"
-		for hop in hoplist:
-			cursor.execute(insertIntoHop, (id[0], hop.HopNumber, hop.PacketNumber, hop.PacketDestinationDomain,
-				hop.PacketDestinationAddress, hop.RTT))
+def insertData(dao, trc, hoplist):
+	#insertIntoTraceroute = """INSERT INTO Traceroute(sourceAddress, destinationDomain, destinationAddress,
+	#	startingTime, endingTime, ethernetMacAddress, currentMacAddress)
+	#	values (%s,%s,%s,%s,%s,%s,%s)"""
+	#insertIntoHop = """INSERT INTO Hop(ID, hopNumber, packetNumber, packetDomainAddress, packetDestinationAddress,
+	#	RTT) values (%s,%s,%s,%s,%s,%s)"""
 
+	print "Writting to the Traceroute tabele"
+	traceroute_id = dao.write_op("traceroute", trc.as_dict())
 
-		database.commit()
+	print "writing to the Hop table"
+	for hop in hoplist:
+		hop.traceroute = traceroute_id
+		dao.write_op("traceroot_hop",hop.as_dict())
 
 
 #parses arguments
 if __name__ == "__main__":
-	args = (sys.argv)
-	args = args[1:]
-	destinations = []
-	save = False
+	#general logging here? unable to connect etc
+	config = cheesepi.config.get_config()
+	dao = cheesepi.config.get_dao()
 
-	for arg in args:
+	landmarks = cheesepi.config.get_landmarks()
+	save_file = cheesepi.config.config_equal("ping_save_file","true")
 
-		if "-save=" in arg:
-				print "save!"
-				save = (arg.split("=")[1] in ['True', 'true'])
-		else:
-				destinations.append(str(arg))
+	print "Landmarks: ",landmarks
+	measure(dao, landmarks, save_file)
+	dao.close()
 
-measure(targets = destinations, saveToFile=save)
 
