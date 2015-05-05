@@ -95,6 +95,30 @@ class Hop(object):
 #########################
 ## Mac traceroute
 ########################
+def parse_mac(data):
+	hops=[]
+	lines = data.split()
+	lines.pop(0)
+	hop_count=-1
+	while (len(lines)>0):
+		line = lines.pop(0)
+		hop_count = int(line[:3].strip())
+		print hop_count
+		host_line = line[4:] # extract everything after hopcount
+		host_fields = host_line.split()
+		if len(host_fields)==3:
+			hops.extend(parse_null(hop_count))
+		elif len(host_fields)==8: # the same host responds for each retry
+			hop_entries = parse_hop_1host(hop_count,host_fields)
+			hops.extend(hop_entries)
+		elif len(host_fields)==4: # multiple hosts respond at this hop
+			retry2 = lines.pop(0)[4:] #pop the next 2 lines
+			retry3 = lines.pop(0)[4:]
+			hop_entries = parse_hop_3host(hop_count,host_line, retry2, retry3)
+			hops.extend(hop_entries)
+	print hops
+	return hops
+
 def parse_null(hop_count):
 	return {'hop_count': hop_count,
 		'domain1': "*", 'domain2': "*", 'domain3': "*",
@@ -130,65 +154,40 @@ def parse_hop_3host(hop_count, retry1, retry2, retry3):
 		'delay3': retry3_fields[2],
 		}
 
-def parse_mac(data):
-	hops=[]
-	lines = data.split()
-	lines.pop(0)
-	hop_count=-1
-	while (len(lines)>0):
-		line = lines.pop(0)
-		hop_count = int(line[:3].strip())
-		print hop_count
-		host_line = line[4:] # extract everything after hopcount
-		host_fields = host_line.split()
-		if len(host_fields)==3:
-			hops.extend(parse_null(hop_count))
-		elif len(host_fields)==8: # the same host responds for each retry
-			hop_entries = parse_hop_1host(hop_count,host_fields)
-			hops.extend(hop_entries)
-		elif len(host_fields)==4: # multiple hosts respond at this hop
-			retry2 = lines.pop(0)[4:] #pop the next 2 lines
-			retry3 = lines.pop(0)[4:]
-			hop_entries = parse_hop_3host(hop_count,host_line, retry2, retry3)
-			hops.extend(hop_entries)
-	print hops
-	return hops
 #############################
 
 def parse(data):
 	hops=[]
 	lines = data.split()
-	lines.pop(0)
-	hop_count=-1
-	for line in lines:
-		hop_count = int(line[:3].strip())
-		host_fields = line[3:].split()
-		if len(host_fields)==3:
-			hops.extend(parse_null(hop_count))
-		elif len(host_fields)==8: # the same host responds for each retry
-			hop_entries = parse_hop_1host(hop_count,host_fields)
-			hops.extend(hop_entries)
-		elif len(host_fields)==11: # multiple hosts respond at this hop
-			hop_entries = parse_hop_3host(hop_count,host_line, retry2, retry3)
-			hops.extend(hop_entries)
-
-	while (len(lines)>0):
-		line = lines.pop(0)
-		print hop_count
-		host_line = line[4:] # extract everything after hopcount
+	for line in lines[1:]:
+		hop_count   = int(line[:3].strip())
+		host_line   = line[4:] # extract everything after hopcount
 		host_fields = host_line.split()
 		if len(host_fields)==3:
 			hops.extend(parse_null(hop_count))
-		elif len(host_fields)==8: # the same host responds for each retry
-			hop_entries = parse_hop_1host(hop_count,host_fields)
-			hops.extend(hop_entries)
-		elif len(host_fields)==4: # multiple hosts respond at this hop
-			retry2 = lines.pop(0)[4:] #pop the next 2 lines
-			retry3 = lines.pop(0)[4:]
-			hop_entries = parse_hop_3host(hop_count,host_line, retry2, retry3)
+		else:
+			hop_entries = parse_hop(hop_count, host_fields)
 			hops.extend(hop_entries)
 	print hops
 	return hops
+
+def parse_hop(hop_count, host_fields):
+	if   len(host_fields)==8:
+		return {'hop_count': hop_count,
+			'domain1':host_fields[0],       'domain2':host_fields[0],        'domain3':host_fields[0],
+			'ip1'    :host_fields[1][1:-1], 'ip2'    :host_fields[1][1:-1],  'ip3'    :host_fields[1][1:-1],
+			'delay1' :float(host_fields[2]),'delay2' :float(host_fields[4]), 'delay3' :float(host_fields[6]),
+			}
+	elif len(host_fields)==11:
+		return {'hop_count': hop_count,
+			'domain1':host_fields[0],       'domain2':host_fields[4],       'domain3':host_fields[8],
+			'ip1'    :host_fields[1][1:-1], 'ip2'    :host_fields[5][1:-1], 'ip3'    :host_fields[9][1:-1],
+			'delay1' :float(host_fields[2]),'delay2' :float(host_fields[6]),'delay3' :float(host_fields[10]),
+			}
+	else:
+		print "Error parsing host line: "+str(host_fields)
+		exit(1)
+
 
 #read the data from traceroute and reformat for database entry
 def reformat(data, startTime, endTime):
