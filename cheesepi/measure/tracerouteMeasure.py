@@ -134,6 +134,7 @@ def parse_mac(data):
 	hops=[]
 	lines = data.split()
 	lines.pop(0)
+	hop_count=-1
 	while (len(lines)>0):
 		line = lines.pop(0)
 		hop_count = int(line[:3].strip())
