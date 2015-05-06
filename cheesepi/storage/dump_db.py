@@ -21,25 +21,16 @@ def perform_database_dump():
     dump_data = dao.dump(last_updated)
     ethmac = cheesepi.utils.getCurrMAC()
     parameters = {'ethmac': ethmac}
-    #files = {'file': ('unusedfilename.tar.gz', zlib.compress(dump_data)), }
-    #fd = io.BytesIO(dump_data)
-    #zdata = zipfile.ZipFile(fd)
+    
+    # make a temp file that dies on running out of scope
     fd = tempfile.TemporaryFile()
+    # make a zipfile object with this file handle
     zfd = zipfile.ZipFile(fd,'w', zipfile.ZIP_DEFLATED)
     zfd.writestr("file.z",dump_data)
-    fd.flush()
-    fd.seek(0)
+    fd.flush() 
+    fd.seek(0) # flush and reset file handle
 
-    #buff = StringIO.StringIO()
-    #zip_archive = zipfile.ZipFile(buff, mode='w')
-    #zip_archive.writestr("file.dat",dump_data)
-    #zip_archive.close()
-    
-    #zfd = zipfile.ZipFile(StringIO.StringIO(), 'a')
-    #zfd.writestr("filename.z",dump_data)
-    #zfd.close()
     files = {'file': ('archive.z', fd), }
-
     r = requests.post(dump_url, data=parameters, files=files)
     print r.text
     #fd.close()
