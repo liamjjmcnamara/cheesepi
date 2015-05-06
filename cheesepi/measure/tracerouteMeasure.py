@@ -3,14 +3,14 @@
   All rights reserved.
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
-      * Redistributions of source code must retain the above copyright
-        notice, this list of conditions and the following disclaimer.
-      * Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
-      * Neither the name of The Swedish Institute of Computer Science nor the
-        names of its contributors may be used to endorse or promote products
-        derived from this software without specific prior written permission.
+	  * Redistributions of source code must retain the above copyright
+		notice, this list of conditions and the following disclaimer.
+	  * Redistributions in binary form must reproduce the above copyright
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
+	  * Neither the name of The Swedish Institute of Computer Science nor the
+		names of its contributors may be used to endorse or promote products
+		derived from this software without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -43,215 +43,157 @@ ethernet mac address + the current date.
 For example 00:aa:bb:cc:dd:ee 20-2015-14:00:01.txt
 
 """
-import os
 import sys
-from subprocess import Popen, PIPE, STDOUT
-import urllib2
-import uuid
-import socket
-import fcntl
-import struct
-from datetime import datetime
+from subprocess import Popen, PIPE
 import re
 import copy
 
-import MySQLdb
-
 # try to import cheesepi, i.e. it's on PYTHONPATH
-try:
-    import cheesepi
-except:
-    # try default location
-    sys.path.append("/usr/local/")
-    import cheesepi
+sys.path.append("/usr/local/")
+import cheesepi
 
-#A Traceroute class to represent the Traceroute table
-class Traceroute(object):
-	StartingTime = None
-	EndingTime = None
-	EthernetMacAddress = None
-	CurrentMacAddress = None
-	SourceAddress = None
-	DestinationDomain = None
-	DestinationAddress = None
 
-#A Hop class to represent the Hop table
-class Hop(object):
-	HopNumber = None
-	PacketNumber = None
-	PacketDestinationAddress = None
-	PacketDestinationDomain = None
-	RTT = None
-
-#main measure funtion
-def measure(targets = None, saveToFile=False):
-	trc = Traceroute()
-	#hop = Hop()
+def measure(dao, landmarks, saveToFile=False):
 	hoplist = []
-	if targets is None:
-                targets = []
-	database = MySQLdb.connect("localhost", "measurement", "MP4MDb", "Measurement")
-        curs=database.cursor()
-
-        #Extract the ethernet MAC address of the PI
-        ethmac = getEthMAC()
-        for target in targets:
-                startTime = datetime.now()
-		print "Traceroute for target started"
-                tracerouteResult = getData(target)
-                endTime = datetime.now()
-		print "Traceroute for target done"
-                if saveToFile:
-			print "Writing to traceroute results to file"
-                        writeFile(tracerouteResult, startTime, ethmac)
-                trc, hoplist = reformat(tracerouteResult, startTime, endTime, ethmac)
-		insertData(database, curs, trc, hoplist)
-
-        database.close()
-
-        #general logging here? unable to connect etc
-
-
-#Writing traceroute results to file function
-def writeFile(tracerouteResult, startTime, ethmac):
-        fileName = "./" + ethmac+str(startTime) +".txt"
-        #print fileName
-        myfile = open(fileName, 'w')
-
-        myfile.write(tracerouteResult)
-        myfile.close()
+	#Extract the ethernet MAC address of the PI
+	for landmark in landmarks:
+		startTime = cheesepi.utils.now()
+		output = getData(landmark)
+		endTime = cheesepi.utils.now()
+		#trc, hoplist = reformat(tracerouteResult, startTime, endTime)
+		traceroute, hoplist = parse(output, startTime, endTime)
+		insertData(dao, traceroute, hoplist)
 
 #Execute traceroute function
 def getData(target):
-        #traceroute command"
-        execute = "traceroute %s"%(target)
-        #Executing the above shell command with pipe
-        result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
-	#Read the data from the pipe
-        ret = result.stdout.read()
-        result.stdout.flush()
-        return ret
-#read the data from traceroute and reformat for database entry
-def reformat(data, startTime, endTime, ethmac):
-        trc = Traceroute()
-	#hop = Hop()
-	hoplist = []
-	print "Structuring the traceroute result"
-        trc.StartingTime = startTime
-        trc.EndingTime = endTime
-        trc.EthernetMacAddress = ethmac
-        trc.CurrentMacAddress = getCurrMAC()
-        trc.SourceAddress = getSA()
-	#print data
-        lines = data.split("\n")
-	tmp = lines[0].split()
-        trc.DestinationDomain = str(tmp[2])
-	trc.DestinationAddress = re.sub("[(),]", "", str(tmp[3]))
-	#print len(lines)
-        for line in lines[1:len(lines)-1]:
-		i = 1 # Line length counter
-		j = 1 #packet counter
-		hop = Hop()
-		ip = None
-		domain = None
-		temp = line.split()
-		#print temp[0]
-		hop.HopNumber = int(temp[0])
-		#till the end of the line
-		while i < len(temp):
-			#print temp[i]
-			if temp[i] == "*":
-				hop.PacketNumber = j
-				hop.PacketDestinationAddress = None
-				hop.PacketDestinationDomain = None
-				hop.RTT = -1
-				hopcopy = copy.copy(hop)
-				hoplist.append(hopcopy)
-				i = i + 1
-				j = j + 1
-                	elif "(" in temp[i+1]:
-				hop.PacketNumber = j
-				hop.PacketDestinationAddress = re.sub("[(),]", "",str(temp[i+1]))
-				hop.PacketDestinationDomain =  str(temp[i])
-				hop.RTT = float(temp[i+2])
-				hopcopy = copy.copy(hop)
-				hoplist.append(hopcopy)
-				i = i + 4
-                        	j = j + 1
-
-                	elif temp[i+1] == "ms":
-				hop.PacketNumber = j
-				hop.PacketDestinationAddress = ip
-				hop.PacketDestinationDomain = domain
-				hop.RTT = float(str(temp[i]))
-				hopcopy = copy.copy(hop)
-				hoplist.append(hopcopy)
-				i = i + 2
-				j = j + 1
-			ip = hop.PacketDestinationAddress
-			domain = hop.PacketDestinationDomain
-
-	return trc,hoplist
+	#traceroute command"
+	execute = "traceroute %s"%(target)
+	#Executing the above shell command with pipe
+	result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
+	ret = result.stdout.read()
+	result.stdout.flush()
+	return ret
 
 
-#get the ethernet mac address of this device
-def getEthMAC(ifname = "eth0"):
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', ifname[:15]))
-    return ''.join(['%02x:' % ord(char) for char in info[18:24]])[:-1]
+def parse_null(hop_count):
+	return {'hop_count': hop_count,
+		'domain1': "*", 'domain2': "*", 'domain3': "*",
+		'ip1'    : "*", 'ip2'    : "*", 'ip3'    : "*",
+		'delay1': -1, 'delay2': -1, 'delay3': -1, }
 
-#get the currently using MAC address
-def getCurrMAC():
-        ret =':'.join(['{:02x}'.format((uuid.getnode() >> i) & 0xff) for i in range(0,8*6,8)][::-1])
-        return ret
+#############################
+# Parse Linux command
+#
 
-#get our source address
-def getSA():
-        ret = urllib2.urlopen('http://ip.42.pl/raw').read()
-        return ret
+def parse(data, start_time, end_time):
+	lines = data.split("\n")
+	traceroute = parse_destination(lines[0], start_time, end_time)
+	hops=[]
+	for line in lines[1:-1]:
+		hop_count = int(line[:3].strip())
+		hops.append(parse_hop(hop_count, line[4:]))
+	print "hops: ",hops
+	return traceroute, hops
+
+def parse_destination(destination, start_time, end_time):
+	traceroute = {}
+	fields = destination.split()
+	traceroute['domain']     = fields[2]
+	traceroute['ip']         = fields[3][1:-1]
+	traceroute['start_time'] = start_time
+	traceroute['end_time']   = end_time
+	return traceroute
+
+def parse_hop(hop_count, host_line):
+	"""This does not yet deal with network problems"""
+	hop={'hop_count':hop_count}
+	retry="1" # string accumulator
+	for match in re.finditer(r"\*|(([\w\.-]+) \(([\d\.]+)\)  ([\d\.ms ]+) )", host_line):
+		if match.group(0)=="*": # found a non response
+			hop['domain'+retry]="*"
+			hop['ip'+retry]="*"
+			hop['delay'+retry]="-1"
+		else: # some host reploiued N times
+			for delay in match.group(4).split("ms"):
+				hop['domain'+retry]= match.group(2)
+				hop['ip'+retry]    = match.group(3)
+				hop['delay'+retry] = delay
+				retry = str(int(retry)+1) # inc but keep as string
+		retry = str(int(retry)+1) # inc but keep as string
+	return hop
+
+
+#########################
+## Mac traceroute
+########################
+def parse_mac(data):
+	hops=[]
+	lines = data.split()
+	lines.pop(0)
+	hop_count=-1
+	while (len(lines)>0):
+		line = lines.pop(0)
+		hop_count = int(line[:3].strip())
+		print hop_count
+		host_line = line[4:] # extract everything after hopcount
+		host_fields = host_line.split()
+		if len(host_fields)==3:
+			hops.extend(parse_null(hop_count))
+		elif len(host_fields)==8: # the same host responds for each retry
+			hop_entries = parse_hop_1host(hop_count,host_fields)
+			hops.extend(hop_entries)
+		elif len(host_fields)==4: # multiple hosts respond at this hop
+			retry2 = lines.pop(0)[4:] #pop the next 2 lines
+			retry3 = lines.pop(0)[4:]
+			hop_entries = parse_hop_3host(hop_count,host_line, retry2, retry3)
+			hops.extend(hop_entries)
+	print hops
+	return hops
+
+
+def parse_hop_1host(hop_count, host_fields):
+	return {'hop_count': hop_count,
+		'domain1': host_fields[0], 'domain2': host_fields[0], 'domain3': host_fields[0],
+		'ip1'    : host_fields[1], 'ip2'    : host_fields[1], 'ip3'    : host_fields[1],
+		'delay1': host_fields[2], 'delay2': host_fields[4], 'delay3': host_fields[6],
+		}
+
+def parse_hop_3host(hop_count, retry1, retry2, retry3):
+	retry1_fields = retry1.split()
+	retry2_fields = retry2.split()
+	retry3_fields = retry3.split()
+	return {'hop_count': hop_count,
+		'domain1': retry1_fields[0], 'domain2': retry1_fields[0], 'domain3': retry1_fields[0],
+		'ip1'   : retry1_fields[1], 'ip2'   : retry2_fields[1], 'ip3'   : retry3_fields[1],
+		'delay1': retry1_fields[2], 'delay2': retry2_fields[2], 'delay3': retry3_fields[2],
+		}
+###
+
 
 #insert the tracetoute results into the database
-def insertData(database, cursor, trc, hoplist):
-	print "Inserting the results in to the database"
-        with database:
-                insertIntoTraceroute = """INSERT INTO Traceroute(sourceAddress, destinationDomain, destinationAddress,
-						startingTime, endingTime, ethernetMacAddress, currentMacAddress)
-						values (%s,%s,%s,%s,%s,%s,%s)"""
-		insertIntoHop = """INSERT INTO Hop(ID, hopNumber, packetNumber, packetDomainAddress, packetDestinationAddress,
-						RTT) values (%s,%s,%s,%s,%s,%s)"""
-		print "Writting to the Traceroute tabele"
-		cursor.execute(insertIntoTraceroute,(trc.SourceAddress, trc.DestinationDomain, trc.DestinationAddress,
-						      trc.StartingTime.strftime('%Y-%m-%d %H:%M:%S'),
-						      trc.EndingTime.strftime('%Y-%m-%d %H:%M:%S'),
-						      trc.EthernetMacAddress, trc.CurrentMacAddress))
-		#Assigning the traceroute id to the hops
-		lastTracerouteID = "SELECT ID FROM Traceroute ORDER BY ID DESC LIMIT 1"
-		cursor.execute(lastTracerouteID)
-		id = cursor.fetchone()
-		print "writing to the Hop table"
-		for hop in hoplist:
-			cursor.execute(insertIntoHop, (id[0], hop.HopNumber, hop.PacketNumber, hop.PacketDestinationDomain,
-						       hop.PacketDestinationAddress, hop.RTT))
+def insertData(dao, traceroute, hoplist):
+	print "Writting to the Traceroute tabele"
+	traceroute_id = dao.write_op("traceroute", traceroute)
 
-
-                database.commit()
+	print "writing to the Hop table"
+	for hop in hoplist:
+		print hop
+		#hop.traceroute = traceroute_id
+		hop['traceroute_id'] = traceroute_id
+		dao.write_op("traceroot_hop",hop)
 
 
 #parses arguments
 if __name__ == "__main__":
+	#general logging here? unable to connect etc
+	config = cheesepi.config.get_config()
+	dao = cheesepi.config.get_dao()
 
-	args = (sys.argv)
-        args = args[1:]
-	destinations = []
-        save = False
+	landmarks = cheesepi.config.get_landmarks()
+	save_file = cheesepi.config.config_equal("ping_save_file","true")
 
-        for arg in args:
+	print "Landmarks: ",landmarks
+	measure(dao, landmarks, save_file)
+	dao.close()
 
-                if "-save=" in arg:
-                        print "save!"
-                        save = (arg.split("=")[1] in ['True', 'true'])
-                else:
-                        destinations.append(str(arg))
-
-        measure(targets = destinations, saveToFile=save)
 
