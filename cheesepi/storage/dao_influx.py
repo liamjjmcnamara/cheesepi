@@ -106,14 +106,26 @@ class DAO_influx(dao.DAO):
 	# Note that assignments are not deleted, but the most recent assignemtn
 	# is always returned
 	def read_user_attribute(self, attribute):
-		user = self.conn.query('select %s from user limit 1;' % attribute)
+		try:
+			user = self.conn.query('select %s from user limit 1;' % attribute)
+		except Exception as e:
+			msg = "Problem connecting to InfluxDB: "+str(e)
+			print msg
+			logging.error(msg)
+			exit(1)
 		return user
 
 	def write_user_attribute(self, attribute, value):
 		# check we dont already exist
-		print "Saving user attribute: %s to %s " % (attribute, value)
-		json = self.to_json("user", {attribute:value})
-		return self.conn.write_points(json)
+		try:
+			print "Saving user attribute: %s to %s " % (attribute, value)
+			json = self.to_json("user", {attribute:value})
+			return self.conn.write_points(json)
+		except Exception as e:
+			msg = "Problem connecting to InfluxDB: "+str(e)
+			print msg
+			logging.error(msg)
+			exit(1)
 
 
 
