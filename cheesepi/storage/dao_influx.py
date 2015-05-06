@@ -34,6 +34,7 @@ import json
 #from influxdb import InfluxDBClient
 # legacy module
 from influxdb.influxdb08 import InfluxDBClient
+from influxdb.influxdb08.client import InfluxDBClientError
 
 import cheesepi
 import dao
@@ -61,11 +62,11 @@ class DAO_influx(dao.DAO):
 		series = self.conn.query("list series")
 		dumped_db = ""
 		# maybe prune series?
-		print "series",series
+		print "series",series[0]['points']
 
-		for s in series:
-			print s['name']
-			series_name = s['name']
+		for s in series[0]['points']:
+			print s[1]
+			series_name = s[1]
 			dumped_series = self.conn.query('select * from '+series_name+' where time > now() - 1d limit 1;')
 			print dumped_series
 			dumped_db += json.dumps(dumped_series)+"\n"
@@ -106,14 +107,29 @@ class DAO_influx(dao.DAO):
 	# Note that assignments are not deleted, but the most recent assignemtn
 	# is always returned
 	def read_user_attribute(self, attribute):
-		user = self.conn.query('select %s from user limit 1;' % attribute)
-		return user
+		try:
+			value = self.conn.query('select %s from user limit 1;' % attribute)
+		except InfluxDBClientError:
+			value = -1
+			#msg = "Problem connecting to InfluxDB: "+str(e)
+			#print msg
+			#logging.error(msg)
+		except Exception as e:
+			print e
+			exit(1)
+		return value
 
 	def write_user_attribute(self, attribute, value):
 		# check we dont already exist
-		print "Saving user attribute: %s to %s " % (attribute, value)
-		json = self.to_json("user", {attribute:value})
-		return self.conn.write_points(json)
+		try:
+			print "Saving user attribute: %s to %s " % (attribute, value)
+			json = self.to_json("user", {attribute:value})
+			return self.conn.write_points(json)
+		except Exception as e:
+			msg = "Problem connecting to InfluxDB: "+str(e)
+			print msg
+			logging.error(msg)
+			exit(1)
 
 
 
