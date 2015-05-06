@@ -36,7 +36,7 @@ def auth_user(mac, password):
 
 def save_file(fileitem, ip, user=None):
 	# strip leading path from file name to avoid directory traversal attacks
-	filename = NOW+".tar.gz"
+	filename = NOW+".z"
 	if user!=None:
 		filename = user+"-"+filename
 	#os.path.basename(fileitem.filename)
