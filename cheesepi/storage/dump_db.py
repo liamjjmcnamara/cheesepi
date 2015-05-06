@@ -1,29 +1,28 @@
 #!/usr/bin/env python
 
+import sys
 import tempfile
 import gzip
-import cheesepi
 import requests
 
+sys.path.append("/usr/local/")
+import cheesepi
 
 dump_url = "http://cheesepi.sics.se/upload.py"
 
-def upload_dump():
-    pass
-
-def my_callback(monitor):
-    # Your callback function
-    print monitor.bytes_read
 
 def perform_database_dump():
     dao = cheesepi.config.get_dao()
+    ethmac = cheesepi.utils.getCurrMAC()
 
     last_updated = cheesepi.config.get_last_updated(dao)
-    dao.dump(last_updated)
+    dump_data = dao.dump(last_updated)
+    print ethmac
 
-    files = {'file': ('report.csv', 'some,data,to,send\nanother,row,to,send\n')}
+    data = {'ethmac': ethmac}
+    files = {'file': ('unusedfilename.tar.gz', dump_data), }
 
-    r = requests.post(dump_url, files=files)
+    r = requests.post(dump_url, data=data, files=files)
     print r.text
 
 
