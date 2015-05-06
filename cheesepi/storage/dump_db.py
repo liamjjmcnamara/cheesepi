@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 import sys
-import tempfile
-import gzip
+import zlib
+import io
+import zipfile
+import StringIO
 import requests
 
 sys.path.append("/usr/local/")
@@ -17,12 +19,19 @@ def perform_database_dump():
 
     last_updated = cheesepi.config.get_last_updated(dao)
     dump_data = dao.dump(last_updated)
-    print ethmac
 
-    data = {'ethmac': ethmac}
-    files = {'file': ('unusedfilename.tar.gz', dump_data), }
+    parameters = {'ethmac': ethmac}
+    #files = {'file': ('unusedfilename.tar.gz', zlib.compress(dump_data)), }
 
-    r = requests.post(dump_url, data=data, files=files)
+    #fd = io.BytesIO(dump_data)
+    #zdata = zipfile.ZipFile(fd)
+    
+    zfd = zipfile.ZipFile(StringIO.StringIO(), 'a')
+    zfd.writestr("filename.z",dump_data)
+    zfd.close()
+    files = {'file': ('unusedfilename.tar.gz', zfd), }
+
+    r = requests.post(dump_url, data=parameters, files=files)
     print r.text
 
 
