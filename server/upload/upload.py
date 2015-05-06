@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import datetime
 from mod_python import apache
@@ -26,6 +27,10 @@ def index(req):
 
 def auth_user(mac, password):
 	# shoulc check if this really is the user's MAC address
+
+	# check Eth MAC is well-formed
+	if not re.match("([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})",mac):
+		return "unset"
 
 	return mac
 
