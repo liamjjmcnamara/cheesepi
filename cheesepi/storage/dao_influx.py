@@ -31,10 +31,10 @@ import hashlib
 import json
 
 # Influx
-from influxdb import InfluxDBClient
+#from influxdb import InfluxDBClient
 # legacy module
-#from influxdb.influxdb08 import InfluxDBClient
-#from influxdb.influxdb08.client import InfluxDBClientError
+from influxdb.influxdb08 import InfluxDBClient
+from influxdb.influxdb08.client import InfluxDBClientError
 
 import cheesepi
 import dao
