@@ -1,6 +1,7 @@
 # Where shall we install CheesePi?
 # This can be changed but will currently break the Influx and Grafana config files
-INSTALL_DIR=/usr/local/cheesepi
+# following should end up being /usr/local/cheesepi
+INSTALL_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 
 # Quit if any command fails...
 set -e
@@ -17,6 +18,7 @@ fi
 # Influx needs to spool up
 INFLUX_DIR=$INSTALL_DIR/tools/influxdb
 INFLUX_CMD="$INFLUX_DIR/influxdb -config=$INFLUX_DIR/config.toml"
+echo $INFLUX_CMD
 nohup $INFLUX_CMD &
 sleep 5
 
@@ -40,6 +42,7 @@ if [ ! -f $INSTALL_DIR/webserver/dashboard/config.js ]; then
 	sudo cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_influxdb_server/$LOCAL_IP/" >$INSTALL_DIR/webserver/dashboard/config.js
 fi
 # and the webserver serving a grafana dashboard
+echo "$INSTALL_DIR/webserver/webserver.py"
 $INSTALL_DIR/webserver/webserver.py &
 sleep 5
 
@@ -63,8 +66,7 @@ fi
 # Very quick and dirty solution
 echo "Waiting for Influx to definitely be started..."
 sleep 20
-curl -s "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"cheesepi\"}"
-curl -s "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"grafana\"}"
+$INSTALL_DIR/install/installDB.sh
 
 
 ## Inform user of dashboard website

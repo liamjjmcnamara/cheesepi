@@ -256,7 +256,11 @@ def clean(id):
 config	= get_config()
 if config_defined('logfile'):
 	logfile = os.path.join(cheesepi_dir, config['logfile'])
-	logging.basicConfig(filename=logfile, level=logging.INFO, format="%(asctime)s;%(levelname)s; %(message)s")
+	try:
+		logging.basicConfig(filename=logfile, level=logging.INFO, format="%(asctime)s;%(levelname)s; %(message)s")
+	except:
+		print "Error: failed to open log %s, probably lacking permissions" % logfile
+		exit(1)
 
 
 if __name__ == "__main__":

@@ -56,7 +56,7 @@ def measure(config=None):
     # Run the measurement suite
     # TODO: convert this from program execution into mathod calling
     for action in actions:
-        if cheesepi.config.config_true(config, action):
+        if cheesepi.config.config_true(action):
             run([config['cheesepi_dir']+"/measure/"+action+".py"])
 
     # should we upload a dump of collected data to the server?
