@@ -33,7 +33,7 @@ sys.path.append("/usr/local/")
 import cheesepi
 
 # all scripts that should be run
-actions = ["localMeasure", "pingMeasure", "httpingMeasure", "wifiMeasure"] #"udpMeasure", 'voipMeasure']
+actions = ["localMeasure", "pingMeasure", "httpingMeasure", "wifiMeasure" "traceroute"] #"udpMeasure", 'voipMeasure']
 
 def run(cmd):
     """Execute the given command, and log failures"""
@@ -63,7 +63,7 @@ def measure(config=None):
     if cheesepi.config.should_dump():
         # in another process! (will take a while)
         print "Should dump data!"
-        dumpcall = [config['cheesepi_dir']+"/storage/dump.sh"]
+        dumpcall = [config['cheesepi_dir']+"/storage/dump_db.py"]
         run(dumpcall)
 
     # Update the chesepi distribution?

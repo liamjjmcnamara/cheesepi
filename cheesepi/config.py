@@ -120,12 +120,16 @@ def get_dao():
 	exit(1)
 
 
-def get_last_updated(dao):
+def set_last_updated(dao=None):
+	if dao==None:
+		dao = get_dao()
+	dao.write_user_attribute("last_updated",cheesepi.utils.now())
+
+def get_last_updated(dao=None):
 	"""When did we last update our code from the central server?"""
 	if dao==None:
 		dao = get_dao()
 	last_updated = dao.read_user_attribute("last_updated")
-
 	# convert to seconds
 	return last_updated
 
@@ -144,7 +148,12 @@ def should_update(dao=None):
 	return False
 
 
-def get_last_dumped(dao):
+def set_last_dumped(dao=None):
+	if dao==None:
+		dao = get_dao()
+	dao.write_user_attribute("last_dumped", cheesepi.utils.now())
+
+def get_last_dumped(dao=None):
 	"""When did we last dump our data to the central server?"""
 	if dao==None:
 		dao = get_dao()
@@ -211,6 +220,7 @@ def get_landmarks():
 	landmark_string = config['landmarks']
 	landmarks = landmark_string.split()
 	return landmarks
+
 
 def config_defined(key):
 	"""Is the specified key defined and true in the config object?"""
