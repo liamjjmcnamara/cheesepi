@@ -19,7 +19,7 @@ else
 	# take the current version of the repos and place it on the distribution server
 	# for the Pis to download from.
 	#rsync -avzhe ssh dist/* pi@grayling.sics.se:dist
-	tar -cvzf cheesepi.tar.gz cheesepi/	
+	tar -czf cheesepi.tar.gz cheesepi/	
 fi
 
 echo -e "\nNow copy cheesepi.tar.gz to the distribution location!\n"
