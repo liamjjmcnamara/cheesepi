@@ -11,5 +11,8 @@ nohup sudo $INFLUX_CMD >&/dev/null &
 # and the webserver serving a grafana dashboard
 echo "Running: $INSTALL_DIR/webserver/webserver.py"
 sudo $INSTALL_DIR/webserver/webserver.py &
-sleep 5
 
+sleep 10
+
+
+$INSTALL_DIR/install/make_influx_DBs.sh
