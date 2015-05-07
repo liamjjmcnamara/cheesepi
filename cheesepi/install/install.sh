@@ -3,6 +3,11 @@
 # following should end up being /usr/local/cheesepi
 INSTALL_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 
+# # Install required OS software
+echo "Enter root pass to enable apt-get software install if prompted..."
+# Ensure we have uptodate package definition
+sudo apt-get update
+
 # Quit if any command fails...
 set -e
 
@@ -11,22 +16,11 @@ set -e
 LOCAL_IP=`hostname -I |head -n1| tr -d '[[:space:]]'`
 
 # Copy Influx config if it doesnt exist
-echo "Starting InfluxDB..."
 if [ ! -f $INSTALL_DIR/tools/influxdb/config.toml ]; then
 	cp $INSTALL_DIR/tools/influxdb/config.sample.toml $INSTALL_DIR/tools/influxdb/config.toml
 fi
-# Influx needs to spool up
-INFLUX_DIR=$INSTALL_DIR/tools/influxdb
-INFLUX_CMD="$INFLUX_DIR/influxdb -config=$INFLUX_DIR/config.toml"
-echo $INFLUX_CMD
-nohup $INFLUX_CMD &
-sleep 5
 
 
-# # Install required OS software
-echo "Enter root pass to enable apt-get software install if prompted..."
-# Ensure we have uptodate package definition
-sudo apt-get update
 
 # Optional software for speed improvements (through a binary module)
 sudo apt-get install build-essential python-dev
@@ -41,10 +35,10 @@ sudo pip install cherrypy influxdb pymongo
 if [ ! -f $INSTALL_DIR/webserver/dashboard/config.js ]; then
 	sudo cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_influxdb_server/$LOCAL_IP/" >$INSTALL_DIR/webserver/dashboard/config.js
 fi
-# and the webserver serving a grafana dashboard
-echo "$INSTALL_DIR/webserver/webserver.py"
-$INSTALL_DIR/webserver/webserver.py &
-sleep 5
+
+# start the influx and web servers
+$INSTALL_DIR/install/start_servers.sh
+sleep 10
 
 
 ## Have both Influx and webserver start on boot
@@ -64,9 +58,9 @@ fi
 
 ## Create Influx 'cheesepi' and 'grafana' databases
 # Very quick and dirty solution
-echo "Waiting for Influx to definitely be started..."
+echo "Starting InfluxDB..." echo "Waiting for Influx to definitely be started..."
 sleep 20
-$INSTALL_DIR/install/installDB.sh
+$INSTALL_DIR/install/install_influx_DBs.sh
 
 
 ## Inform user of dashboard website
