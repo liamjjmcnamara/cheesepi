@@ -4,12 +4,21 @@
 INSTALL_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 
 # # Install required OS software
-echo "Enter root pass to enable apt-get software install if prompted..."
+echo -e "\nEnter root pass to enable apt-get software install if prompted."
+echo "Updating apt-get sources:"
 # Ensure we have uptodate package definition
 sudo apt-get update
 
 # Quit if any command fails...
 set -e
+
+
+echo -e "\nInstalling required software:"
+# latter two only for faster binary python modules
+sudo apt-get install httping python-pip python-mysqldb build-essential python-dev
+# add python modules
+sudo pip install cherrypy influxdb pymongo
+
 
 # Discover local IP address
 # To be used in the grafana configuration (so it knows where the Influx DB is)
@@ -22,18 +31,9 @@ fi
 
 
 
-# Optional software for speed improvements (through a binary module)
-sudo apt-get install build-essential python-dev
-
-sudo apt-get install httping python-pip python-mysqldb
-# include ntpdate ?
-# add python modules
-sudo pip install cherrypy influxdb pymongo
-
-
 ## Copy the Grafana config file, adding the local IP address
 if [ ! -f $INSTALL_DIR/webserver/dashboard/config.js ]; then
-	sudo cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_influxdb_server/$LOCAL_IP/" >$INSTALL_DIR/webserver/dashboard/config.js
+	sudo cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_influxdb_server/$LOCAL_IP/" | sudo tee $INSTALL_DIR/webserver/dashboard/config.js > /dev/null
 fi
 
 # start the influx and web servers
@@ -45,24 +45,26 @@ sleep 10
 #sudo echo $INFLUX_CMD >> /etc/rc.local
 #echo $INFLUX_CMD | sudo tee --append /etc/rc.local
 if ! grep --quiet influxdb /etc/inittab; then
-	echo -e "\nC1:2345:boot:$INFLUX_CMD" | sudo tee --append /etc/inittab
-	echo "W1:2345:boot:$INSTALL_DIR/webserver/webserver.py" | sudo tee --append /etc/inittab
+	echo -e "\nC1:2345:boot:$INFLUX_CMD" | sudo tee --append /etc/inittab > /dev/null
+	echo "W1:2345:boot:$INSTALL_DIR/webserver/webserver.py" | sudo tee --append /etc/inittab > /dev/null
 fi
 
 
 ## Install a crontab entry so that $INSTALL_DIR/measure/measure.py is run
 if ! grep --quiet measure.py /etc/crontab; then
-	echo -e "\n*/5 *   * * *   root    /usr/local/cheesepi/measure/measure.py" | sudo tee --append /etc/crontab
+	echo -e "\n*/5 *   * * *   root    /usr/local/cheesepi/measure/measure.py" | sudo tee --append /etc/crontab > /dev/null
 fi
 
 
 ## Create Influx 'cheesepi' and 'grafana' databases
 # Very quick and dirty solution
-echo "Starting InfluxDB..." echo "Waiting for Influx to definitely be started..."
+echo -e "\nWaiting for Influx to spool before making databases..."
 sleep 20
-$INSTALL_DIR/install/install_influx_DBs.sh
+$INSTALL_DIR/install/make_influx_DBs.sh
 
 
 ## Inform user of dashboard website
-echo -e "\nInstalled!\nVisit $LOCAL_IP:8080/dashboard to see your dashboard!\n"
+echo -e "\n\nInstalled!\nVisit http://$LOCAL_IP:8080/dashboard to see your dashboard!\n"
+
+echo "If the servers have not started, run the the $INSTALL_DIR/install/start_servers.sh script"
 
