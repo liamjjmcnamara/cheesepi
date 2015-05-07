@@ -37,7 +37,7 @@ sudo pip install cherrypy influxdb pymongo
 
 ## Copy the Grafana config file, adding the local IP address
 if [ ! -f $INSTALL_DIR/webserver/dashboard/config.js ]; then
-	cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_influxdb_server/$LOCAL_IP/" >$INSTALL_DIR/webserver/dashboard/config.js
+	sudo cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_influxdb_server/$LOCAL_IP/" >$INSTALL_DIR/webserver/dashboard/config.js
 fi
 # and the webserver serving a grafana dashboard
 $INSTALL_DIR/webserver/webserver.py &

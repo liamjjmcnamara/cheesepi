@@ -5,8 +5,8 @@ import requests
 import tarfile
 import sys
 
-sys.path.append("/usr/local")
-import cheesepi
+install_dir = "/usr/local"
+print "Downloading a CheesePi install into "+install_dir+"..."
 
 # Location of the most recent release of the CheesePi code
 code_url = "http://cheesepi.sics.se/files/cheesepi.tar.gz"
@@ -22,9 +22,8 @@ if response.status_code!=200:
     print "Error: file %s was not available on server" % code_url
     exit(1)
 
-print(response.headers)
 lastmodified = response.headers['last-modified']
-print lastmodified
+#print lastmodified
 
 # if we have downloaded since it was updated, do nothing
 response = requests.get(code_url)
@@ -35,8 +34,14 @@ response = requests.get(code_url)
 fd = StringIO(response.content)
 tfile = tarfile.open(mode="r:gz", fileobj=fd)
 
-# should actually do this into /usr/local (or the correct cheesepi directory)
-tfile.extractall('/tmp')
+try:
+	# should actually do this into /usr/local (or the correct cheesepi directory)
+	tfile.extractall(install_dir)
 
-# record that we have just updated the code
-cheesepi.config.set_last_updated()
+	sys.path.append(install_dir)
+	import cheesepi
+	# record that we have just updated the code
+	cheesepi.config.set_last_updated()
+except OSError:
+	print "Error: Can't untar the .tar.gz, you probably do not have permission, try sudo"
+	exit(1)
