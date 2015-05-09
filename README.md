@@ -1,18 +1,17 @@
 
-Introduction to the source files for the CheesePI infrastructure.
+Introduction to the source files for the CheesePi infrastructure.
 
 # Install
 
-To download a CheesePi distribution execute the following command
+To obtain a CheesePi distribution, simply download:
+`http://cheesepi.sics.se/files/cheesepi.tar.gz`
 
-`sudo rsync -avzhe ssh  pi@grayling.sics.se:dist/* /usr/local/cheesepi/`
+Then unpack the archive into the  */user/local/cheesepi* directory. 
 
-This will leave scripts in  */user/local/cheesepi* directory. To install
-the database and crontab jobs that will enable storing and measuring 
-of your network.
+There is an install script that will ensure you have the correct 
+programs and python modules installed. It will also cause the database
+server (currently InfluxDB) and webserver (for the dashboard) to be run
+upon start up. Simply run it be executing:
 
+`$ /usr/local/cheesepi/install/install.sh`
 
-# Repository structure
-
-dist/ is the directory that will be placed at /usr/local/cheesepi
-server/ holds scripts that run on our server

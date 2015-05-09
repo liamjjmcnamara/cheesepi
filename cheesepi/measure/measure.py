@@ -61,8 +61,8 @@ def measure(config=None):
 
     # should we upload a dump of collected data to the server?
     if cheesepi.config.should_dump():
-        # in another process! (will take a while)
-        print "Should dump data!"
+        # should do in another process! (will take a while)
+        cheesepi.config.log("Info: performing data dump to central server!")
         dumpcall = [config['cheesepi_dir']+"/storage/dump_db.py"]
         run(dumpcall)
 

@@ -28,9 +28,6 @@ lastmodified = response.headers['last-modified']
 # if we have downloaded since it was updated, do nothing
 response = requests.get(code_url)
 
-#tar = tarfile.open(mode= "r:gz", fileobj = StringIO(response.content)y)
-#results = gzip.GzipFile(fileobj=StringIO(response.content))
-
 fd = StringIO(response.content)
 tfile = tarfile.open(mode="r:gz", fileobj=fd)
 

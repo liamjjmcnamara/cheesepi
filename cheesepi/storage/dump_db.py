@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import zlib
-import io
 import zipfile
-import StringIO
 import tempfile
 import requests
 
@@ -21,13 +18,13 @@ def perform_database_dump():
     dump_data = dao.dump(last_updated)
     ethmac = cheesepi.utils.getCurrMAC()
     parameters = {'ethmac': ethmac}
-    
+
     # make a temp file that dies on running out of scope
     fd = tempfile.TemporaryFile()
     # make a zipfile object with this file handle
     zfd = zipfile.ZipFile(fd,'w', zipfile.ZIP_DEFLATED)
     zfd.writestr("file.z",dump_data)
-    fd.flush() 
+    fd.flush()
     fd.seek(0) # flush and reset file handle
 
     files = {'file': ('archive.z', fd), }
@@ -38,4 +35,5 @@ def perform_database_dump():
 
 if __name__ == "__main__":
     perform_database_dump()
-
+    # remember when we last successfully dumped our data
+    cheesepi.config.set_last_dumped()
