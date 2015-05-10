@@ -29,7 +29,7 @@ Testers:
 
 import sys
 from subprocess import Popen, PIPE
-import re
+import socket
 import logging
 
 # try to import cheesepi, i.e. it's on PYTHONPATH
@@ -70,7 +70,8 @@ def parse_output(data, start_time, end_time, ethmac):
 	ret["ethernet_MAC"]  = ethmac
 	ret["current_MAC"]   = cheesepi.utils.get_MAC()
 	ret["source_address"]= cheesepi.utils.get_SA()
-	ret["local_address"] = "1.2.3.4"
+	# shakey
+	ret["local_address"] = [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
 
 	fields = data.split()
 	ret["uptime"] = fields[2][:-1]

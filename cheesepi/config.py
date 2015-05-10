@@ -120,6 +120,9 @@ def get_dao():
 	logging.error(msg)
 	exit(1)
 
+def get_cheesepi_dir():
+	return config['cheesepi_dir']
+
 
 def set_last_updated(dao=None):
 	if dao==None:
