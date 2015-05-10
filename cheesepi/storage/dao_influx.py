@@ -30,11 +30,11 @@ import logging
 import hashlib
 import json
 
-# Influx
-#from influxdb import InfluxDBClient
-# legacy module
+# Influx module, use legacy on RaspberryPi Linux
 from influxdb.influxdb08 import InfluxDBClient
 from influxdb.influxdb08.client import InfluxDBClientError
+#from influxdb import InfluxDBClient
+#from influxdb.client import InfluxDBClientError
 
 import cheesepi
 import dao
@@ -58,18 +58,25 @@ class DAO_influx(dao.DAO):
 
 
 	def dump(self, since=None):
-		#series = self.conn.get_list_series()
-		series = self.conn.query("list series")
-		dumped_db = ""
+		try:
+			series = self.conn.query("list series")
+			#series = self.conn.get_list_series()
+			#series = self.conn.get_list_database()
+			print series
+		except Exception as e:
+			msg = "Problem connecting to InfluxDB when listing series: "+str(e)
+			print msg
+			logging.error(msg)
+			exit(1)
+		dumped_db = {}
 		# maybe prune series?
 		print "series",series[0]['points']
 
 		for s in series[0]['points']:
-			print s[1]
 			series_name = s[1]
 			dumped_series = self.conn.query('select * from '+series_name+' where time > now() - 1d limit 1;')
 			print dumped_series
-			dumped_db += json.dumps(dumped_series)+"\n"
+			dumped_db[series_name] = json.dumps(dumped_series)
 		return dumped_db
 
 
@@ -108,14 +115,17 @@ class DAO_influx(dao.DAO):
 	# is always returned
 	def read_user_attribute(self, attribute):
 		try:
-			value = self.conn.query('select %s from user limit 1;' % attribute)
+			result = self.conn.query('select %s from user limit 1;' % attribute)
+			column_index = result[0]['columns'].index(attribute)
+			value = result[0]['points'][0][column_index]
 		except InfluxDBClientError:
 			value = -1
 			#msg = "Problem connecting to InfluxDB: "+str(e)
 			#print msg
 			#logging.error(msg)
 		except Exception as e:
-			print e
+			msg = "Problem connecting to InfluxDB: "+str(e)
+			print msg
 			exit(1)
 		return value
 
