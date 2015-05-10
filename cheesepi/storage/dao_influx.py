@@ -116,13 +116,15 @@ class DAO_influx(dao.DAO):
 	def read_user_attribute(self, attribute):
 		try:
 			result = self.conn.query('select %s from user limit 1;' % attribute)
+			if result==[]:
+				return -1
 			column_index = result[0]['columns'].index(attribute)
 			value = result[0]['points'][0][column_index]
 		except InfluxDBClientError:
-			value = -1
 			#msg = "Problem connecting to InfluxDB: "+str(e)
 			#print msg
 			#logging.error(msg)
+			return -1
 		except Exception as e:
 			msg = "Problem connecting to InfluxDB: "+str(e)
 			print msg
