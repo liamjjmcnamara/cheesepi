@@ -56,7 +56,7 @@ class DAO_influx(dao.DAO):
 			logging.error(msg)
 			print msg
 			exit(1)
-		print "Connected!"
+		#print "Connected!"
 
 
 	def dump(self, since=None):
@@ -117,7 +117,9 @@ class DAO_influx(dao.DAO):
 	# is always returned
 	def read_user_attribute(self, attribute):
 		try:
-			value = self.conn.query('select %s from user limit 1;' % attribute)
+			result = self.conn.query('select %s from user limit 1;' % attribute)
+			column_index = result[0]['columns'].index(attribute)
+			value = result[0]['points'][0][column_index]
 		except InfluxDBClientError:
 			value = -1
 			#msg = "Problem connecting to InfluxDB: "+str(e)
