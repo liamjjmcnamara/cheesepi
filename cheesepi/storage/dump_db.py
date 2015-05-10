@@ -13,9 +13,10 @@ dump_url = "http://cheesepi.sics.se/upload.py"
 
 def perform_database_dump():
     dao = cheesepi.config.get_dao()
-
     last_updated = cheesepi.config.get_last_updated(dao)
-    dump_data = dao.dump(last_updated)
+
+    print last_updated
+    dumped_tables = dao.dump(last_updated)
     ethmac = cheesepi.utils.getCurrMAC()
     parameters = {'ethmac': ethmac}
 
@@ -23,7 +24,8 @@ def perform_database_dump():
     fd = tempfile.TemporaryFile()
     # make a zipfile object with this file handle
     zfd = zipfile.ZipFile(fd,'w', zipfile.ZIP_DEFLATED)
-    zfd.writestr("file.z",dump_data)
+    for table in dumped_tables.keys():
+        zfd.writestr(table+".z", dumped_tables[table])
     fd.flush()
     fd.seek(0) # flush and reset file handle
 
@@ -31,9 +33,9 @@ def perform_database_dump():
     r = requests.post(dump_url, data=parameters, files=files)
     print r.text
     #fd.close()
+    # remember when we last successfully dumped our data
+    cheesepi.config.set_last_dumped()
 
 
 if __name__ == "__main__":
     perform_database_dump()
-    # remember when we last successfully dumped our data
-    cheesepi.config.set_last_dumped()
