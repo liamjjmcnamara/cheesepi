@@ -1,8 +1,8 @@
 import os
 import re
-import sys
 import datetime
 from mod_python import apache
+
 
 NOW = str(datetime.datetime.utcnow().strftime("%s"))
 DUMP_DIR="/var/www/html/dump"
@@ -14,15 +14,15 @@ def index(req):
 		return "Error: Please upload a file"
 
 	ethmac   = "unset"
-	password = "unset" 
+	password = "unset"
 	if 'ethmac' in   req.form: ethmac   = req.form['ethmac']
 	if 'password' in req.form: password = req.form['password']
-	
+
 	user = auth_user(ethmac,password)
 
 	# Record which IP send this file
 	ip = req.get_remote_host(apache.REMOTE_NOLOOKUP)
-	
+
 	return save_file(req.form['file'], ip, user)
 
 def auth_user(mac, password):
@@ -36,13 +36,13 @@ def auth_user(mac, password):
 
 def save_file(fileitem, ip, user=None):
 	# strip leading path from file name to avoid directory traversal attacks
-	filename = NOW+".z"
+	filename = NOW+".tgz"
 	if user!=None:
 		filename = user+"-"+filename
 	#os.path.basename(fileitem.filename)
 
 	# build absolute path to files directory
-	host_dir = os.path.join(DUMP_DIR, ip) 
+	host_dir = os.path.join(DUMP_DIR, ip)
 	ensure_dir(host_dir)
 	filepath = os.path.join(host_dir, filename)
 
