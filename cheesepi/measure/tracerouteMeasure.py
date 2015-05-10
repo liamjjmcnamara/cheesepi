@@ -46,7 +46,7 @@ For example 00:aa:bb:cc:dd:ee 20-2015-14:00:01.txt
 import sys
 from subprocess import Popen, PIPE
 import re
-import copy
+import platform
 
 # try to import cheesepi, i.e. it's on PYTHONPATH
 sys.path.append("/usr/local/")
@@ -185,6 +185,9 @@ def insertData(dao, traceroute, hoplist):
 
 #parses arguments
 if __name__ == "__main__":
+	if platform.system()=="Darwin":
+		exit(0)
+
 	#general logging here? unable to connect etc
 	config = cheesepi.config.get_config()
 	dao = cheesepi.config.get_dao()
