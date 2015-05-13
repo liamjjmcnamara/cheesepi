@@ -3,4 +3,5 @@ sleep 10
 
 # define the two required databases
 curl -s "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"cheesepi\"}"
+curl -s "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"cheesepi3\"}"
 curl -s "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"grafana\"}"

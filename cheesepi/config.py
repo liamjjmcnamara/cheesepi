@@ -34,7 +34,6 @@ import os
 import re
 import uuid
 import logging
-from subprocess import call
 
 
 import cheesepi
@@ -127,7 +126,8 @@ def get_cheesepi_dir():
 
 def make_databases():
 	cmd = get_cheesepi_dir()+"/install/make_influx_DBs.sh"
-	call([cmd])
+	print "Making databases: ",cmd
+	os.system(cmd)
 
 
 def set_last_updated(dao=None):
