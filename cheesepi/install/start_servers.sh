@@ -1,4 +1,4 @@
-
+echo "Starting servers..."
 # following should end up being /usr/local/cheesepi
 INSTALL_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 
@@ -12,7 +12,6 @@ nohup sudo $INFLUX_CMD >&/dev/null &
 echo "Running: $INSTALL_DIR/webserver/webserver.py"
 sudo $INSTALL_DIR/webserver/webserver.py &
 
-sleep 10
+sleep 5
 
-
-$INSTALL_DIR/install/make_influx_DBs.sh
+return 0

@@ -41,7 +41,7 @@ set +e
 
 # start the influx and web servers
 $INSTALL_DIR/install/start_servers.sh
-sleep 10
+sleep 20
 
 
 ## Have both Influx and webserver start on boot
@@ -59,15 +59,10 @@ if ! grep --quiet measure.py /etc/crontab; then
 fi
 
 
-## Create Influx 'cheesepi' and 'grafana' databases
-# Very quick and dirty solution
-echo -e "\nWaiting for Influx to spool before making databases..."
-sleep 20
-$INSTALL_DIR/install/make_influx_DBs.sh
-
 
 ## Inform user of dashboard website
 echo -e "\n\nInstalled!\nVisit http://$LOCAL_IP:8080/dashboard to see your dashboard!\n"
 
-echo "If the servers have not started, run the the $INSTALL_DIR/install/start_servers.sh script"
+echo "If the servers (influx/webserver.py) have not started, run the the $INSTALL_DIR/install/start_servers.sh script"
 
+sleep 5
