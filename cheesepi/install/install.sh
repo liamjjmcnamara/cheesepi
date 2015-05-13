@@ -36,6 +36,9 @@ if [ ! -f $INSTALL_DIR/webserver/dashboard/config.js ]; then
 	sudo cat $INSTALL_DIR/webserver/dashboard/config.sample.js| sed "s/my_influxdb_server/$LOCAL_IP/" | sudo tee $INSTALL_DIR/webserver/dashboard/config.js > /dev/null
 fi
 
+# disable exit on error
+set +e
+
 # start the influx and web servers
 $INSTALL_DIR/install/start_servers.sh
 sleep 10
