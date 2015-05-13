@@ -43,17 +43,24 @@ host     = "localhost"
 port     = 8086
 username = "root"
 password = "root"
-database = "cheesepi"
+database = "cheesepi2"
 
 class DAO_influx(dao.DAO):
 	def __init__(self):
 		logging.info("Connecting to influx: %s %s %s" % (username,password,database))
+		print("Connecting to influx: %s %s %s" % (username,password,database))
 		try: # Get a hold of a Influx connection
 			self.conn = InfluxDBClient(host, port, username, password, database)
+			# ensure we have the correct databases made
+			print "about to make databases"
+			self.conn.create_database("cheesepi")
+			self.conn.create_database("grafana")
+			print "made em"
 		except Exception as e:
 			msg = "Error: Connection to Influx database failed! Ensure InfluxDB is running. "+str(e)
 			logging.error(msg)
 			print msg
+			cheesepi.config.make_databases()
 			exit(1)
 
 

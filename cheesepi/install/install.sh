@@ -58,7 +58,8 @@ if ! grep --quiet measure.py /etc/crontab; then
 	echo -e "\n*/5 *   * * *   root    /usr/local/cheesepi/measure/measure.py" | sudo tee --append /etc/crontab > /dev/null
 fi
 
-
+sleep 5
+$INSTALL_DIR/make_influx_DBs.sh
 
 ## Inform user of dashboard website
 echo -e "\n\nInstalled!\nVisit http://$LOCAL_IP:8080/dashboard to see your dashboard!\n"
