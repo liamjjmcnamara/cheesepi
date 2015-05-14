@@ -73,7 +73,7 @@ else
 fi
 
 sleep 5
-$INSTALL_DIR/make_influx_DBs.sh
+$INSTALL_DIR/install/make_influx_DBs.sh
 
 ## Inform user of dashboard website
 echo -e "\n\nInstalled! This script has just done the following steps:"

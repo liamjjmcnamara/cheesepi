@@ -16,4 +16,4 @@ echo "Started servers..."
 
 sleep 5
 
-return 0
+exit 0
