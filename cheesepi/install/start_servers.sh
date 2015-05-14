@@ -12,6 +12,8 @@ nohup sudo $INFLUX_CMD >&/dev/null &
 echo "Running: $INSTALL_DIR/webserver/webserver.py"
 sudo $INSTALL_DIR/webserver/webserver.py &
 
+echo "Started servers..."
+
 sleep 5
 
 return 0
