@@ -8,40 +8,39 @@ import cherrypy
 sys.path.append("/usr/local")
 import cheesepi
 
+logger = logging.getLogger('CheesePi')
+logger.setLevel(logging.ERROR)
 resultLimit = 5 # number of results per page
-
 serveroot = os.path.dirname(os.path.realpath(__file__))
-
 confpath = os.path.join(serveroot,'cherrypy.conf')
-print "Server root: "+serveroot
+print "Webserver root: "+serveroot
 
 dao = cheesepi.config.get_dao()
 
+class Root:
+    def index(self):
+        raise cherrypy.HTTPRedirect("/dashboard")
+        return
+    index.exposed = True
+
+class Dynamic:
+    def index(self, **params):
+        cherrypy.response.headers["Content-Type"]  = "application/json"
+        return '{[{"value":10},{"value":15}]}'
+        return '{["value":1],["value":2]}'
+        return dao.get_op("ping")
+    index.exposed = True
+    #def dynamic(self):
+    #	return "This is a DYNAMIC page"
+    #dynamic.exposed = True
+
 def setup_server():
-
-	class Root:
-		def index(self):
-			return
-		index.exposed = True
-
-	class Dynamic:
-		def index(self, **params):
-			cherrypy.response.headers["Content-Type"]  = "application/json"
-			return '{[{"value":10},{"value":15}]}'
-			return '{["value":1],["value":2]}'
-			return dao.get_op("ping")
-		index.exposed = True
-		#def dynamic(self):
-		#	return "This is a DYNAMIC page"
-		#dynamic.exposed = True
-
 	root = Root()
 	root.data = Dynamic()
 	config = {
 		'global': {
-			'environment': 'production',
+			'environment': 'embedded',
 			'log.screen': True,
-			'server.socket_port': 9999,
 		},
 		'/dashboard': {
 			'tools.staticdir.on': True,

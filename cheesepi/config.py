@@ -35,7 +35,6 @@ import re
 import uuid
 import logging
 
-
 import cheesepi
 
 
@@ -267,7 +266,8 @@ config	= get_config()
 if config_defined('logfile'):
 	logfile = os.path.join(cheesepi_dir, config['logfile'])
 	try:
-		logging.basicConfig(filename=logfile, level=logging.INFO, format="%(asctime)s;%(levelname)s; %(message)s")
+		logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(levelname)s; %(message)s")
+		logger = logging.getLogger('CheesePi')
 	except:
 		print "Error: failed to open log %s, probably lacking permissions" % logfile
 		exit(1)
