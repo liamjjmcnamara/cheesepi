@@ -48,7 +48,6 @@ database = "cheesepi"
 class DAO_influx(dao.DAO):
 	def __init__(self):
 		logging.info("Connecting to influx: %s %s %s" % (username,password,database))
-		print("Connecting to influx: %s %s %s" % (username,password,database))
 		try: # Get a hold of a Influx connection
 			self.conn = InfluxDBClient(host, port, username, password, database)
 		except Exception as e:
