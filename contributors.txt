@@ -1,1 +1,2 @@
-"Biniam Gebregergs" <guulay@kth.se>, "Urban Pettersson" <urbanpe@kth.se>, "Liam McNamara" <ljjm@sics.se>, "Ian Marsh" <ianm@sics.se>
+"Liam McNamara" <ljjm@sics.se>, "Ian Marsh" <ianm@sics.se>
+"Biniam Gebregergs" <guulay@kth.se>, "Urban Pettersson" <urbanpe@kth.se>

@@ -28,7 +28,7 @@ LOCAL_IP=`hostname -I |head -n1| tr -d '[[:space:]]'`
 
 # Copy Influx config if it doesnt exist
 if [ ! -f $INSTALL_DIR/tools/influxdb/config.toml ]; then
-	cp $INSTALL_DIR/tools/influxdb/config.sample.toml $INSTALL_DIR/tools/influxdb/config.toml
+	cp -p $INSTALL_DIR/tools/influxdb/config.sample.toml $INSTALL_DIR/tools/influxdb/config.toml
 	echo "Copied Influx config file: config.toml"
 else
 	echo "Influx config file already exists, not copying."
