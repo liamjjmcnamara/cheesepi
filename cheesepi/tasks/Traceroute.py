@@ -5,12 +5,13 @@ from Task import Task
 
 class Traceroute(Task):
 
-    def __init__(self,domain):
+    def __init__(self, dao, parameters):
         self.taskname = "traceroute"
-        self.domain   = domain
+        self.dao = dao
+        self.landmark = parameters['landmark']
 
     def run(self):
-        print "Tracerouting: %s" % self.domain
+        print "Tracerouting: %s" % self.landmark
         print "pid: %d" % os.getpid()
 
         time.sleep(4)

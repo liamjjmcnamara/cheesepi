@@ -30,3 +30,4 @@ import config
 import utils
 import register
 import storage
+import tasks

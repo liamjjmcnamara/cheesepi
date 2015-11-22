@@ -13,30 +13,33 @@ from Task import Task
 
 class Ping(Task):
 
-    def __init__(self,domain):
-        self.taskname = "ping"
-        self.domain   = domain
+    def __init__(self, dao, parameters):
+        self.taskname    = "ping"
+        self.dao         = dao
+        self.landmark    = parameters['landmark']
+        self.ping_count  = 10 #parameters['ping_count']
+        self.packet_size = 64 #parameters['packet_size']
+        socket.gethostbyname(self.landmark) # we dont care, just populate the cache
+        print "ping init %s" % self.landmark
+
+    def tmp():
+        print "STDERR"
 
     def run(self):
-        print "Pinging: %s @ %f" % (self.domain, time.time())
-        print "pid: %d" % os.getpid()
-
+        print "__run__"
+        print "Pinging: %s @ %f, PID: %d" % (self.landmark, time.time(), os.getpid())
+        self.measure(self.landmark, self.ping_count, self.packet_size)
         time.sleep(5)
 
     #main measure funtion
-    def measure(self, dao, landmarks, ping_count, packet_size, save_file=False):
-        for landmark in landmarks:
-            socket.gethostbyname(landmark) # we dont care, just populate the cache
-            start_time = cheesepi.utils.now()
-            op_output = self.perform(landmark, ping_count, packet_size)
-            end_time = cheesepi.utils.now()
-            #print op_output
+    def measure(self, landmark, ping_count, packet_size):
+        start_time = cheesepi.utils.now()
+        op_output = self.perform(self.landmark, ping_count, packet_size)
+        end_time = cheesepi.utils.now()
+        print op_output
 
-            parsed_output = self.parse_output(op_output, landmark, start_time, end_time, packet_size, ping_count)
-            if save_file: # should we save the whole output?
-                dao.write_op("ping", parsed_output, op_output)
-            else:
-                dao.write_op("ping", parsed_output)
+        parsed_output = self.parse_output(op_output, landmark, start_time, end_time, packet_size, ping_count)
+        self.dao.write_op("ping", parsed_output)
 
     #ping function
     def perform(self, landmark, ping_count, packet_size):

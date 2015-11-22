@@ -5,8 +5,7 @@ import os
 import sched
 import multiprocessing
 
-from Ping import Ping
-from Traceroute import Traceroute
+import cheesepi
 
 start_time = time.time()
 
@@ -14,29 +13,37 @@ s = sched.scheduler(time.time, time.sleep)
 pool = None # pool must be global, yet instantiated in __main__
 pool_size = 5
 
+dao    = cheesepi.config.get_dao()
+config = cheesepi.config.get_config()
 
 results = []
 def log_result(result):
+    print "logging result..."
     results.append(result)
-
-
 def timestamp(): return (time.time()-start_time)
 def print_queue(): print s.queue
 
+def async(task):
+    task.run()
+
 # Perform a scheduled Task
 def run(task):
-    print "\nRunning %s @ %f" % (task.taskname,timestamp())
-    pool.apply_async(task.run, args=(1,), callback=log_result)
-    #print "async returned"
+    print "\nRunning %s @ %f" % (task.taskname, timestamp())
+    #task.run()
+    #pool.apply_async(task.run, args=(), callback=log_result)
+    pool.apply_async(async, args=[task], callback=log_result)
+    print "async returned"
 
 # Reschedule a cycle of measurements
 # Record which cycle, to avoid clock drift
 def reschedule(cycle):
-    print "Rescheduling cycle %d @ %f" % (cycle,timestamp())
+    print "Rescheduling cycle %d @ %f" % (cycle, timestamp())
 
-    s.enter(2, 1, run, [Ping("google.com")])
-    s.enter(2, 1, run, [Traceroute("google.com")])
-    s.enter(6, 1, reschedule, [cycle+1])
+    params1 = {'landmark':'google.com'}
+    s.enter(1, 1, run, [cheesepi.tasks.Ping(dao, params1)])
+    #params2 = {'landmark':'facebook.com'}
+    #s.enter(2, 1, run, [cheesepi.tasks.Traceroute(dao, params2)])
+    #s.enter(6, 1, reschedule, [cycle+1])
     #print_queue()
 
 # Begin the measurement cycles
