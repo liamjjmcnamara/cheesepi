@@ -6,7 +6,7 @@ Introduction to the source files for the CheesePi infrastructure.
 To obtain a CheesePi distribution, simply download:
 `http://cheesepi.sics.se/files/cheesepi.tar.gz`
 
-Then unpack the archive into the  */user/local/cheesepi* directory. 
+Then unpack the archive into the  */usr/local/cheesepi* directory. 
 
 There is an install script that will ensure you have the correct 
 programs and python modules installed. It will also cause the database
