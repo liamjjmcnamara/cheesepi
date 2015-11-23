@@ -4,13 +4,12 @@ import os
 import re
 import logging
 import socket
-import json
 from subprocess import Popen, PIPE
 
 sys.path.append("/usr/local/")
 import cheesepi
 
-class Ping(cheesepi.tasks.Task):
+class Httping(cheesepi.tasks.Task):
 
     # construct the process and perform pre-work
     def __init__(self, dao, parameters):
@@ -20,13 +19,6 @@ class Ping(cheesepi.tasks.Task):
         self.ping_count  = 10 #parameters['ping_count']
         self.packet_size = 64 #parameters['packet_size']
         socket.gethostbyname(self.landmark) # we dont care, just populate the cache
-
-    def toDict(self):
-        return {'taskname'   :self.taskname,
-                'landmark'   :self.landmark,
-                'ping_count' :self.ping_count,
-                'packet_size':self.packet_size,
-                }
 
     # actually perform the measurements, no arguments required
     def run(self):
