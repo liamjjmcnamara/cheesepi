@@ -4,7 +4,7 @@ import json
 # To be subclassed by explicit measurement tasks
 class Task:
 
-    def __init__(self):
+    def __init__(self,a,b):
         self.taskname = "Superclass"
     #def __init__(a,b,c):
     #    pass

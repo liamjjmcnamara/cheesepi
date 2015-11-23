@@ -7,14 +7,13 @@ import socket
 from subprocess import Popen, PIPE
 
 #sys.path.append("/usr/local/")
+import cheesepi.utils
 import Task
-#from cheesepi.utils import now
 
-class Ping(Task):
+class Ping(Task.Task):
 
     # construct the process and perform pre-work
     def __init__(self, dao, parameters):
-        super()
         self.taskname    = "ping"
         self.dao         = dao
         self.landmark    = parameters['landmark']

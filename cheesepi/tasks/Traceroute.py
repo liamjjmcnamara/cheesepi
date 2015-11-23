@@ -6,10 +6,10 @@ import re
 from subprocess import Popen, PIPE
 
 sys.path.append("/usr/local/")
-import cheesepi
+import Task
+import cheesepi.utils
 
-
-class Traceroute(cheesepi.tasks.Task):
+class Traceroute(Task.Task):
 
     def __init__(self, dao, parameters):
         self.taskname = "traceroute"

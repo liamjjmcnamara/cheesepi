@@ -9,7 +9,7 @@ from subprocess import Popen, PIPE
 sys.path.append("/usr/local/")
 import Task
 
-class Httping(Task):
+class Httping(Task.Task):
 
     # construct the process and perform pre-work
     def __init__(self, dao, parameters):
