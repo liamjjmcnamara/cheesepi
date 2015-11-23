@@ -20,13 +20,8 @@ class Ping(Task):
         self.ping_count  = 10 #parameters['ping_count']
         self.packet_size = 64 #parameters['packet_size']
         socket.gethostbyname(self.landmark) # we dont care, just populate the cache
-        print "ping init %s" % self.landmark
-
-    def tmp():
-        print "STDERR"
 
     def run(self):
-        print "__run__"
         print "Pinging: %s @ %f, PID: %d" % (self.landmark, time.time(), os.getpid())
         self.measure(self.landmark, self.ping_count, self.packet_size)
         time.sleep(5)

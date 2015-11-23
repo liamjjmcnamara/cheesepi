@@ -1,3 +1,4 @@
+import cheesepi
 
 # To be subclassed by explicit measurement tasks
 class Task:
@@ -12,3 +13,11 @@ class Task:
     def run(self):
         print "Task not doing anything..."
 
+
+def build_task(dao, spec):
+    if spec['taskname']=='ping':
+        return cheesepi.tasks.Ping(dao, spec)
+    if spec['taskname']=='traceroute':
+        return cheesepi.tasks.Tradceroute(dao, spec)
+    else:
+        raise Exception('Task name not specified!')
