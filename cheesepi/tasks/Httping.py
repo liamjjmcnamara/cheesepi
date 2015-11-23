@@ -7,9 +7,9 @@ import socket
 from subprocess import Popen, PIPE
 
 sys.path.append("/usr/local/")
-import cheesepi
+import Task
 
-class Httping(cheesepi.tasks.Task):
+class Httping(Task):
 
     # construct the process and perform pre-work
     def __init__(self, dao, parameters):

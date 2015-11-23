@@ -6,13 +6,15 @@ import logging
 import socket
 from subprocess import Popen, PIPE
 
-sys.path.append("/usr/local/")
-import cheesepi
+#sys.path.append("/usr/local/")
+import Task
+#from cheesepi.utils import now
 
-class Ping(cheesepi.tasks.Task):
+class Ping(Task):
 
     # construct the process and perform pre-work
     def __init__(self, dao, parameters):
+        super()
         self.taskname    = "ping"
         self.dao         = dao
         self.landmark    = parameters['landmark']
@@ -26,6 +28,7 @@ class Ping(cheesepi.tasks.Task):
                 'ping_count' :self.ping_count,
                 'packet_size':self.packet_size,
                 }
+
 
     # actually perform the measurements, no arguments required
     def run(self):
