@@ -4,7 +4,6 @@ import os
 import re
 import logging
 import socket
-import json
 from subprocess import Popen, PIPE
 
 sys.path.append("/usr/local/")
