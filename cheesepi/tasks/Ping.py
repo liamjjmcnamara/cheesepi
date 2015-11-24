@@ -6,7 +6,7 @@ import logging
 import socket
 from subprocess import Popen, PIPE
 
-#sys.path.append("/usr/local/")
+sys.path.append("/usr/local/")
 import cheesepi.utils
 import Task
 
@@ -27,7 +27,6 @@ class Ping(Task.Task):
                 'ping_count' :self.ping_count,
                 'packet_size':self.packet_size,
                 }
-
 
     # actually perform the measurements, no arguments required
     def run(self):

@@ -8,6 +8,7 @@ from subprocess import Popen, PIPE
 
 sys.path.append("/usr/local/")
 import Task
+import cheesepi.utils
 
 class Httping(Task.Task):
 
@@ -19,6 +20,12 @@ class Httping(Task.Task):
         self.ping_count  = 10 #parameters['ping_count']
         self.packet_size = 64 #parameters['packet_size']
         socket.gethostbyname(self.landmark) # we dont care, just populate the cache
+
+    def toDict(self):
+        return {'taskname'   :self.taskname,
+                'landmark'   :self.landmark,
+                'ping_count' :self.ping_count,
+                }
 
     # actually perform the measurements, no arguments required
     def run(self):

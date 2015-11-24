@@ -16,6 +16,11 @@ class Traceroute(Task.Task):
         self.dao = dao
         self.landmark = parameters['landmark']
 
+    def toDict(self):
+        return {'taskname' :self.taskname,
+                'landmark' :self.landmark,
+                }
+
     def run(self):
         print "Tracerouting: %s PID: %d" % (self.landmark, os.getpid())
         self.measure(self.landmark)
@@ -29,6 +34,7 @@ class Traceroute(Task.Task):
         output    = self.getData(landmark)
         endTime   = cheesepi.utils.now()
         #trc, hoplist = reformat(tracerouteResult, startTime, endTime)
+        print output
         traceroute, hoplist = self.parse(output, startTime, endTime)
         self.insertData(self.dao, traceroute, hoplist)
 
@@ -41,7 +47,6 @@ class Traceroute(Task.Task):
         ret = result.stdout.read()
         result.stdout.flush()
         return ret
-
 
     def parse_null(self, hop_count):
         return {'hop_count': hop_count,

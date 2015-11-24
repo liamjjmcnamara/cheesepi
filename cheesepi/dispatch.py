@@ -2,6 +2,8 @@
 
 import time
 import os
+import signal
+import sys
 import sched
 import multiprocessing
 
@@ -15,6 +17,13 @@ pool_size = 5
 
 dao    = cheesepi.config.get_dao()
 config = cheesepi.config.get_config()
+
+def signal_handler(signal, frame):
+    print('You pressed Ctrl+C!')
+    # kill children
+
+    sys.exit(0)
+signal.signal(signal.SIGINT, signal_handler)
 
 results = []
 def log_result(result):
