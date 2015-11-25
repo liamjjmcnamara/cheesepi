@@ -2,7 +2,6 @@
 
 import time
 import os
-import signal
 import sys
 import sched
 import multiprocessing
@@ -79,20 +78,11 @@ def initiate():
 
 print "pid: %d" % os.getpid()
 
-# To called by pool process on init, ignore SIGNALs
-def init_worker():
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
-
 if __name__ == "__main__":
     pool = multiprocessing.Pool(processes=pool_size)
 
-    try:
-        initiate()
-    except KeyboardInterrupt:
-        print "Caught KeyboardInterrupt, terminating workers"
-        pool.terminate()
-        pool.join()
-    else:
+    initiate()
+    if pool is not None:
         pool.close()
         pool.join()
 
