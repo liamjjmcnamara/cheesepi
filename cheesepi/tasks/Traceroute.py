@@ -22,7 +22,7 @@ class Traceroute(Task.Task):
 				}
 
 	def run(self):
-		print "Tracerouting: %s PID: %d" % (self.landmark, os.getpid())
+		print "Tracerouting %s @ %f PID: %d" % (self.landmark, time.time(), os.getpid())
 		self.measure(self.landmark)
 		time.sleep(4)
 

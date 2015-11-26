@@ -100,8 +100,9 @@ class DAO_influx(dao.DAO):
 			msg = "Database Influx "+op_type+" Op write failed! "+str(e)
 			logging.error(msg)
 			print msg
-			cheesepi.config.make_databases()
-			exit(1)
+			#cheesepi.config.make_databases()
+			#exit(1)
+			return None
 		return id
 
 	def read_op(self, op_type, timestamp=0, limit=100):

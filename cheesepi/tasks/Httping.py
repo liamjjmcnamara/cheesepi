@@ -30,7 +30,7 @@ class Httping(Task.Task):
 	# actually perform the measurements, no arguments required
 	def run(self):
 		print "HTTPinging: %s @ %f, PID: %d" % (self.landmark, time.time(), os.getpid())
-		self.measure(self.landmark, self.ping_count, self.packet_size)
+		self.measure(self.landmark, self.ping_count)
 
 
 	#main measure funtion
@@ -38,18 +38,20 @@ class Httping(Task.Task):
 		start_time = cheesepi.utils.now()
 		op_output = self.perform(landmark, ping_count)
 		end_time = cheesepi.utils.now()
-		#print op_output
+		print op_output
 
 		parsed_output = self.parse_output(op_output, landmark, start_time, end_time, ping_count)
 		self.dao.write_op("httping", parsed_output)
 
 	#ping function
-	def perform(self, landmark, ping_count, packet_size):
+	def perform(self, landmark, ping_count):
 		execute = "httping -c %s %s" % (ping_count, landmark)
+		print execute
 		logging.info("Executing: "+execute)
 		#print execute
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=False)
 		ret = result.stdout.read()
+		print ret
 		result.stdout.flush()
 		return ret
 
