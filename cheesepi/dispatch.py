@@ -17,18 +17,6 @@ pool_size = 5
 dao    = cheesepi.config.get_dao()
 config = cheesepi.config.get_config()
 
-# Ctrl doesnt work well with multiprocessing.py
-# http://noswap.com/blog/python-multiprocessing-keyboardinterrupt
-def signal_handler(signal, frame):
-    print('Ctrl+C!')
-    # kill children
-    if pool!=None:
-        pool.terminate()
-        pool.join()
-
-    sys.exit(0)
-#signal.signal(signal.SIGINT, signal_handler)
-
 
 results = []
 def log_result(result):
