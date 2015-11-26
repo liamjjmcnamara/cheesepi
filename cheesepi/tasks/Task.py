@@ -4,10 +4,12 @@ import json
 # To be subclassed by explicit measurement tasks
 class Task:
 
-	def __init__(self,a,b):
+	def __init__(self, dao, parameters):
 		self.taskname = "Superclass"
-	#def __init__(a,b,c):
-	#	 pass
+		self.dao      = dao
+		self.cycle    = 0
+		if 'cycle' in parameters:
+			self.cycle    = parameters['cycle']
 
 	def toDict(self):
 		return {'taskname':'superclass'}

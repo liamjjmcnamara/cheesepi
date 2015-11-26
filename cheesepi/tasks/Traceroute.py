@@ -12,8 +12,8 @@ import cheesepi.utils
 class Traceroute(Task.Task):
 
 	def __init__(self, dao, parameters):
+		Task.Task.__init__(self, dao, parameters)
 		self.taskname = "traceroute"
-		self.dao = dao
 		self.landmark = parameters['landmark']
 
 	def toDict(self):
@@ -156,19 +156,21 @@ class Traceroute(Task.Task):
 			dao.write_op("traceroot_hop",hop)
 
 
-	#parses arguments
-	if __name__ == "__main__":
-		if platform.system()=="Darwin":
-			exit(0)
+#parses arguments
+if __name__ == "__main__":
+	if platform.system()=="Darwin":
+		print "Seems to be Darwin OS, exiting..."
+		exit(0)
 
-		#general logging here? unable to connect etc
-		config = cheesepi.config.get_config()
-		dao = cheesepi.config.get_dao()
+	#general logging here? unable to connect etc
+	config = cheesepi.config.get_config()
+	dao = cheesepi.config.get_dao()
 
-		landmarks = cheesepi.config.get_landmarks()
-		save_file = cheesepi.config.config_equal("ping_save_file","true")
+	landmarks = cheesepi.config.get_landmarks()
 
-		print "Landmarks: ",landmarks
-		measure(dao, landmarks, save_file)
-		dao.close()
+	#print "Landmarks: ",landmarks
+	parameters = {'landmark':'google.com'}
+	print parameters
+	traceroute_task = Traceroute(dao, parameters)
+	traceroute_task.run()
 

@@ -14,8 +14,8 @@ class Httping(Task.Task):
 
 	# construct the process and perform pre-work
 	def __init__(self, dao, parameters):
+		Task.Task.__init__(self, dao, parameters)
 		self.taskname	 = "httping"
-		self.dao		 = dao
 		self.landmark	 = parameters['landmark']
 		self.ping_count  = 10 #parameters['ping_count']
 		self.packet_size = 64 #parameters['packet_size']
@@ -91,25 +91,23 @@ class Httping(Task.Task):
 		return ret
 
 
-	if __name__ == "__main__":
-		#general logging here? unable to connect etc
-		dao = cheesepi.config.get_dao()
-		config = cheesepi.config.get_config()
+if __name__ == "__main__":
+	#general logging here? unable to connect etc
+	dao = cheesepi.config.get_dao()
+	config = cheesepi.config.get_config()
 
-		landmarks = cheesepi.config.get_landmarks()
+	landmarks = cheesepi.config.get_landmarks()
 
-		ping_count = 10
-		if cheesepi.config.config_defined("httping_count"):
-			ping_count = int(cheesepi.config.get("httping_count"))
+	ping_count = 10
+	if cheesepi.config.config_defined("httping_count"):
+		ping_count = int(cheesepi.config.get("httping_count"))
 
-		packet_size = 103 # this is total packet size, not contents! (check ping man page)
-		if cheesepi.config.config_defined("httping_packet_size"):
-			packet_size= int(cheesepi.config.get("httping_packet_size"))
 
-		save_file = cheesepi.config.config_equal("httping_save_file","true")
+	print "Landmarks: ",landmarks
 
-		print "Landmarks: ",landmarks
-		measure(dao, landmarks, ping_count, packet_size, save_file)
+	parameters = {'landmark':'google.com'}
+	httping_task = Httping(dao, parameters)
+	httping_task.run()
 
 
 

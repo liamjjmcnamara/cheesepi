@@ -14,16 +14,16 @@ class Ping(Task.Task):
 
 	# construct the process and perform pre-work
 	def __init__(self, dao, parameters):
-		self.taskname	 = "ping"
-		self.dao		 = dao
-		self.landmark	 = parameters['landmark']
+		Task.Task.__init__(self, dao, parameters)
+		self.taskname    = "ping"
+		self.landmark    = parameters['landmark']
 		self.ping_count  = 10 #parameters['ping_count']
 		self.packet_size = 64 #parameters['packet_size']
 		socket.gethostbyname(self.landmark) # we dont care, just populate the cache
 
 	def toDict(self):
-		return {'taskname'	 :self.taskname,
-				'landmark'	 :self.landmark,
+		return {'taskname'   :self.taskname,
+				'landmark'   :self.landmark,
 				'ping_count' :self.ping_count,
 				'packet_size':self.packet_size,
 				}
@@ -49,7 +49,7 @@ class Ping(Task.Task):
 		execute = "ping -c %s -s %s %s"%(ping_count, packet_size, landmark)
 		logging.info("Executing: "+execute)
 		print execute
-		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=False)
+		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
 		ret = result.stdout.read()
 		result.stdout.flush()
 		return ret
@@ -100,3 +100,11 @@ class Ping(Task.Task):
 				ret["stddev_RTT"]  = float(fields[3])
 		return ret
 
+if __name__ == "__main__":
+	#general logging here? unable to connect etc
+	dao = cheesepi.config.get_dao()
+
+	#parameters = {'landmark':'google.com','ping_count':10,'packet_size':64}
+	parameters = {'landmark':'google.com'}
+	ping_task = Ping(dao, parameters)
+	ping_task.run()

@@ -55,10 +55,12 @@ def reschedule(cycle):
 
 	time1 = 1
 	time2 = 2
-	params1 = {'landmark':'google.com'}
-	params2 = {'landmark':'facebook.com'}
+	time3 = 3
+	params1 = {'landmark':'google.com','cycle':cycle}
+	params2 = {'landmark':'facebook.com','cycle':cycle}
 	s.enter(time1, NORMAL, run, [cheesepi.tasks.Ping(dao, params1)])
-	s.enter(time2, NORMAL, run, [cheesepi.tasks.Traceroute(dao, params2)])
+	s.enter(time2, NORMAL, run, [cheesepi.tasks.Httping(dao, params1)])
+	s.enter(time3, NORMAL, run, [cheesepi.tasks.Traceroute(dao, params2)])
 	#s.enter(6, 1, reschedule, [cycle+1])
 	print get_queue()
 

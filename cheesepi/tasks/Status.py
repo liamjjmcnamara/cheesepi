@@ -12,9 +12,9 @@ import Task
 class Status(Task.Task):
 
 	# construct the process and perform pre-work
-	def __init__(self, dao):
+	def __init__(self, dao, parameters={}):
+		Task.Task.__init__(self, dao, parameters)
 		self.taskname    = "status"
-		self.dao         = dao
 
 	def toDict(self):
 		return {'taskname'  :self.taskname,
@@ -70,4 +70,4 @@ if __name__ == "__main__":
 	dao = cheesepi.config.get_dao()
 
 	status_task = Status(dao)
-	status_task.measure()
+	status_task.run()

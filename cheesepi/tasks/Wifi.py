@@ -12,9 +12,9 @@ import Task
 class Wifi(Task.Task):
 
 	# construct the process and perform pre-work
-	def __init__(self, dao):
+	def __init__(self, dao, parameters={}):
+		Task.Task.__init__(self, dao, parameters)
 		self.taskname	 = "wifi"
-		self.dao		 = dao
 		self.config		 = cheesepi.config.get_config()
 		self.interface	 = self.config['wlan']
 
@@ -24,8 +24,8 @@ class Wifi(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "Wifi scan: %s @ %f, PID: %d" % (self.landmark, time.time(), os.getpid())
-		self.measure(self.landmark, self.ping_count, self.packet_size)
+		print "Wifi scan @ %f, PID: %d" % (time.time(), os.getpid())
+		self.measure()
 
 
 	def measure(self):
@@ -117,8 +117,8 @@ if __name__ == "__main__":
 	scanForever=False
 	if scanForever:
 		while(True):
-			wifi_task.measure()
+			wifi_task.run()
 			time.sleep(300)
 	else:
-		wifi_task.measure()
+		wifi_task.run()
 
