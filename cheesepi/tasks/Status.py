@@ -27,7 +27,6 @@ class Status(Task.Task):
 
     #main measure funtion
     def measure(self):
-
         ethmac = cheesepi.utils.get_MAC()
         start_time = cheesepi.utils.now()
         op_output  = self.perform()
@@ -38,12 +37,10 @@ class Status(Task.Task):
 
     #ping function
     def perform(self):
-        #print "calling ping"
-
         execute = "uptime"
         logging.info("Executing: "+execute)
         #print execute
-        result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
+        result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=False)
 
         ret = result.stdout.read()
         result.stdout.flush()

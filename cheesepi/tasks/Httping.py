@@ -48,7 +48,7 @@ class Httping(Task.Task):
         execute = "httping -c %s %s" % (ping_count, landmark)
         logging.info("Executing: "+execute)
         #print execute
-        result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
+        result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=False)
         ret = result.stdout.read()
         result.stdout.flush()
         return ret

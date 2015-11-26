@@ -43,7 +43,7 @@ class Traceroute(Task.Task):
         #traceroute command"
         execute = "traceroute %s"%(target)
         #Executing the above shell command with pipe
-        result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
+        result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=False)
         ret = result.stdout.read()
         result.stdout.flush()
         return ret
