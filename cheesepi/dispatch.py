@@ -17,6 +17,9 @@ pool_size = 5
 dao    = cheesepi.config.get_dao()
 config = cheesepi.config.get_config()
 
+# Task priority
+IMPORTANT  = 1
+NORMAL     = 2
 
 results = []
 def log_result(result):
@@ -50,16 +53,23 @@ def run(task):
 def reschedule(cycle):
 	print "Rescheduling cycle %d @ %f" % (cycle, timestamp())
 
+	time1 = 1
+	time2 = 2
 	params1 = {'landmark':'google.com'}
-	s.enter(1, 1, run, [cheesepi.tasks.Ping(dao, params1)])
 	params2 = {'landmark':'facebook.com'}
-	s.enter(1, 1, run, [cheesepi.tasks.Traceroute(dao, params2)])
+	s.enter(time1, NORMAL, run, [cheesepi.tasks.Ping(dao, params1)])
+	s.enter(time2, NORMAL, run, [cheesepi.tasks.Traceroute(dao, params2)])
 	#s.enter(6, 1, reschedule, [cycle+1])
-	#print_queue()
+	print get_queue()
 
-def get_queuue():
-	q = s.queue
-	print q
+def get_queue():
+	q=[]
+	for t in s.queue:
+		start_time = t.time
+		# extract the dict of the first parameter to the event
+		spec = t.argument[0].toDict()
+		spec['start_time'] = start_time
+		q.append(spec)
 	return q
 
 # Begin the measurement cycles
