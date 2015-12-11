@@ -34,6 +34,7 @@ import os
 import re
 import uuid
 import logging
+import json
 
 import cheesepi
 
@@ -254,6 +255,25 @@ def config_true(key):
 		if config[key]=="true":
 			return True
 	return False
+
+# read config file
+def load_schedule():
+	filename = get_cheesepi_dir()+"/"+config['schedule']
+	lines = []
+	schedule = []
+
+	with open(filename) as f:
+		lines = f.readlines()
+
+	for l in lines:
+		if l=="" or l.startswith("#"):
+			next
+		try:
+			spec = json.loads(l)
+			schedule.append(spec)
+		except:
+			print "JSON task spec not parsed: "+l
+	return schedule
 
 
 # clean the identifiers

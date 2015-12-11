@@ -5,17 +5,24 @@ import os
 import sys
 import sched
 import multiprocessing
+import logging
 
 import cheesepi
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 start_time = time.time()
 
+# Create scheduler object, use 'real' time
 s = sched.scheduler(time.time, time.sleep)
 pool = None # pool must be global, yet instantiated in __main__
 pool_size = 5
-
 dao    = cheesepi.config.get_dao()
 config = cheesepi.config.get_config()
+cycle_length = float(config['cycle_length'])
+schedule_list = cheesepi.config.load_schedule()
+repeat_schedule = False # keep rescheuling?
 
 # Task priority
 IMPORTANT  = 1
@@ -48,38 +55,55 @@ def run(task):
 	#pool.apply_async(task.run, args=(), callback=log_result)
 	pool.apply_async(async, args=[task], callback=log_result)
 
+
 # Reschedule a cycle of measurements
 # Record which cycle, to avoid clock drift
-def reschedule(cycle):
-	print "Rescheduling cycle %d @ %f" % (cycle, timestamp())
+def reschedule(task):
+	print "Rescheduling cycle %d @ %f" % (task.cycle, timestamp())
 
-	time1 = 1
-	time2 = 2
-	time3 = 3
-	params1 = {'landmark':'sics.se','cycle':cycle}
-	params2 = {'landmark':'sics.se','cycle':cycle}
-	#s.enter(time1, NORMAL, run, [cheesepi.tasks.Ping(dao, params1)])
-	s.enter(time2, NORMAL, run, [cheesepi.tasks.Httping(dao, params1)])
-	s.enter(time3, NORMAL, run, [cheesepi.tasks.Traceroute(dao, params2)])
-	#s.enter(6, 1, reschedule, [cycle+1])
-	print get_queue()
+	# reschedule all tasks from the config file
+	for t in schedule_list:
+		schedule_task(t)
 
+	if repeat_schedule:
+		# schedule a task to reschedule all other tasks
+		spec = {'cycle': task.cycle+1}
+		reschedule_task = cheesepi.tasks.Reschedule(dao, spec)
+		s.enter(cycle_length*(task.cycle+1), 1, reschedule, [reschedule_task])
+	#print get_queue()
+
+def schedule_task(spec):
+	if type(spec) is cheesepi.tasks.Task:
+		task = spec # we already have na object
+	else: # otherwise build it
+		task = cheesepi.tasks.build_task(dao, spec)
+	if task == None:
+		logger.error("Task specification not valid: "+str(spec))
+		return # do nothing
+	s.enter(spec['time'], NORMAL, run, [task])
+
+# return list of task objects
 def get_queue():
 	q=[]
 	for t in s.queue:
 		start_time = t.time
 		# extract the dict of the first parameter to the event
+		#print t
 		spec = t.argument[0].toDict()
 		spec['start_time'] = start_time
 		q.append(spec)
 	return q
 
-# Begin the measurement cycles
+
+# Begin the first measurement cycle
 def initiate():
 	print "Start: ", timestamp()
-	reschedule(0)
+	spec = {'cycle': 0}
+	reschedule_task = cheesepi.tasks.Reschedule(dao, spec)
+	reschedule(reschedule_task)
 	s.run()
 	print "End: ", timestamp()
+
 
 print "pid: %d" % os.getpid()
 

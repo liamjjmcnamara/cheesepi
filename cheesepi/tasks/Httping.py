@@ -49,9 +49,8 @@ class Httping(Task.Task):
 		print execute
 		logging.info("Executing: "+execute)
 		#print execute
-		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=False)
+		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
 		ret = result.stdout.read()
-		print ret
 		result.stdout.flush()
 		return ret
 
