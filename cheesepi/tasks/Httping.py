@@ -38,14 +38,14 @@ class Httping(Task.Task):
 		start_time = cheesepi.utils.now()
 		op_output = self.perform(landmark, ping_count)
 		end_time = cheesepi.utils.now()
-		print op_output
+		#print op_output
 
 		parsed_output = self.parse_output(op_output, landmark, start_time, end_time, ping_count)
 		self.dao.write_op("httping", parsed_output)
 
 	#ping function
 	def perform(self, landmark, ping_count):
-		execute = "httping -c %s %s" % (ping_count, landmark)
+		execute = "httping -S -c %s %s" % (ping_count, landmark)
 		print execute
 		logging.info("Executing: "+execute)
 		#print execute
@@ -53,6 +53,14 @@ class Httping(Task.Task):
 		ret = result.stdout.read()
 		result.stdout.flush()
 		return ret
+
+	# average out the breakdowns if different steps in HTTP request
+	def parse_breakdowns(self, breakdowns):
+		acc=[0.0] * len(breakdowns[0])
+		for i in xrange(len(breakdowns)):
+			for j in xrange(len(breakdowns[i])):
+				acc[j] += float(breakdowns[i][j])
+		return [x / len(breakdowns) for x in acc]
 
 	#read the data from ping and reformat for database entry
 	def parse_output(self, data, landmark, start_time, end_time, ping_count):
@@ -62,6 +70,7 @@ class Httping(Task.Task):
 		ret["end_time"]    = end_time
 		ret["ping_count"]  = int(ping_count)
 		delays=[]
+		breakdowns=[]
 
 		lines = data.split("\n")
 		first_line = lines.pop(0).split()
@@ -73,14 +82,15 @@ class Httping(Task.Task):
 				# does the following string wrangling always hold? what if not "X ms" ?
 				# also need to check whether we are on linux-like or BSD-like ping
 				sequence_num = int(re.findall('seq=[\d]+ ',line)[0][4:-1])
-				delay = re.findall('time=.*? ms',line)[0][5:-3]
+
+				delay = re.findall('[\d\.]+ ms',line)[0][0:-3]
 				# only save returned pings!
 				delays[sequence_num]=float(delay)
-		ret['delays'] = str(delays)
-		ret["stddev_RTT"]  = cheesepi.utils.stdev(delays)
 
-		# probably should not reiterate over lines...
-		for line in lines:
+				# capture split breakdown of httping
+				splits = re.findall('time=.*=',line)[0][5:-1]
+				breakdowns.append(splits.split("+"))
+
 			if "packet loss" in line:
 				loss = re.findall('[\d]+% packet loss',line)[0][:-13]
 				ret["packet_loss"] = float(loss)
@@ -89,6 +99,9 @@ class Httping(Task.Task):
 				ret["minimum_RTT"] = float(fields[0])
 				ret["average_RTT"] = float(fields[1])
 				ret["maximum_RTT"] = float(fields[2])
+		ret['delays'] = str(delays)
+		ret["stddev_RTT"]  = cheesepi.utils.stdev(delays)
+		ret['breakdown'] = str(self.parse_breakdowns(breakdowns))
 		return ret
 
 
@@ -96,15 +109,6 @@ if __name__ == "__main__":
 	#general logging here? unable to connect etc
 	dao = cheesepi.config.get_dao()
 	config = cheesepi.config.get_config()
-
-	landmarks = cheesepi.config.get_landmarks()
-
-	ping_count = 10
-	if cheesepi.config.config_defined("httping_count"):
-		ping_count = int(cheesepi.config.get("httping_count"))
-
-
-	print "Landmarks: ",landmarks
 
 	parameters = {'landmark':'google.com'}
 	httping_task = Httping(dao, parameters)

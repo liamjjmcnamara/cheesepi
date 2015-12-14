@@ -291,6 +291,11 @@ def load_local_schedule():
 			print "JSON task spec not parsed: "+l
 	return schedule
 
+def get_logger():
+	logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(levelname)s; %(message)s")
+	logger = logging.getLogger('CheesePi')
+	return logger
+
 
 # clean the identifiers
 def clean(id):
@@ -302,8 +307,7 @@ config	= get_config()
 if config_defined('logfile'):
 	logfile = os.path.join(cheesepi_dir, config['logfile'])
 	try:
-		logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(levelname)s; %(message)s")
-		logger = logging.getLogger('CheesePi')
+		logger = get_logger()
 	except:
 		print "Error: failed to open log %s, probably lacking permissions" % logfile
 		exit(1)
