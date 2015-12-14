@@ -41,7 +41,7 @@ class Ping(Task.Task):
 		#print op_output
 
 		parsed_output = self.parse_output(op_output, landmark, start_time, end_time, packet_size, ping_count)
-		self.dao.write_op("ping", parsed_output)
+		self.dao.write_op(self.taskname, parsed_output)
 
 	#ping function
 	def perform(self, landmark, ping_count, packet_size):

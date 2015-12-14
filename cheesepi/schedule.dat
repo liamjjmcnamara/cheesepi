@@ -1,3 +1,4 @@
-{"landmark": "sics.se", "taskname": "ping", "time": 1, "ping_count": 1, "packet_size": 64} 
-{"landmark": "sics.se", "taskname": "httping", "time": 1, "ping_count": 10}
+{"taskname": "ping", "landmark": "sics.se", "time": 1, "ping_count": 1, "packet_size": 64} 
+{"taskname": "httping", "landmark": "sics.se", "time": 1, "ping_count": 10}
 #{"landmark": "sics.se", "taskname": "traceroute", "time": 2}
+{"taskname": "status", "time": 3}

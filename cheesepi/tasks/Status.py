@@ -18,12 +18,12 @@ class Status(Task.Task):
 
 	def toDict(self):
 		return {'taskname'  :self.taskname,
-				}
+			}
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "Status: %s @ %f, PID: %d" % (self.landmark, time.time(), os.getpid())
-		self.measure(self.landmark, self.ping_count, self.packet_size)
+		print "Status @ %f, PID: %d" % (time.time(), os.getpid())
+		self.measure()
 
 	#main measure funtion
 	def measure(self):
@@ -33,9 +33,8 @@ class Status(Task.Task):
 		end_time   = cheesepi.utils.now()
 
 		parsed_output = self.parse_output(op_output, start_time, end_time, ethmac)
-		self.dao.write_op("local", parsed_output)
+		self.dao.write_op("status", parsed_output)
 
-	#ping function
 	def perform(self):
 		execute = "uptime"
 		logging.info("Executing: "+execute)
