@@ -73,7 +73,7 @@ class Httping(Task.Task):
 				# does the following string wrangling always hold? what if not "X ms" ?
 				# also need to check whether we are on linux-like or BSD-like ping
 				sequence_num = int(re.findall('seq=[\d]+ ',line)[0][4:-1])
-				delay = re.findall('time= ?.*? ms',line)[0][6:-3]
+				delay = re.findall('time=.*? ms',line)[0][5:-3]
 				# only save returned pings!
 				delays[sequence_num]=float(delay)
 		ret['delays'] = str(delays)

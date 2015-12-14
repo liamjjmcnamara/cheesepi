@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import time
-import os
 import sys
 import sched
 import multiprocessing
@@ -14,15 +13,19 @@ logger = logging.getLogger(__name__)
 
 start_time = time.time()
 
-# Create scheduler object, use 'real' time
-s = sched.scheduler(time.time, time.sleep)
-pool = None # pool must be global, yet instantiated in __main__
-pool_size = 5
 dao    = cheesepi.config.get_dao()
 config = cheesepi.config.get_config()
+
+# Create scheduler object, use 'real' time
+s = sched.scheduler(time.time, time.sleep)
 cycle_length = float(config['cycle_length'])
-schedule_list = cheesepi.config.load_schedule()
-repeat_schedule = False # keep rescheuling?
+repeat_schedule = True # keep rescheuling?
+# list of tasks to perform each schedule (populate later)
+schedule_list = []
+
+pool = None # pool must be global, yet instantiated in __main__
+pool_size = 5
+
 
 # Task priority
 IMPORTANT  = 1
@@ -105,8 +108,19 @@ def initiate():
 	print "End: ", timestamp()
 
 
-print "pid: %d" % os.getpid()
+def load_schedule():
+	#try to get from central server
+	tasks = cheesepi.config.load_remote_schedule()
 
+	if tasks==None :
+		# just use local
+		tasks = cheesepi.config.load_local_schedule()
+	return tasks
+
+
+schedule_list = load_schedule()
+
+#print "pid: %d" % os.getpid()
 if __name__ == "__main__":
 	pool = multiprocessing.Pool(processes=pool_size)
 

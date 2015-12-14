@@ -38,7 +38,7 @@ class Ping(Task.Task):
 		start_time = cheesepi.utils.now()
 		op_output = self.perform(self.landmark, ping_count, packet_size)
 		end_time = cheesepi.utils.now()
-		print op_output
+		#print op_output
 
 		parsed_output = self.parse_output(op_output, landmark, start_time, end_time, packet_size, ping_count)
 		self.dao.write_op("ping", parsed_output)
