@@ -20,7 +20,8 @@ def build_task(dao, spec):
 		return None
 	elif not 'time' in spec:
 		return None
-	elif spec['taskname']=='ping':
+
+	if spec['taskname']=='ping':
 		return Ping(dao, spec)
 	elif spec['taskname']=='httping':
 		return Httping(dao, spec)
