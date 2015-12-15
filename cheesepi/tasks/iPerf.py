@@ -1,7 +1,6 @@
 import sys
 import time
 import os
-import re
 import logging
 from subprocess import Popen, PIPE
 
