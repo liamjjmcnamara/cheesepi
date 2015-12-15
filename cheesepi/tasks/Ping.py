@@ -17,8 +17,10 @@ class Ping(Task.Task):
 		Task.Task.__init__(self, dao, parameters)
 		self.taskname    = "ping"
 		self.landmark    = parameters['landmark']
-		self.ping_count  = 10 #parameters['ping_count']
-		self.packet_size = 64 #parameters['packet_size']
+		self.ping_count  = 10
+		self.packet_size = 64
+		if 'ping_count'  in parameters: self.ping_count  = parameters['ping_count']
+		if 'packet_size' in parameters: self.packet_size = parameters['packet_size']
 		socket.gethostbyname(self.landmark) # we dont care, just populate the cache
 
 	def toDict(self):
@@ -31,16 +33,16 @@ class Ping(Task.Task):
 	# actually perform the measurements, no arguments required
 	def run(self):
 		print "Pinging: %s @ %f, PID: %d" % (self.landmark, time.time(), os.getpid())
-		self.measure(self.landmark, self.ping_count, self.packet_size)
+		self.measure()
 
 	# measure and record funtion
-	def measure(self, landmark, ping_count, packet_size):
+	def measure(self):
 		start_time = cheesepi.utils.now()
-		op_output = self.perform(self.landmark, ping_count, packet_size)
+		op_output = self.perform(self.landmark, self.ping_count, self.packet_size)
 		end_time = cheesepi.utils.now()
 		#print op_output
 
-		parsed_output = self.parse_output(op_output, landmark, start_time, end_time, packet_size, ping_count)
+		parsed_output = self.parse_output(op_output, self.landmark, start_time, end_time, self.packet_size, self.ping_count)
 		self.dao.write_op(self.taskname, parsed_output)
 
 	#ping function
