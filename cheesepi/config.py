@@ -34,6 +34,8 @@ import os
 import re
 import uuid
 import logging
+import json
+import urllib2
 
 import cheesepi
 
@@ -255,6 +257,45 @@ def config_true(key):
 			return True
 	return False
 
+# see if we can grab a schedule from the central server
+# this should (in future) include authentication
+def load_remote_schedule():
+	try:
+		response = urllib2.urlopen('http://cheesepi.sics.se/schedule.dat')
+		schedule = response.read()
+		return schedule
+	except urllib2.HTTPError as e:
+		print 'The server couldn\'t fulfill the request. Code: ', e.code
+	except urllib2.URLError as e:
+		print 'We failed to reach a server: ', e.reason
+	except:
+		print "Unrecognised problem downloading remote schedule..."
+	return None
+
+# read config file
+def load_local_schedule():
+	filename = get_cheesepi_dir()+"/"+config['schedule']
+	lines = []
+	schedule = []
+
+	with open(filename) as f:
+		lines = f.readlines()
+
+	for l in lines:
+		if l=="" or l.startswith("#"):
+			next
+		try:
+			spec = json.loads(l)
+			schedule.append(spec)
+		except:
+			print "JSON task spec not parsed: "+l
+	return schedule
+
+def get_logger():
+	logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(levelname)s; %(message)s")
+	logger = logging.getLogger('CheesePi')
+	return logger
+
 
 # clean the identifiers
 def clean(id):
@@ -266,8 +307,7 @@ config	= get_config()
 if config_defined('logfile'):
 	logfile = os.path.join(cheesepi_dir, config['logfile'])
 	try:
-		logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(levelname)s; %(message)s")
-		logger = logging.getLogger('CheesePi')
+		logger = get_logger()
 	except:
 		print "Error: failed to open log %s, probably lacking permissions" % logfile
 		exit(1)

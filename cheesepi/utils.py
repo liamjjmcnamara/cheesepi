@@ -29,12 +29,14 @@ Testers:
 import urllib2
 import uuid
 import datetime
+import time
 
 import cheesepi
 
 # time functions
 def now():
-    return int(datetime.datetime.utcnow().strftime("%s"))
+    return time.time()
+    #return int(datetime.datetime.utcnow().strftime("%s"))
 
 
 # logging facilities
