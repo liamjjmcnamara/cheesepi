@@ -11,6 +11,8 @@ class Upload(Task.Task):
 	def __init__(self, dao, parameters):
 		Task.Task.__init__(self, dao, parameters)
 		self.taskname    = "upload"
+		self.server      = "cheesepi.sics.se"
+		if 'server' in parameters: self.server = parameters['server']
 
 	def toDict(self):
 		return {'taskname'   :self.taskname,

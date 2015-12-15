@@ -22,7 +22,7 @@ class Beacon(Task.Task):
 
 	def run(self):
 		print "Beaconing to %s @ %f, PID: %d" % (self.server, time.time(), os.getpid())
-		self.upload()
+		self.beacon()
 
-	def upload(self):
+	def beacon(self):
 		pass
