@@ -40,9 +40,9 @@ class iPerf(Task.Task):
 
 	#ping function
 	def perform(self, landmark, port):
-		execute = "iperf -p %d -c %s"%(port, landmark)
+		execute = "iperf -yc -p %d -c %s"%(port, landmark)
 		logging.info("Executing: "+execute)
-		print execute
+		#print execute
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
 		ret = result.stdout.read()
 		result.stdout.flush()
@@ -56,16 +56,20 @@ class iPerf(Task.Task):
 		ret["end_time"]    = end_time
 
 		lines = data.split("\n")
-		first_line = lines.pop(0).split()
-		ret["destination_domain"]  = first_line[1]
-		ret["destination_address"] = re.sub("[()]", "", str(first_line[2]))
+		fields = lines[0].split(',')
+		ret['bandwidth'] = fields[-1]
+		ret['transfer']  = fields[-2]
+		return ret
+
 
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
 	dao = cheesepi.config.get_dao()
 
-	#parameters = {'landmark':'google.com','ping_count':10,'packet_size':64}
-	parameters = {'landmark':'google.com'}
+	# Public servers https://iperf.fr/iperf-servers.php
+	parameters = {'landmark':"iperf.eenet.ee",
+		'port':5201,
+	}
 	iperf_task = iPerf(dao, parameters)
 	iperf_task.run()
