@@ -31,16 +31,17 @@ class DNS(Task.Task):
 	def measure(self):
 		domain = "www.abc.net.au"
 		op_output = self.query_authoritative_ns(domain, log)
-		#print op_output
+		print op_output
 
 		parsed_output = self.parse_output(op_output, domain)
 		self.dao.write_op(self.taskname, parsed_output)
 
 	#read the data from ping and reformat for database entry
-	def parse_output(self, data, landmark):
+	def parse_output(self, delays, domain):
 		ret = {}
-		ret["start_time"]  = start_time
-		ret["end_time"]    = end_time
+		ret['domain'] = domain
+		ret['delays'] = str(delays)
+		ret['sum']    = sum(delays)
 		return ret
 
 	# http://stackoverflow.com/questions/4066614/how-can-i-find-the-authoritative-dns-server-for-a-domain-using-dnspython
@@ -48,6 +49,7 @@ class DNS(Task.Task):
 		default = dns.resolver.get_default_resolver()
 		ns = default.nameservers[0]
 		n = domain.split('.')
+		delays = [] # right to left delays in DNS resolution
 
 		for i in xrange(len(n), 0, -1):
 			sub = '.'.join(n[i-1:])
@@ -56,7 +58,9 @@ class DNS(Task.Task):
 			query = dns.message.make_query(sub, dns.rdatatype.NS)
 			response = dns.query.udp(query, ns)
 			end_time = cheesepi.utils.now()
-			print "time: %f" % (end_time-start_time)
+			delay = end_time - start_time
+			print "time: %f" % (delay)
+			delays.append(delay)
 
 			rcode = response.rcode()
 			if rcode != dns.rcode.NOERROR:
@@ -76,21 +80,22 @@ class DNS(Task.Task):
 			for rrset in rrsets:
 				for rr in rrset:
 					if rr.rdtype == dns.rdatatype.SOA:
-						log('Same server is authoritative for %s' % (sub))
+						#log('Same server is authoritative for %s' % (sub))
+						pass
 					elif rr.rdtype == dns.rdatatype.A:
 						ns = rr.items[0].address
-						log('Glue record for %s: %s' % (rr.name, ns))
+						#log('Glue record for %s: %s' % (rr.name, ns))
 					elif rr.rdtype == dns.rdatatype.NS:
 						authority = rr.target
 						ns = default.query(authority).rrset[0].to_text()
-						log('%s [%s] is authoritative for %s; ttl %i' %
-							(authority, ns, sub, rrset.ttl))
+						#log('%s [%s] is authoritative for %s; ttl %i' % (authority, ns, sub, rrset.ttl))
 						result = rrset
 					else:
 						# IPv6 glue records etc
 						#log('Ignoring %s' % (rr))
 						pass
-		return result
+		#return result
+		return delays
 
 
 def log (msg):

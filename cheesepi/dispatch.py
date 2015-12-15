@@ -112,7 +112,7 @@ def load_schedule():
 	#try to get from central server
 	tasks = cheesepi.config.load_remote_schedule()
 
-	if tasks==None :
+	if tasks==None:
 		# just use local
 		tasks = cheesepi.config.load_local_schedule()
 	return tasks
