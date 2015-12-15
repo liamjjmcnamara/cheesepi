@@ -1,22 +1,23 @@
 import sys
+import time
+import os
 
 sys.path.append("/usr/local/")
 import Task
 
-class Reschedule(Task.Task):
-
+class Upload(Task.Task):
+	"""Task to upload data to central server"""
 	# construct the process and perform pre-work
 	def __init__(self, dao, parameters):
 		Task.Task.__init__(self, dao, parameters)
-		self.taskname    = "reschedule"
-		self.cycle       = parameters['cycle']
+		self.taskname    = "upload"
 
 	def toDict(self):
 		return {'taskname'   :self.taskname,
-				'cycle'      :self.cycle,
 				}
 
 	def run(self):
-		print "Warning: Reschedule tasks should not be run!"
+		"""Upload data server, may take some time..."""
+		print "Uploading data... @ %f, PID: %d" % (time.time(), os.getpid())
 
 

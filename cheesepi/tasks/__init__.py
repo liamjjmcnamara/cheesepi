@@ -8,6 +8,8 @@ from DASH import DASH
 from DNS import DNS
 from Throughput import Throughput
 from iPerf import iPerf
+from Beacon import Beacon
+from Upload import Upload
 
 import json
 
@@ -35,6 +37,10 @@ def build_task(dao, spec):
 		return Throughput(dao, spec)
 	elif spec['taskname']=='iperf':
 		return iPerf(dao, spec)
+	elif spec['taskname']=='beacon':
+		return Beacon(dao, spec)
+	elif spec['taskname']=='upload':
+		return Upload(dao, spec)
 	else:
 		raise Exception('Task name not specified! '+spec)
 
