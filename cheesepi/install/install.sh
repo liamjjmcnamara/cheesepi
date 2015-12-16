@@ -18,7 +18,7 @@ echo -e "\nInstalling required software:"
 # latter two only for faster binary python modules
 sudo apt-get install httping python-pip python-mysqldb build-essential python-dev
 # add python modules
-sudo pip install cherrypy influxdb pymongo
+sudo pip install cherrypy influxdb pymongo future
 echo "Installed required software."
 
 
