@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 from builtins import str
 
@@ -10,6 +10,7 @@ from twisted.logger import Logger, ILogObserver
 from twisted.internet import defer
 
 from server_dao.mongo import MongoDAO
+from server_dao.exception import NoSuchPeer
 
 @provider(ILogObserver)
 class PrintingObserver:
@@ -27,6 +28,20 @@ class MongoRPCServerFactory(MsgpackServerFactory):
         p = self.protocol(self, sendErrors=False) # Override to False
         return p
 
+    def getRemoteMethod(self, protocol, methodName):
+        # This is how you can get the ip address of the peer...
+        # Maybe something ugly can be made so that it's passed to the method
+        # when needed, like remote_register
+        if methodName == 'register':
+            # When registering we want to know from which ip address the peer
+            # is connecting and so we patch the function with an extra parameter
+            host = protocol.transport.getPeer().host
+            base_function = getattr(self.handler, "remote_" + methodName)
+            mod_function = lambda *args: base_function(host, *args)
+            return mod_function
+        else:
+            return getattr(self.handler, "remote_" + methodName)
+
 class MongoRPCServer(MsgpackRPCServer):
     log = Logger()
 
@@ -37,24 +52,28 @@ class MongoRPCServer(MsgpackRPCServer):
     def __init__(self):
         self.dao = MongoDAO()
 
-    def remote_hello(self, add=None):
-        self.log.info("received request for hello, add is {add}", add=add)
-        return "world"
+    def _response(self, status, body):
+        if status == True:
+            return {'status':'success','result':body}
+        else:
+            return {'status':'failure','error':body}
 
     @defer.inlineCallbacks
-    def remote_register(self, peer_id):
+    def remote_register(self, host, peer_id):
+        """
+        This remote method gets special handling in getRemoteMethod() in the
+        MongoRPCServerFactory class and thus receives the ip of the connecting
+        peer
+        """
         try:
-            self.log.info("peer with id {peer_id} registering", peer_id=peer_id)
-            result = yield self.dao.register_peer({
-                'peer_id':peer_id,
-                'tasks':[],
-                'results':[]
-            })
-            #self.log.info("inserted with result: {result}",result=result)
-            defer.returnValue(result)
+            self.log.info("peer with id {peer_id} registering from host {host}",
+                          peer_id=peer_id, host=host)
+            result = yield self.dao.register_peer(peer_id, host)
+            #self.log.info("register with result: {result}",result=result)
+            defer.returnValue(self._response(True, result))
         except Exception as e:
             self._error(e)
-            defer.returnValue("fail")
+            defer.returnValue(self._response(False, "error"))
 
     @defer.inlineCallbacks
     def remote_upload_result(self, data):
@@ -62,20 +81,25 @@ class MongoRPCServer(MsgpackRPCServer):
             find = yield self.dao.find_peer(data['peer_id'])
             #self.log.info("{result} {count}", result=find[0], count=find.count())
             update = yield self.dao.write_result(data['peer_id'], data['result'])
-            defer.returnValue(update['status'])
+            if update['status'] == 'success':
+                defer.returnValue(self._response(True, update['status']))
+            else:
+                defer.returnValue(self._response(False, "Failed to upload."))
         except Exception as e:
             self._error(e)
-            defer.returnValue("fail")
+            defer.returnValue(self._response(False, "error"))
 
     @defer.inlineCallbacks
     def remote_get_tasks(self, peer_id):
         try:
             tasks = yield self.dao.get_tasks(peer_id)
             #self.log.info("got tasks {tasks}", tasks=tasks)
-            defer.returnValue(tasks)
+            defer.returnValue(self._response(True, tasks))
+        except NoSuchPeer as e:
+            defer.returnValue(self._response(False, "nosuchpeer"))
         except Exception as e:
             self._error(e)
-            defer.returnValue("fail")
+            defer.returnValue(self._response(False, "error"))
 
 
 class DataMuncher(object):
@@ -110,7 +134,8 @@ class DataMuncher(object):
                 task = {
                     'task_name':'ping',
                     'task_id':randint(0,99999), # placeholder
-                    'target_id':target['peer_id']
+                    'target_id':target['peer_id'],
+                    'target_host':target['host']
                 }
                 self.log.info("New task {} ".format(task['task_id']) +
                               "for {}: ".format(peer['peer_id']) +
@@ -138,11 +163,11 @@ if __name__ == "__main__":
 
     globalLogPublisher.addObserver(PrintingObserver())
 
-    server = MongoRPCServer().getStreamFactory(MongoRPCServerFactory)
+    rpc_server = MongoRPCServer().getStreamFactory(MongoRPCServerFactory)
 
     muncher = DataMuncher()
     muncher.register()
 
-    reactor.listenTCP(18080, server)
+    reactor.listenTCP(18080, rpc_server)
     log.info("starting on port 18080")
     reactor.run()
