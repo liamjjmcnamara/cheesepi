@@ -1,7 +1,6 @@
 from __future__ import print_function, absolute_import
 
-from builtins import str
-
+from time import time
 from txmsgpackrpc.server import MsgpackRPCServer
 from txmsgpackrpc.factory import MsgpackServerFactory
 
@@ -11,6 +10,9 @@ from twisted.internet import defer
 
 from server_dao.mongo import MongoDAO
 from server_dao.exception import NoSuchPeer
+
+
+SERVER_PORT = 18080
 
 @provider(ILogObserver)
 class PrintingObserver:
@@ -32,7 +34,14 @@ class MongoRPCServerFactory(MsgpackServerFactory):
         # This is how you can get the ip address of the peer...
         # Maybe something ugly can be made so that it's passed to the method
         # when needed, like remote_register
-        if methodName == 'register':
+        if methodName == 'beacon':
+            # When registering we want to know from which ip address the peer
+            # is connecting and so we patch the function with an extra parameter
+            host = protocol.transport.getPeer().host
+            base_function = getattr(self.handler, "remote_" + methodName)
+            mod_function = lambda *args: base_function(host, *args)
+            return mod_function
+        elif methodName == 'register':
             # When registering we want to know from which ip address the peer
             # is connecting and so we patch the function with an extra parameter
             host = protocol.transport.getPeer().host
@@ -59,6 +68,23 @@ class MongoRPCServer(MsgpackRPCServer):
             return {'status':'failure','error':body}
 
     @defer.inlineCallbacks
+    def remote_beacon(self, host, peer_id):
+        """
+        This remote method gets special handling in getRemoteMethod() in the
+        MongoRPCServerFactory class and thus receives the ip of the connecting
+        peer
+        """
+        try:
+            self.log.info("peer with id {peer_id} beaconed from host {host}",
+                          peer_id=peer_id, host=host)
+            result = yield self.dao.peer_beacon(peer_id, host, time())
+            self.log.info("beacon with result: {result}",result=result)
+            defer.returnValue(self._response(True, result))
+        except Exception as e:
+            self._error(e)
+            defer.returnValue(self._response(False, "error"))
+
+    @defer.inlineCallbacks
     def remote_register(self, host, peer_id):
         """
         This remote method gets special handling in getRemoteMethod() in the
@@ -75,6 +101,7 @@ class MongoRPCServer(MsgpackRPCServer):
             self._error(e)
             defer.returnValue(self._response(False, "error"))
 
+
     @defer.inlineCallbacks
     def remote_upload_result(self, data):
         try:
@@ -88,6 +115,7 @@ class MongoRPCServer(MsgpackRPCServer):
         except Exception as e:
             self._error(e)
             defer.returnValue(self._response(False, "error"))
+
 
     @defer.inlineCallbacks
     def remote_get_tasks(self, peer_id):
@@ -106,7 +134,7 @@ class DataMuncher(object):
     log = Logger()
 
     def __init__(self):
-        from twisted.internet import reactor, task
+        from twisted.internet import task
 
         self.dao = MongoDAO()
 
@@ -168,6 +196,6 @@ if __name__ == "__main__":
     muncher = DataMuncher()
     muncher.register()
 
-    reactor.listenTCP(18080, rpc_server)
-    log.info("starting on port 18080")
+    reactor.listenTCP(SERVER_PORT, rpc_server)
+    log.info("Starting server on port %d..." % SERVER_PORT)
     reactor.run()

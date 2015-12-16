@@ -1,8 +1,11 @@
-
+import time
 import server_dao.dao as dao
 from server_dao.exception import ServerDaoError, NoSuchPeer
 
 import pymongo
+
+# What is the threshold in seconds to be considered 'active'
+ACTIVE_THRESHOLD = 120
 
 class MongoDAO(dao.DAO):
 
@@ -13,6 +16,7 @@ class MongoDAO(dao.DAO):
         # Initialization stuff
         # This makes sure that the peer_id field is unique and fast lookups can
         # be performed
+        self.db.beacons.create_index([("last_seen",pymongo.ASCENDING)], unique=True)
         self.db.peers.create_index([("peer_id",pymongo.ASCENDING)], unique=True)
         # This (I think) ensures fast lookups for ('peer_id','results.target_id')
         self.db.peers.create_index([("peer_id",pymongo.ASCENDING),
@@ -20,6 +24,26 @@ class MongoDAO(dao.DAO):
 
     def close(self):
         pass # Nothing to do??
+
+    def peer_beacon(self, peer_id, host, last_seen=0):
+        if last_seen==0: last_seen=time.time()
+        result = self.db.beaconss.update_one(
+                {'peer_id':peer_id},
+                {'$set':{
+                     'peer_id':peer_id,
+                     'host':host,
+                     'last_seen':last_seen,
+                     }
+                },
+                upsert=True
+        )
+        return self._return_status(result.acknowledged)
+
+    def active_peers(self, since=0):
+        if since==0: since=time.time()-ACTIVE_THRESHOLD
+        result = self.db.beacons.find({"last_seen": {"$gt": since}})
+        return result
+
 
     def register_peer(self, peer_id, host):
         result = self.db.peers.update_one(
