@@ -27,7 +27,7 @@ class MongoDAO(dao.DAO):
 
     def peer_beacon(self, peer_id, host, last_seen=0):
         if last_seen==0: last_seen=time.time()
-        result = self.db.beaconss.update_one(
+        result = self.db.beacons.update_one(
                 {'peer_id':peer_id},
                 {'$set':{
                      'peer_id':peer_id,

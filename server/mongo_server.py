@@ -77,7 +77,7 @@ class MongoRPCServer(MsgpackRPCServer):
         try:
             self.log.info("peer with id {peer_id} beaconed from host {host}",
                           peer_id=peer_id, host=host)
-            result = yield self.dao.peer_beacon(peer_id, host, time())
+            result = yield self.dao.peer_beacon(peer_id, host, int(time()))
             self.log.info("beacon with result: {result}",result=result)
             defer.returnValue(self._response(True, result))
         except Exception as e:
@@ -138,15 +138,16 @@ class DataMuncher(object):
 
         self.dao = MongoDAO()
 
-        self.tasks = [
-                (task.LoopingCall(self.purge_old_results), 15),
-                (task.LoopingCall(self.delegate_tasks), 10)
-        ]
+        #self.tasks = [
+        #        (task.LoopingCall(self.purge_old_results), 15),
+        #        (task.LoopingCall(self.delegate_tasks), 10)
+        #]
 
     def register(self):
         """ start tasks """
-        for task in self.tasks:
-            task[0].start(task[1])
+        pass
+        #for task in self.tasks:
+        #    task[0].start(task[1])
 
     @defer.inlineCallbacks
     def delegate_tasks(self):

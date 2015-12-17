@@ -8,6 +8,12 @@ class DAO():
     def close(self):
         pass
 
+    def peer_beacon(self, peer_id, host, last_seen):
+        pass
+
+    def active_peers(self, since):
+        pass
+
     def register_peer(self, peer_id, host):
         pass
 

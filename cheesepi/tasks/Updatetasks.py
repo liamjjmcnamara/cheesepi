@@ -13,40 +13,38 @@ import Task
 
 SERVER_PORT = 18080
 
-class Beacon(Task.Task):
+class Updatetasks(Task.Task):
 	"""Inform the central server that we are alive"""
 
 	# construct the process and perform pre-work
 	def __init__(self, dao, parameters):
 		Task.Task.__init__(self, dao, parameters)
-		self.taskname    = "beacon"
-		self.client_id   = parameters['client_id']
+		self.taskname    = "updatetasks"
 		self.server      = "cheesepi.sics.se"
 		if 'server' in parameters: self.server = parameters['server']
 
 	def toDict(self):
 		return {'taskname'   :self.taskname,
 				'cycle'      :self.cycle,
-				'client_id'  :self.client_id,
 				}
 
 	def run(self):
-		print "Beaconing ID:%d to %s @ %f, PID: %d" % (self.client_id, self.server, time(), os.getpid())
-		self.beacon(self.client_id)
+		print "Beaconing to %s @ %f, PID: %d" % (self.server, time(), os.getpid())
+		self.beacon(234)
 
 	@defer.inlineCallbacks
 	def beacon(self, peer_id):
 		c = yield connect('localhost', SERVER_PORT, connectTimeout=5, waitTimeout=5)
 
-		res = yield c.createRequest('beacon', peer_id)
+		res = yield c.createRequest('updatetasks', peer_id)
 		c.disconnect()
 		defer.returnValue(res)
 		pass
 
 
 def main(client_id):
-	spec = {'client_id': int(client_id)}
-	beacon_task = Beacon(None,spec)
+	spec = {id: client_id}
+	beacon_task = Updatetasks(None,spec)
 	beacon_task.run()
 
 
