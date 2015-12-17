@@ -103,6 +103,32 @@ class MongoRPCServer(MsgpackRPCServer):
 
 
     @defer.inlineCallbacks
+    def remote_get_active(self, peer_id):
+        try:
+            peers = yield self.dao.active_peers()
+            defer.returnValue(self._response(True, peers))
+        except Exception as e:
+            self._error(e)
+            defer.returnValue(self._response(False, "error"))
+
+    @defer.inlineCallbacks
+    def remote_get_tasks(self, peer_id):
+        try:
+            # no valid task generation yet...
+            tasks = yield self.dao.get_tasks(peer_id)
+            task_str=""
+            for t in tasks:
+                task_str += str(t)
+            self.log.info("got tasks {tasks}", tasks=task_str)
+            defer.returnValue(self._response(True, task_str))
+        except NoSuchPeer as e:
+            defer.returnValue(self._response(False, "nosuchpeer"))
+        except Exception as e:
+            self._error(e)
+            defer.returnValue(self._response(False, "error"))
+
+
+    @defer.inlineCallbacks
     def remote_upload_result(self, data):
         try:
             find = yield self.dao.find_peer(data['peer_id'])
@@ -115,28 +141,6 @@ class MongoRPCServer(MsgpackRPCServer):
         except Exception as e:
             self._error(e)
             defer.returnValue(self._response(False, "error"))
-
-
-    @defer.inlineCallbacks
-    def remote_get_tasks(self, peer_id):
-        print("getting tasks")
-        try:
-            peer_str=""
-            peers = yield self.dao.active_peers(peer_id)
-            for p in peers:
-                peer_str += str(p)
-            print(peer_str)
-            defer.returnValue(self._response(True, peer_str))
-            # no valid task generation yet...
-            #tasks = yield self.dao.get_tasks(peer_id)
-            #self.log.info("got tasks {tasks}", tasks=tasks)
-            defer.returnValue(self._response(True, tasks))
-        except NoSuchPeer as e:
-            defer.returnValue(self._response(False, "nosuchpeer"))
-        except Exception as e:
-            self._error(e)
-            defer.returnValue(self._response(False, "error"))
-
 
 class DataMuncher(object):
     log = Logger()

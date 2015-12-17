@@ -13,6 +13,7 @@ import Task
 
 SERVER_PORT = 18080
 
+
 class Updatetasks(Task.Task):
 	"""Inform the central server that we are alive"""
 
@@ -32,7 +33,7 @@ class Updatetasks(Task.Task):
 	def run(self):
 		print "Getting tasks for ID:%d from %s @ %f, PID: %d" % (self.peer_id, self.server, time(), os.getpid())
 		tasks = self.get_tasks(self.peer_id)
-		print tasks
+		tasks.addCallback(self.act)
 
 	@defer.inlineCallbacks
 	def get_tasks(self, peer_id):
@@ -41,7 +42,9 @@ class Updatetasks(Task.Task):
 		res = yield c.createRequest('get_tasks', peer_id)
 		c.disconnect()
 		defer.returnValue(res)
-		pass
+
+	def act(self,d):
+		print d['result']
 
 
 def main(peer_id):

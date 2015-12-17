@@ -5,7 +5,7 @@ from server_dao.exception import ServerDaoError, NoSuchPeer
 import pymongo
 
 # What is the threshold in seconds to be considered 'active'
-ACTIVE_THRESHOLD = 120
+ACTIVE_THRESHOLD = 3600
 
 class MongoDAO(dao.DAO):
 
@@ -16,7 +16,8 @@ class MongoDAO(dao.DAO):
         # Initialization stuff
         # This makes sure that the peer_id field is unique and fast lookups can
         # be performed
-        self.db.beacons.create_index([("last_seen",pymongo.ASCENDING)], unique=True)
+        self.db.beacons.create_index([("last_seen",pymongo.ASCENDING)])
+        self.db.tasks.create_index([("peer_id",pymongo.ASCENDING)])
         self.db.peers.create_index([("peer_id",pymongo.ASCENDING)], unique=True)
         # This (I think) ensures fast lookups for ('peer_id','results.target_id')
         self.db.peers.create_index([("peer_id",pymongo.ASCENDING),
@@ -40,24 +41,11 @@ class MongoDAO(dao.DAO):
         return self._return_status(result.acknowledged)
 
     def active_peers(self, since=0):
-        if since==0: since=time.time()-ACTIVE_THRESHOLD
+        if since<=0: since=time.time()-ACTIVE_THRESHOLD
         result = self.db.beacons.find({"last_seen": {"$gt": since}})
         return result
 
 
-    def register_peer(self, peer_id, host):
-        result = self.db.peers.update_one(
-                {'peer_id':peer_id},
-                {'$set':{
-                     'peer_id':peer_id,
-                     'host':host,
-                     'tasks':[],
-                     'results':[]
-                     }
-                },
-                upsert=True
-        )
-        return self._return_status(result.acknowledged)
 
     def find_peer(self, peer_id):
         result = self.db.peers.find({'peer_id':peer_id}, limit=1)
@@ -81,6 +69,35 @@ class MongoDAO(dao.DAO):
         else:
             # What does this mean????
             raise ServerDaoError()
+
+    def write_task(self, peer_id, task):
+        result = self.db.peers.update(
+                {'peer_id':peer_id},
+                {'$push': {'tasks':task}}
+        )
+        return result
+
+    def get_tasks(self, peer_id):
+        results = self.db.tasks.find(
+                {'peer_id':peer_id},
+                projection={'_id':0},
+                limit=5 # should be unlimited
+        )
+        return results
+
+    def register_peer(self, peer_id, host):
+        result = self.db.peers.update_one(
+                {'peer_id':peer_id},
+                {'$set':{
+                     'peer_id':peer_id,
+                     'host':host,
+                     'tasks':[],
+                     'results':[]
+                     }
+                },
+                upsert=True
+        )
+        return self._return_status(result.acknowledged)
 
     def write_result(self, peer_id, result):
         # Can probably merge these operations into one???
@@ -125,21 +142,3 @@ class MongoDAO(dao.DAO):
         )
         return result
 
-    def write_task(self, peer_id, task):
-        result = self.db.peers.update(
-                {'peer_id':peer_id},
-                {'$push': {'tasks':task}}
-        )
-        return result
-
-    def get_tasks(self, peer_id):
-        result = self.db.peers.find(
-                {'peer_id':peer_id},
-                projection={'tasks':True},
-                limit=1
-        )
-        if result.count() > 0:
-            tasks = result[0]['tasks']
-            return tasks
-        else:
-            raise NoSuchPeer()
