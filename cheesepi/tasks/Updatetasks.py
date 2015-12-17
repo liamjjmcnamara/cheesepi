@@ -20,45 +20,47 @@ class Updatetasks(Task.Task):
 	def __init__(self, dao, parameters):
 		Task.Task.__init__(self, dao, parameters)
 		self.taskname    = "updatetasks"
-		self.server      = "cheesepi.sics.se"
+		self.peer_id    = parameters['peer_id']
+		self.server     = "cheesepi.sics.se"
 		if 'server' in parameters: self.server = parameters['server']
 
 	def toDict(self):
-		return {'taskname'   :self.taskname,
-				'cycle'      :self.cycle,
+		return {'taskname':self.taskname,
+				'cycle'   :self.cycle,
 				}
 
 	def run(self):
-		print "Beaconing to %s @ %f, PID: %d" % (self.server, time(), os.getpid())
-		self.beacon(234)
+		print "Getting tasks for ID:%d from %s @ %f, PID: %d" % (self.peer_id, self.server, time(), os.getpid())
+		tasks = self.get_tasks(self.peer_id)
+		print tasks
 
 	@defer.inlineCallbacks
-	def beacon(self, peer_id):
+	def get_tasks(self, peer_id):
 		c = yield connect('localhost', SERVER_PORT, connectTimeout=5, waitTimeout=5)
 
-		res = yield c.createRequest('updatetasks', peer_id)
+		res = yield c.createRequest('get_tasks', peer_id)
 		c.disconnect()
 		defer.returnValue(res)
 		pass
 
 
-def main(client_id):
-	spec = {id: client_id}
+def main(peer_id):
+	spec = {'peer_id': int(peer_id)}
 	beacon_task = Updatetasks(None,spec)
 	beacon_task.run()
 
 
 if __name__ == "__main__":
-    from twisted.internet import reactor
-    import argparse
+	from twisted.internet import reactor
+	import argparse
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--id', type=str, default=None,
-                        help='peer id')
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--id', type=str, default=None,
+		help='peer id')
 
-    args = parser.parse_args()
+	args = parser.parse_args()
 
-    if args.id is None:
-        exit()
-    reactor.callWhenRunning(main, args.id)
-    reactor.run()
+	if args.id is None:
+		exit()
+	reactor.callWhenRunning(main, args.id)
+	reactor.run()

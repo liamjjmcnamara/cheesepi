@@ -20,19 +20,19 @@ class Beacon(Task.Task):
 	def __init__(self, dao, parameters):
 		Task.Task.__init__(self, dao, parameters)
 		self.taskname    = "beacon"
-		self.client_id   = parameters['client_id']
+		self.peer_id   = parameters['peer_id']
 		self.server      = "cheesepi.sics.se"
 		if 'server' in parameters: self.server = parameters['server']
 
 	def toDict(self):
 		return {'taskname'   :self.taskname,
 				'cycle'      :self.cycle,
-				'client_id'  :self.client_id,
+				'peer_id'    :self.peer_id,
 				}
 
 	def run(self):
-		print "Beaconing ID:%d to %s @ %f, PID: %d" % (self.client_id, self.server, time(), os.getpid())
-		self.beacon(self.client_id)
+		print "Beaconing ID:%d to %s @ %f, PID: %d" % (self.peer_id, self.server, time(), os.getpid())
+		self.beacon(self.peer_id)
 
 	@defer.inlineCallbacks
 	def beacon(self, peer_id):
@@ -44,8 +44,8 @@ class Beacon(Task.Task):
 		pass
 
 
-def main(client_id):
-	spec = {'client_id': int(client_id)}
+def main(peer_id):
+	spec = {'peer_id': int(peer_id)}
 	beacon_task = Beacon(None,spec)
 	beacon_task.run()
 

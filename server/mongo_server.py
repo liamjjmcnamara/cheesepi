@@ -119,8 +119,16 @@ class MongoRPCServer(MsgpackRPCServer):
 
     @defer.inlineCallbacks
     def remote_get_tasks(self, peer_id):
+        print("getting tasks")
         try:
-            tasks = yield self.dao.get_tasks(peer_id)
+            peer_str=""
+            peers = yield self.dao.active_peers(peer_id)
+            for p in peers:
+                peer_str += str(p)
+            print(peer_str)
+            defer.returnValue(self._response(True, peer_str))
+            # no valid task generation yet...
+            #tasks = yield self.dao.get_tasks(peer_id)
             #self.log.info("got tasks {tasks}", tasks=tasks)
             defer.returnValue(self._response(True, tasks))
         except NoSuchPeer as e:
@@ -134,10 +142,8 @@ class DataMuncher(object):
     log = Logger()
 
     def __init__(self):
-        from twisted.internet import task
-
         self.dao = MongoDAO()
-
+        #from twisted.internet import task
         #self.tasks = [
         #        (task.LoopingCall(self.purge_old_results), 15),
         #        (task.LoopingCall(self.delegate_tasks), 10)
