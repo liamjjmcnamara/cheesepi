@@ -24,19 +24,18 @@ class Traceroute(Task.Task):
 	def run(self):
 		print "Tracerouting %s @ %f PID: %d" % (self.landmark, time.time(), os.getpid())
 		self.measure(self.landmark)
-		time.sleep(4)
-
 
 	def measure(self, landmark):
-		hoplist = []
 		#Extract the ethernet MAC address of the PI
 		startTime = cheesepi.utils.now()
 		output	  = self.getData(landmark)
 		endTime   = cheesepi.utils.now()
 		#trc, hoplist = reformat(tracerouteResult, startTime, endTime)
 		print output
-		traceroute, hoplist = self.parse(output, startTime, endTime)
-		self.insertData(self.dao, traceroute, hoplist)
+		parsed = self.parse(output, startTime, endTime)
+		parsed['uploaded']= 8 * 3 * len(parsed['hoplist'])
+		parsed['uploaded']= parsed['downloaded']
+		self.insertData(self.dao, parsed['traceroute'], parsed['hoplist'])
 
 	#Execute traceroute function
 	def getData(self, target):
@@ -59,14 +58,16 @@ class Traceroute(Task.Task):
 	#
 
 	def parse(self, data, start_time, end_time):
+		ret={}
 		lines = data.split("\n")
-		traceroute = self.parse_destination(lines[0], start_time, end_time)
+		ret['traceroute'] = self.parse_destination(lines[0], start_time, end_time)
 		hops=[]
 		for line in lines[1:-1]:
 			hop_count = int(line[:3].strip())
 			hops.append(self.parse_hop(hop_count, line[4:]))
 		print "hops: ",hops
-		return traceroute, hops
+		ret['hops']=hops
+		return ret
 
 	def parse_destination(self, destination, start_time, end_time):
 		traceroute = {}

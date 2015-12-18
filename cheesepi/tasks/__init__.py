@@ -4,7 +4,7 @@ from Reschedule import Reschedule
 from Ping import Ping
 from Httping import Httping
 from Traceroute import Traceroute
-from DASH import DASH
+from Dash import Dash
 from DNS import DNS
 from Throughput import Throughput
 from iPerf import iPerf
@@ -30,7 +30,7 @@ def build_task(dao, spec):
 	elif spec['taskname']=='traceroute':
 		return Traceroute(dao, spec)
 	elif spec['taskname']=='dash':
-		return DASH(dao, spec)
+		return Dash(dao, spec)
 	elif spec['taskname']=='dns':
 		return DNS(dao, spec)
 	elif spec['taskname']=='throughput':

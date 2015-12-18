@@ -84,14 +84,9 @@ class Ping(Task.Task):
 					logging.error("ping parse error:"+line)
 					exit(1)
 				delay = re.findall('time=.*? ms',line)[0][5:-3]
-				#print sequence_num,delay
 				# only save returned pings!
 				delays[sequence_num]=float(delay)
-		ret['delays'] = str(delays)
-
-		# probably should not reiterate over lines...
-		for line in lines:
-			if "packet loss" in line:
+			elif "packet loss" in line:
 				loss = re.findall('[\d]+% packet loss',line)[0][:-13]
 				ret["packet_loss"] = float(loss)
 			elif "min/avg/max/" in line:
@@ -100,7 +95,16 @@ class Ping(Task.Task):
 				ret["average_RTT"] = float(fields[1])
 				ret["maximum_RTT"] = float(fields[2])
 				ret["stddev_RTT"]  = float(fields[3])
+
+		ret['delays'] = str(delays)
+		ret['uploaded'] = self.packet_size * self.ping_count
+		ret['downloaded'] = 8 * self.ping_count
 		return ret
+
+	def result(self):
+		"""Capture the result of running this task"""
+		Task.Task.result(self)
+		return self._result
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
@@ -110,3 +114,5 @@ if __name__ == "__main__":
 	parameters = {'landmark':'google.com'}
 	ping_task = Ping(dao, parameters)
 	ping_task.run()
+	print ping_task.result()
+
