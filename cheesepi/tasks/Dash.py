@@ -19,15 +19,11 @@ def callback(d):
 class Dash(Task.Task):
 
 	# construct the process and perform pre-work
-	def __init__(self, dao, parameters):
-		Task.Task.__init__(self, dao, parameters)
-		self.taskname    = "dash"
-		self.source      = parameters['source']
-
-	def toDict(self):
-		return {'taskname'   :self.taskname,
-				'source'     :self.source,
-				}
+	def __init__(self, dao, spec):
+		Task.Task.__init__(self, dao, spec)
+		self.spec['taskname'] = "dash"
+		if not 'source' in spec:
+			self.spec['source'] = "http://www.youtube.com/watch?v=_OBlgSz8sSM"
 
 	# actually perform the measurements, no arguments required
 	def run(self):
@@ -36,13 +32,13 @@ class Dash(Task.Task):
 
 	# measure and record funtion
 	def measure(self):
-		start_time = cheesepi.utils.now()
+		self.spec['start_time'] = cheesepi.utils.now()
 		op_output = self.perform()
-		end_time = cheesepi.utils.now()
+		self.spec['end_time'] = cheesepi.utils.now()
 		#print op_output
 
-		#parsed_output = self.parse_output(op_output, self.source, start_time, end_time)
-		#self.dao.write_op(self.taskname, parsed_output)
+		#parsed_output = self.parse_output(op_output)
+		#self.dao.write_op(self.spec['taskname'], parsed_output)
 
 	def perform(self):
 		ydl_opts = {
@@ -60,20 +56,16 @@ class Dash(Task.Task):
 			ydl.download([self.source])
 
 	#read the data from ping and reformat for database entry
-	def parse_output(self, data, source, start_time, end_time):
-		ret = {}
-		ret["source"]      = source
-		ret["start_time"]  = start_time
-		ret["end_time"]    = end_time
+	def parse_output(self, data, ):
 
 		lines = data.split("\n")
 		first_line = lines.pop(0).split()
-		return ret
+		return self.spec
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
 	dao = cheesepi.config.get_dao()
 
-	parameters = {'source':'http://www.youtube.com/watch?v=_OBlgSz8sSM'}
-	dash_task = Dash(dao, parameters)
+	spec = {'source':'http://www.youtube.com/watch?v=_OBlgSz8sSM'}
+	dash_task = Dash(dao, spec)
 	dash_task.run()

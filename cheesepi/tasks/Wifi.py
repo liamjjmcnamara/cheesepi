@@ -12,30 +12,25 @@ import Task
 class Wifi(Task.Task):
 
 	# construct the process and perform pre-work
-	def __init__(self, dao, parameters={}):
-		Task.Task.__init__(self, dao, parameters)
-		self.taskname	 = "wifi"
-		self.config		 = cheesepi.config.get_config()
-		self.interface	 = self.config['wlan']
-
-	def toDict(self):
-		return {'taskname'	 :self.taskname,
-				}
+	def __init__(self, dao, spec={}):
+		Task.Task.__init__(self, dao, spec)
+		self.spec['taskname'] = "wifi"
+		self.config = cheesepi.config.get_config()
+		if not 'interface' in self.spec: self.spec['interface'] = self.config['wlan']
 
 	# actually perform the measurements, no arguments required
 	def run(self):
 		print "Wifi scan @ %f, PID: %d" % (time.time(), os.getpid())
 		self.measure()
 
-
 	def measure(self):
-		start_time = cheesepi.utils.now()
+		self.spec['start_time'] = cheesepi.utils.now()
 		op_output  = self.perform()
-		end_time   = cheesepi.utils.now()
+		self.spec['end_time']   = cheesepi.utils.now()
 		#print op_output
-		parsed_output = self.parse_output(op_output, start_time, end_time)
+		parsed_output = self.parse_output(op_output)
 		#print parsed_output
-		scan_digest = self.digest_scan(parsed_output, start_time, end_time)
+		scan_digest = self.digest_scan(parsed_output)
 		self.dao.write_op("wifi_scan", scan_digest)
 		for ap in parsed_output:
 			dao.write_op("wifi_ap", ap)
@@ -52,14 +47,14 @@ class Wifi(Task.Task):
 		#print scan_output
 		return scan_output
 
-	def parse_output(self, text, start_time, end_time):
+	def parse_output(self, text):
 		rv=[]
 		aps=text.split("Cell")
 		aps.pop(0) # remove first
 		for ap in aps: # over each AccessPoint
 			#print ap
 			ap=self.parse_ap(ap)
-			ap["start_time"] = start_time
+			ap["start_time"] = self.spec['start_time']
 			rv.append(ap)
 		return rv
 
@@ -81,10 +76,10 @@ class Wifi(Task.Task):
 		return ap
 
 
-	def digest_scan(self, aps, start_time, end_time):
+	def digest_scan(self, aps):
 		digest={}
-		digest["start_time"] = start_time
-		digest["end_time"]	 = end_time
+		digest["start_time"] = self.spec['start_time']
+		digest["end_time"]	 = self.spec['end_time']
 
 		channels = [0]*14 # number of WiFi channels
 		# count channel presence

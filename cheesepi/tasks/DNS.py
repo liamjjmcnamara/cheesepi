@@ -14,13 +14,10 @@ import Task
 class DNS(Task.Task):
 
 	# construct the process and perform pre-work
-	def __init__(self, dao, parameters):
-		Task.Task.__init__(self, dao, parameters)
-		self.taskname	 = "dns"
-
-	def toDict(self):
-		return {'taskname' :self.taskname,
-			}
+	def __init__(self, dao, spec):
+		Task.Task.__init__(self, dao, spec)
+		self.spec['taskname'] = "dns"
+		if not 'domain' in spec: self.spec['domain'] = "www.abc.net.au"
 
 	# actually perform the measurements, no arguments required
 	def run(self):
@@ -29,20 +26,17 @@ class DNS(Task.Task):
 
 	# measure and record funtion
 	def measure(self):
-		domain = "www.abc.net.au"
-		op_output = self.query_authoritative_ns(domain, log)
+		op_output = self.query_authoritative_ns(self.spec['domain'], log)
 		print op_output
 
-		parsed_output = self.parse_output(op_output, domain)
-		self.dao.write_op(self.taskname, parsed_output)
+		parsed_output = self.parse_output(op_output, self.spec['domain'])
+		self.dao.write_op(self.spec['taskname'], parsed_output)
 
 	#read the data from ping and reformat for database entry
 	def parse_output(self, delays, domain):
-		ret = {}
-		ret['domain'] = domain
-		ret['delays'] = str(delays)
-		ret['sum']    = sum(delays)
-		return ret
+		self.spec['delays'] = str(delays)
+		self.spec['sum']    = sum(delays)
+		return self.spec
 
 	# http://stackoverflow.com/questions/4066614/how-can-i-find-the-authoritative-dns-server-for-a-domain-using-dnspython
 	def query_authoritative_ns(self, domain, log=lambda msg: None):
@@ -106,6 +100,6 @@ if __name__ == "__main__":
 	#general logging here? unable to connect etc
 	dao = cheesepi.config.get_dao()
 
-	parameters = {'landmark':'google.com'}
-	dns_task = DNS(dao, parameters)
+	spec = {'domain':"www.abc.net.au"}
+	dns_task = DNS(dao, spec)
 	dns_task.run()

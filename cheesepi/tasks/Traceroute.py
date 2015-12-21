@@ -11,15 +11,9 @@ import cheesepi.utils
 
 class Traceroute(Task.Task):
 
-	def __init__(self, dao, parameters):
-		Task.Task.__init__(self, dao, parameters)
-		self.taskname = "traceroute"
-		self.landmark = parameters['landmark']
-
-	def toDict(self):
-		return {'taskname' :self.taskname,
-				'landmark' :self.landmark,
-				}
+	def __init__(self, dao, spec):
+		Task.Task.__init__(self, dao, spec)
+		self.spec['taskname'] = "traceroute"
 
 	def run(self):
 		print "Tracerouting %s @ %f PID: %d" % (self.landmark, time.time(), os.getpid())
@@ -128,8 +122,8 @@ class Traceroute(Task.Task):
 	def parse_hop_1host(hop_count, host_fields):
 		return {'hop_count': hop_count,
 			'domain1': host_fields[0], 'domain2': host_fields[0], 'domain3': host_fields[0],
-			'ip1'	 : host_fields[1], 'ip2'	: host_fields[1], 'ip3'    : host_fields[1],
-			'delay1': host_fields[2], 'delay2': host_fields[4], 'delay3': host_fields[6],
+			'ip1'    : host_fields[1], 'ip2'    : host_fields[1], 'ip3'    : host_fields[1],
+			'delay1' : host_fields[2], 'delay2' : host_fields[4], 'delay3' : host_fields[6],
 			}
 
 	def parse_hop_3host(hop_count, retry1, retry2, retry3):
@@ -167,11 +161,8 @@ if __name__ == "__main__":
 	config = cheesepi.config.get_config()
 	dao = cheesepi.config.get_dao()
 
-	landmarks = cheesepi.config.get_landmarks()
-
 	#print "Landmarks: ",landmarks
-	parameters = {'landmark':'google.com'}
-	print parameters
-	traceroute_task = Traceroute(dao, parameters)
+	spec = {'landmark':'google.com'}
+	traceroute_task = Traceroute(dao, spec)
 	traceroute_task.run()
 

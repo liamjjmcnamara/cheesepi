@@ -9,6 +9,7 @@ from twisted.internet import defer
 
 
 sys.path.append("/usr/local/")
+import cheesepi
 import Task
 
 SERVER_PORT = 18080
@@ -17,22 +18,15 @@ class Beacon(Task.Task):
 	"""Inform the central server that we are alive"""
 
 	# construct the process and perform pre-work
-	def __init__(self, dao, parameters):
-		Task.Task.__init__(self, dao, parameters)
-		self.taskname    = "beacon"
-		self.peer_id   = parameters['peer_id']
-		self.server      = "cheesepi.sics.se"
-		if 'server' in parameters: self.server = parameters['server']
-
-	def toDict(self):
-		return {'taskname'   :self.taskname,
-				'cycle'      :self.cycle,
-				'peer_id'    :self.peer_id,
-				}
+	def __init__(self, dao, spec):
+		Task.Task.__init__(self, dao, spec)
+		self.spec['taskname'] = "beacon"
+		self.spec['peer_id']  = spec['peer_id']
+		if not 'server' in spec: self.spec['server'] = cheesepi.config.get_controller()
 
 	def run(self):
-		print "Beaconing ID:%d to %s @ %f, PID: %d" % (self.peer_id, self.server, time(), os.getpid())
-		self.beacon(self.peer_id)
+		print "Beaconing ID:%d to %s @ %f, PID: %d" % (self.spec['peer_id'], self.spec['server'], time(), os.getpid())
+		self.beacon(self.spec['peer_id'])
 
 	@defer.inlineCallbacks
 	def beacon(self, peer_id):
@@ -51,16 +45,17 @@ def main(peer_id):
 
 
 if __name__ == "__main__":
-    from twisted.internet import reactor
-    import argparse
+	from twisted.internet import reactor
+	import argparse
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--id', type=str, default=None,
-                        help='peer id')
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--id', type=str, default=None,
+						help='peer id')
 
-    args = parser.parse_args()
+	args = parser.parse_args()
 
-    if args.id is None:
-        exit()
-    reactor.callWhenRunning(main, args.id)
-    reactor.run()
+	if args.id is None:
+		print "Error: missing --id"
+		exit()
+	reactor.callWhenRunning(main, args.id)
+	reactor.run()

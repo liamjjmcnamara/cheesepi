@@ -11,31 +11,26 @@ import Task
 class iPerf(Task.Task):
 
 	# construct the process and perform pre-work
-	def __init__(self, dao, parameters):
-		Task.Task.__init__(self, dao, parameters)
-		self.taskname    = "iperf"
-		self.landmark    = parameters['landmark']
-		self.port        = parameters['port']
+	def __init__(self, dao, spec):
+		Task.Task.__init__(self, dao, spec)
+		self.spec['taskname'] = "iperf"
+		if not 'landmark' in spec: self.spec['landmark'] = "iperf.eenet.ee"
+		if not 'port' in spec: self.spec['port'] = 5201
 
-	def toDict(self):
-		return {'taskname'   :self.taskname,
-				'landmark'   :self.landmark,
-				'port'       :self.port,
-				}
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "iPerfing: %s:%d @ %f, PID: %d" % (self.landmark, self.port, time.time(), os.getpid())
+		print "iPerfing: %s:%d @ %f, PID: %d" % (self.spec['landmark'], self.spec['port'], time.time(), os.getpid())
 		self.measure()
 
 	# measure and record funtion
 	def measure(self):
-		start_time = cheesepi.utils.now()
+		self.spec['start_time'] = cheesepi.utils.now()
 		op_output  = self.perform(self.landmark, self.port)
-		end_time   = cheesepi.utils.now()
+		self.spec['end_time']   = cheesepi.utils.now()
 		#print op_output
-		parsed_output = self.parse_output(op_output, self.landmark, start_time, end_time)
-		self.dao.write_op(self.taskname, parsed_output)
+		parsed_output = self.parse_output(op_output)
+		self.dao.write_op(self.spec['taskname'], parsed_output)
 
 	#ping function
 	def perform(self, landmark, port):
@@ -49,17 +44,12 @@ class iPerf(Task.Task):
 
 	#read the data from ping and reformat for database entry
 	def parse_output(self, data, landmark, start_time, end_time):
-		ret = {}
-		ret["landmark"]    = landmark
-		ret["start_time"]  = start_time
-		ret["end_time"]    = end_time
 
 		lines = data.split("\n")
 		fields = lines[0].split(',')
-		ret['bandwidth'] = fields[-1]
-		ret['transfer']  = fields[-2]
-		return ret
-
+		self.spec['bandwidth'] = fields[-1]
+		self.spec['transfer']  = fields[-2]
+		return self.spec
 
 
 if __name__ == "__main__":
@@ -67,8 +57,8 @@ if __name__ == "__main__":
 	dao = cheesepi.config.get_dao()
 
 	# Public servers https://iperf.fr/iperf-servers.php
-	parameters = {'landmark':"iperf.eenet.ee",
+	spec = {'landmark':"iperf.eenet.ee",
 		'port':5201,
 	}
-	iperf_task = iPerf(dao, parameters)
+	iperf_task = iPerf(dao, spec)
 	iperf_task.run()

@@ -9,6 +9,7 @@ from twisted.internet import defer
 
 
 sys.path.append("/usr/local/")
+import cheesepi
 import Task
 
 SERVER_PORT = 18080
@@ -18,21 +19,14 @@ class Updatetasks(Task.Task):
 	"""Inform the central server that we are alive"""
 
 	# construct the process and perform pre-work
-	def __init__(self, dao, parameters):
-		Task.Task.__init__(self, dao, parameters)
-		self.taskname    = "updatetasks"
-		self.peer_id    = parameters['peer_id']
-		self.server     = "cheesepi.sics.se"
-		if 'server' in parameters: self.server = parameters['server']
-
-	def toDict(self):
-		return {'taskname':self.taskname,
-				'cycle'   :self.cycle,
-				}
+	def __init__(self, dao, spec):
+		Task.Task.__init__(self, dao, spec)
+		self.spec['taskname'] = "updatetasks"
+		if not 'server' in spec: self.spec['server'] = cheesepi.config.get_controller()
 
 	def run(self):
-		print "Getting tasks for ID:%d from %s @ %f, PID: %d" % (self.peer_id, self.server, time(), os.getpid())
-		tasks = self.get_tasks(self.peer_id)
+		print "Getting tasks for ID:%d from %s @ %f, PID: %d" % (self.spec['peer_id'], self.spec['server'], time(), os.getpid())
+		tasks = self.get_tasks(self.spec['peer_id'])
 		tasks.addCallback(self.act)
 
 	@defer.inlineCallbacks
@@ -64,6 +58,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	if args.id is None:
+		print "Error: missing --id"
 		exit()
 	reactor.callWhenRunning(main, args.id)
 	reactor.run()

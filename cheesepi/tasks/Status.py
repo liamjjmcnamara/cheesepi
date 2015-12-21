@@ -12,13 +12,9 @@ import Task
 class Status(Task.Task):
 
 	# construct the process and perform pre-work
-	def __init__(self, dao, parameters={}):
-		Task.Task.__init__(self, dao, parameters)
-		self.taskname    = "status"
-
-	def toDict(self):
-		return {'taskname'  :self.taskname,
-			}
+	def __init__(self, dao, spec={}):
+		Task.Task.__init__(self, dao, spec)
+		self.spec['taskname']    = "status"
 
 	# actually perform the measurements, no arguments required
 	def run(self):
@@ -28,11 +24,10 @@ class Status(Task.Task):
 	#main measure funtion
 	def measure(self):
 		ethmac = cheesepi.utils.get_MAC()
-		start_time = cheesepi.utils.now()
+		self.spec['start_time'] = cheesepi.utils.now()
 		op_output  = self.perform()
-		end_time   = cheesepi.utils.now()
 
-		parsed_output = self.parse_output(op_output, start_time, end_time, ethmac)
+		parsed_output = self.parse_output(op_output, ethmac)
 		self.dao.write_op("status", parsed_output)
 
 	def perform(self):
@@ -46,22 +41,19 @@ class Status(Task.Task):
 		return ret
 
 	#read the data from ping and reformat for database entry
-	def parse_output(self, data, start_time, end_time, ethmac):
-		ret = {}
-		ret["start_time"]    = start_time
-		ret["end_time"]      = end_time
-		ret["ethernet_MAC"]  = ethmac
-		ret["current_MAC"]   = cheesepi.utils.get_MAC()
-		ret["source_address"]= cheesepi.utils.get_SA()
+	def parse_output(self, data, ethmac):
+		self.spec["ethernet_MAC"]  = ethmac
+		self.spec["current_MAC"]   = cheesepi.utils.get_MAC()
+		self.spec["source_address"]= cheesepi.utils.get_SA()
 		# shakey
-		ret["local_address"] = [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
+		self.spec["local_address"] = [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
 
 		fields = data.split()
-		ret["uptime"] = fields[2][:-1]
-		ret["load1"]  = float(fields[-3][:-1])
-		ret["load5"]  = float(fields[-2][:-1])
-		ret["load15"] = float(fields[-1])
-		return ret
+		self.spec["uptime"] = fields[2][:-1]
+		self.spec["load1"]  = float(fields[-3][:-1])
+		self.spec["load5"]  = float(fields[-2][:-1])
+		self.spec["load15"] = float(fields[-1])
+		return self.spec
 
 
 if __name__ == "__main__":

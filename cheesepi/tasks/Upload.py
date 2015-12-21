@@ -3,20 +3,16 @@ import time
 import os
 
 sys.path.append("/usr/local/")
+import cheesepi
 import Task
 
 class Upload(Task.Task):
 	"""Task to upload data to central server"""
 	# construct the process and perform pre-work
-	def __init__(self, dao, parameters):
-		Task.Task.__init__(self, dao, parameters)
-		self.taskname    = "upload"
-		self.server      = "cheesepi.sics.se"
-		if 'server' in parameters: self.server = parameters['server']
-
-	def toDict(self):
-		return {'taskname'   :self.taskname,
-				}
+	def __init__(self, dao, spec):
+		Task.Task.__init__(self, dao, spec)
+		self.spec['taskname']    = "upload"
+		if not 'server' in spec: self.spec['server'] = cheesepi.config.get_controller()
 
 	def run(self):
 		"""Upload data server, may take some time..."""

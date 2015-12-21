@@ -15,22 +15,18 @@ class Httping(Task.Task):
 	# construct the process and perform pre-work
 	def __init__(self, dao, parameters):
 		Task.Task.__init__(self, dao, parameters)
-		self.taskname	 = "httping"
-		self.landmark	 = parameters['landmark']
-		self.ping_count  = 10 #parameters['ping_count']
-		self.packet_size = 64 #parameters['packet_size']
-		socket.gethostbyname(self.landmark) # we dont care, just populate the cache
+		self.spec['taskname'] = "httping"
+		if not 'ping_count'  in self.spec: self.spec['ping_count']  = 10
+		if not 'packet_size' in self.spec: self.spec['packet_size'] = 64
+		socket.gethostbyname(self.spec['landmark']) # we dont care, just populate the cache
 
 	def toDict(self):
-		return {'taskname'	 :self.taskname,
-				'landmark'	 :self.landmark,
-				'ping_count' :self.ping_count,
-				}
+		return self.spec
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "HTTPinging: %s @ %f, PID: %d" % (self.landmark, time.time(), os.getpid())
-		self.measure(self.landmark, self.ping_count)
+		print "HTTPinging: %s @ %f, PID: %d" % (self.spec['landmark'], time.time(), os.getpid())
+		self.measure(self.spec['landmark'], self.spec['ping_count'])
 
 
 	#main measure funtion
@@ -107,11 +103,11 @@ class Httping(Task.Task):
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
-	dao = cheesepi.config.get_dao()
+	dao    = cheesepi.config.get_dao()
 	config = cheesepi.config.get_config()
 
-	parameters = {'landmark':'google.com'}
-	httping_task = Httping(dao, parameters)
+	spec = {'landmark':'google.com'}
+	httping_task = Httping(dao, spec)
 	httping_task.run()
 
 
