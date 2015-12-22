@@ -124,6 +124,8 @@ def get_dao():
 
 def get_cheesepi_dir():
 	return config['cheesepi_dir']
+def get_cheesepi_dir():
+	return config['cheesepi_dir']
 
 def make_databases():
 	cmd = get_cheesepi_dir()+"/install/make_influx_DBs.sh"
@@ -267,9 +269,9 @@ def load_remote_schedule():
 	except urllib2.HTTPError as e:
 		print 'The server couldn\'t fulfill the request. Code: ', e.code
 	except urllib2.URLError as e:
-		print 'We failed to reach a server: ', e.reason
+		print 'We failed to reach the central server: ', e.reason
 	except:
-		print "Unrecognised problem downloading remote schedule..."
+		print "Unrecognised problem when downloading remote schedule..."
 	return None
 
 # read config file
@@ -288,7 +290,8 @@ def load_local_schedule():
 			spec = json.loads(l)
 			schedule.append(spec)
 		except:
-			print "JSON task spec not parsed: "+l
+			#print "JSON task spec not parsed: "+l
+			pass
 	return schedule
 
 def get_logger():

@@ -1,5 +1,5 @@
-{"taskname": "ping", "landmark": "sics.se", "period": 120} 
-{"taskname": "httping", "landmark": "sics.se"}
+#{"taskname": "ping", "landmark": "sics.se", "period": 120} 
+#{"taskname": "httping", "landmark": "sics.se"}
 #{"taskname": "traceroute", "landmark": "sics.se"}
 {"taskname": "dummy", "message": "ping", "period": 10}
 {"taskname": "dummy", "message": "pong", "period": 5}

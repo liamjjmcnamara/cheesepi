@@ -39,6 +39,7 @@ def print_queue(): print s.queue
 
 # Need to catch Ctrl+C, and so wrap the Interupt as an Exception
 def async(task):
+	"""Wrapper around asynchronous task execution"""
 	try:
 		task.run()
 	except:
@@ -57,6 +58,7 @@ def run(task):
 
 
 def schedule_task(spec):
+	"""Ensure task defiend by specificaiton is executed"""
 	if type(spec) is cheesepi.tasks.Task:
 		task = spec # we already have an object
 	else: # otherwise build it
@@ -64,17 +66,17 @@ def schedule_task(spec):
 
 	if task == None:
 		logger.error("Task specification not valid: "+str(spec))
-		return # do nothing
+		return
 
 	next_period = 1 + math.floor(time.time() / task.spec['period'])
-	#	round(time.time() - (time.time() % 3600))
 	abs_start = (next_period*task.spec['period']) + task.spec['offset']
 	delay = abs_start-time.time()
-	print "Timme %d %f %f" % (next_period,abs_start,delay)
-	s.enter(delay, NORMAL, run, [task])
+	print "Times: %d\t%f\t%f" % (next_period,abs_start,delay)
+	#run(task)
+	s.enter(1, NORMAL, run, [task])
 
-# return list of queued task objects
 def get_queue():
+	"""return list of queued task objects"""
 	q=[]
 	for t in s.queue:
 		start_time = t.time
@@ -86,6 +88,7 @@ def get_queue():
 	return q
 
 def load_schedule():
+	"""Load a schedule of task specifications"""
 	#try to get from central server
 	tasks = cheesepi.config.load_remote_schedule()
 	if tasks==None:
@@ -104,9 +107,11 @@ if __name__ == "__main__":
 	for t in schedule_list:
 		schedule_task(t)
 	#print get_queue()
+	s.run()
 
 	if pool is not None:
 		pool.close()
 		pool.join()
 
+time.sleep(3000)
 
