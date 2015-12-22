@@ -32,7 +32,7 @@ NORMAL     = 2
 
 results = []
 def log_result(result):
-	print "logging result..."
+	print "logging result..."+str(result)
 	results.append(result)
 def timestamp(): return (time.time()-start_time)
 def print_queue(): print s.queue
@@ -45,25 +45,24 @@ def async(task):
 	except:
 		cls, exc, tb = sys.exc_info()
 		if issubclass(cls, Exception):
-			raise # No worries
+			raise # No worries, pass up the stack
 		# Need to wrap the exception with something multiprocessing will recognise
 		import traceback
 		print "Unhandled exception %s (%s):\n%s" % (cls.__name__, exc, traceback.format_exc())
 		raise Exception("Unhandled exception: %s (%s)" % (cls.__name__, exc))
 
-# Perform a scheduled Task
-def run(task):
+# Perform a scheduled Task, and schedule the next
+def run(task, spec):
+	"""Run this task asychronously, and schedule the next period"""
 	print "\nRunning %s @ %f" % (task.spec['taskname'], timestamp())
 	pool.apply_async(async, args=[task], callback=log_result)
+	if repeat_schedule:
+		schedule_task(spec)
 
 
 def schedule_task(spec):
 	"""Ensure task defiend by specificaiton is executed"""
-	if type(spec) is cheesepi.tasks.Task:
-		task = spec # we already have an object
-	else: # otherwise build it
-		task = cheesepi.tasks.build_task(dao, spec)
-
+	task = cheesepi.tasks.build_task(dao, spec)
 	if task == None:
 		logger.error("Task specification not valid: "+str(spec))
 		return
@@ -71,9 +70,9 @@ def schedule_task(spec):
 	next_period = 1 + math.floor(time.time() / task.spec['period'])
 	abs_start = (next_period*task.spec['period']) + task.spec['offset']
 	delay = abs_start-time.time()
-	print "Times: %d\t%f\t%f" % (next_period,abs_start,delay)
-	#run(task)
-	s.enter(1, NORMAL, run, [task])
+	#print "Time calculations: %d\t%f\t%f" % (next_period,abs_start,delay)
+	# queue up a task, include spec for next period
+	s.enter(delay, NORMAL, run, [task, spec])
 
 def get_queue():
 	"""return list of queued task objects"""
@@ -96,7 +95,6 @@ def load_schedule():
 		tasks = cheesepi.config.load_local_schedule()
 	return tasks
 
-
 schedule_list = load_schedule()
 
 #print "pid: %d" % os.getpid()
@@ -113,5 +111,5 @@ if __name__ == "__main__":
 		pool.close()
 		pool.join()
 
-time.sleep(3000)
+time.sleep(10000)
 
