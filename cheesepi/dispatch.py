@@ -57,7 +57,6 @@ def run(task):
 
 
 def schedule_task(spec):
-	print spec
 	if type(spec) is cheesepi.tasks.Task:
 		task = spec # we already have an object
 	else: # otherwise build it
