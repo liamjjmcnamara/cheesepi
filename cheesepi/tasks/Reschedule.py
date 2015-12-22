@@ -10,9 +10,6 @@ class Reschedule(Task.Task):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname']    = "reschedule"
 
-	def toDict(self):
-		return self.spec
-
 	def run(self):
 		print "Warning: Reschedule tasks should not be run!"
 

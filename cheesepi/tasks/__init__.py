@@ -1,5 +1,7 @@
 
 from Task import Task
+from Dummy import Dummy
+from Status import Status
 from Reschedule import Reschedule
 from Ping import Ping
 from Httping import Httping
@@ -20,8 +22,6 @@ def build_json(dao, json_str):
 def build_task(dao, spec):
 	if not 'taskname' in spec:
 		return None
-	elif not 'time' in spec:
-		return None
 
 	if spec['taskname']=='ping':
 		return Ping(dao, spec)
@@ -41,6 +41,10 @@ def build_task(dao, spec):
 		return Beacon(dao, spec)
 	elif spec['taskname']=='upload':
 		return Upload(dao, spec)
+	elif spec['taskname']=='status':
+		return Status(dao, spec)
+	elif spec['taskname']=='dummy':
+		return Dummy(dao, spec)
 	else:
-		raise Exception('Task name not specified! '+spec)
+		raise Exception('Task name not specified! '+str(spec))
 

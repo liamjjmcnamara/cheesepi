@@ -18,7 +18,10 @@ class Httping(Task.Task):
 		self.spec['taskname'] = "httping"
 		if not 'ping_count'  in self.spec: self.spec['ping_count']  = 10
 		if not 'packet_size' in self.spec: self.spec['packet_size'] = 64
-		socket.gethostbyname(self.spec['landmark']) # we dont care, just populate the cache
+		try:
+			socket.gethostbyname(self.spec['landmark']) # we dont care, just populate the cache
+		except:
+			pass # record network failure later...
 
 	def toDict(self):
 		return self.spec

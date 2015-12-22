@@ -18,7 +18,10 @@ class Ping(Task.Task):
 		self.spec['taskname']    = "ping"
 		if not 'ping_count'  in self.spec: self.spec['ping_count']  = 10
 		if not 'packet_size' in self.spec: self.spec['packet_size'] = 64
-		socket.gethostbyname(self.spec['landmark']) # we dont care, just populate the cache
+		try:
+			socket.gethostbyname(self.spec['landmark']) # we dont care, just populate the cache
+		except:
+			pass # record ping failure later
 
 	# actually perform the measurements, no arguments required
 	def run(self):
