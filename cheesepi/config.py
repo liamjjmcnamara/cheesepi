@@ -122,8 +122,12 @@ def get_dao():
 	logging.error(msg)
 	exit(1)
 
-def get_cheesepi_dir():
-	return config['cheesepi_dir']
+def get_controller():
+	if "controller" in config:
+		return config['controller']
+	else:
+		return "http://cheesepi.sics.se"
+
 def get_cheesepi_dir():
 	return config['cheesepi_dir']
 

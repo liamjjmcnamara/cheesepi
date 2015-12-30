@@ -10,25 +10,30 @@ sys.path.append("/usr/local/")
 import cheesepi
 import Task
 
-dump_url = "http://cheesepi.sics.se/upload.py"
 
 class Upload(Task.Task):
 	"""Task to upload data to central server"""
 	# construct the process and perform pre-work
-	def __init__(self, dao, spec):
+	def __init__(self, dao, spec={}):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname']    = "upload"
-		if not 'server' in spec: self.spec['server'] = cheesepi.config.get_controller()
+		if not 'collector' in self.spec: # no special endpoint
+			if not 'server' in self.spec: self.spec['server'] = cheesepi.config.get_controller()
+			self.spec['collector'] = self.spec['server']+"/upload.py"
 
 	def run(self):
 		"""Upload data server, may take some time..."""
 		print "Uploading data... @ %f, PID: %d" % (time.time(), os.getpid())
 
 
-	def perform_database_dump(self):
+	def dump_db_tempfile(self):
 		last_dumped = cheesepi.config.get_last_dumped(self.dao)
-		print "Last dumped: "+str(last_dumped)
+		if last_dumped==-1:
+			print "Never dumped this DB..."
+		else:
+			print "Last dumped DB: "+str(last_dumped)
 		dumped_tables = self.dao.dump(last_dumped)
+		print dumped_tables
 		ethmac = cheesepi.utils.getCurrMAC()
 		parameters = {'ethmac': ethmac}
 
@@ -37,7 +42,7 @@ class Upload(Task.Task):
 		# make a zipfile object with this file handle
 		tar = tarfile.open(fileobj=fd, mode="w:gz")
 		for table in dumped_tables.keys():
-			print table
+			#print table
 			table_info = tarfile.TarInfo(name=table+".json")
 			table_info.size=len(dumped_tables[table])
 			tar.addfile(table_info, StringIO.StringIO(dumped_tables[table]))
@@ -46,7 +51,7 @@ class Upload(Task.Task):
 		fd.seek(0) # flush and reset file handle, so it can be read for POST
 
 		files = {'file': ('archive.tgz', fd), }
-		r = requests.post(dump_url, data=parameters, files=files)
+		r = requests.post(self.spec['collector'], data=parameters, files=files)
 		print r.text
 		#fd.close()
 		# remember when we last successfully dumped our data
@@ -55,6 +60,7 @@ class Upload(Task.Task):
 
 
 if __name__ == "__main__":
-	dump_task = Upload()
-	dump_task.perform_database_dump()
+	dao = cheesepi.config.get_dao()
+	dump_task = Upload(dao)
+	dump_task.dump_db_tempfile()
 
