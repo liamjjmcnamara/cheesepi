@@ -9,6 +9,7 @@ from subprocess import Popen, PIPE
 sys.path.append("/usr/local/")
 import Task
 import cheesepi.utils
+logger = cheesepi.utils.get_logger()
 
 class Httping(Task.Task):
 
@@ -28,7 +29,7 @@ class Httping(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "HTTPinging: %s @ %f, PID: %d" % (self.spec['landmark'], time.time(), os.getpid())
+		logger.info("HTTPinging: %s @ %f, PID: %d" % (self.spec['landmark'], time.time(), os.getpid()))
 		self.measure(self.spec['landmark'], self.spec['ping_count'])
 
 
@@ -37,7 +38,7 @@ class Httping(Task.Task):
 		start_time = cheesepi.utils.now()
 		op_output = self.perform(landmark, ping_count)
 		end_time = cheesepi.utils.now()
-		#print op_output
+		logger.debug(op_output)
 
 		parsed_output = self.parse_output(op_output, landmark, start_time, end_time, ping_count)
 		self.dao.write_op("httping", parsed_output)
@@ -45,9 +46,7 @@ class Httping(Task.Task):
 	#ping function
 	def perform(self, landmark, ping_count):
 		execute = "httping -S -c %s %s" % (ping_count, landmark)
-		print execute
 		logging.info("Executing: "+execute)
-		#print execute
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
 		ret = result.stdout.read()
 		result.stdout.flush()

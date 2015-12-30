@@ -42,7 +42,6 @@ def now():
 # logging facilities
 def write_file(ret, start_time, ethmac):
 	filename = "./"+ethmac+str(start_time)+".txt"
-	#print filename
 	fd = open(filename, 'w')
 	fd.write(ret)
 	fd.close()
@@ -52,10 +51,12 @@ def get_MAC():
     """Return the MAC of this device's first NIC"""
     return str(hex(uuid.getnode()))[2:]
 
+
 #get our currently used MAC address
 def getCurrMAC():
 	ret =':'.join(['{:02x}'.format((uuid.getnode() >> i) & 0xff) for i in range(0,8*6,8)][::-1])
 	return ret
+
 
 #get our source address
 def get_SA():
@@ -72,11 +73,13 @@ def mean(data):
         raise ValueError('mean requires at least one data point')
     return sum(data)/n # in Python 2 use sum(data)/float(n)
 
+
 def sumsq(data):
     """Return sum of square deviations of sequence data."""
     c = mean(data)
     ss = sum((x-c)**2 for x in data)
     return ss
+
 
 def stdev(data):
     """Calculates the population standard deviation."""

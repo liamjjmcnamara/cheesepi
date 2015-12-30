@@ -8,6 +8,7 @@ sys.path.append("/usr/local/")
 import cheesepi.utils
 import cheesepi.config
 import Task
+logger = cheesepi.utils.get_logger()
 
 class Wifi(Task.Task):
 
@@ -20,16 +21,16 @@ class Wifi(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "Wifi scan @ %f, PID: %d" % (time.time(), os.getpid())
+		logger.info("Wifi scan @ %f, PID: %d" % (time.time(), os.getpid()))
 		self.measure()
 
 	def measure(self):
 		self.spec['start_time'] = cheesepi.utils.now()
 		op_output  = self.perform()
 		self.spec['end_time']   = cheesepi.utils.now()
-		#print op_output
+		logger.debug(op_output)
 		parsed_output = self.parse_output(op_output)
-		#print parsed_output
+		logger.debug(parsed_output)
 		scan_digest = self.digest_scan(parsed_output)
 		self.dao.write_op("wifi_scan", scan_digest)
 		for ap in parsed_output:
@@ -39,12 +40,12 @@ class Wifi(Task.Task):
 		try:
 			scan_output = subprocess.check_output(["iwlist", self.interface, "scanning"])
 		except Exception as e:
-			print "Error: iwlist does not seem to run: "+str(e)
+			logger.error("Error: iwlist does not seem to run: "+str(e))
 			sys.exit(1)
 		if "Interface doesn't support scanning" in scan_output:
-			print "Error: Interface doesn't support scanning"
+			logger.error("Interface doesn't support scanning")
 			sys.exit(1)
-		#print scan_output
+		logger.debug(scan_output)
 		return scan_output
 
 	def parse_output(self, text):
@@ -52,7 +53,7 @@ class Wifi(Task.Task):
 		aps=text.split("Cell")
 		aps.pop(0) # remove first
 		for ap in aps: # over each AccessPoint
-			#print ap
+			logger.debug(ap)
 			ap=self.parse_ap(ap)
 			ap["start_time"] = self.spec['start_time']
 			rv.append(ap)
@@ -72,7 +73,6 @@ class Wifi(Task.Task):
 		except:
 			ap['quality'] = -1
 			ap['signal']  = -1
-		#print ap
 		return ap
 
 

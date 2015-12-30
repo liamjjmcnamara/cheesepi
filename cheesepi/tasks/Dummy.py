@@ -5,6 +5,7 @@ import os
 sys.path.append("/usr/local/")
 import cheesepi.utils
 import Task
+logger = cheesepi.utils.get_logger()
 
 class Dummy(Task.Task):
 
@@ -16,14 +17,13 @@ class Dummy(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "Dummy: %s @ %f, PID: %d" % (self.spec['message'], time.time(), os.getpid())
+		logger.info("Dummy: %s @ %f, PID: %d" % (self.spec['message'], time.time(), os.getpid()))
 
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
 	dao = cheesepi.config.get_dao()
 
-	#parameters = {'landmark':'google.com','ping_count':10,'packet_size':64}
 	spec = {}
 	dummy_task = Dummy(dao, spec)
 	dummy_task.run()

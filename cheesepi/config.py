@@ -41,15 +41,19 @@ import cheesepi
 
 
 # Globals
-cheesepi_dir  = os.path.dirname(os.path.realpath(__file__))
-config_file   = os.path.join(cheesepi_dir,"cheesepi.conf")
-version_file  = os.path.join(cheesepi_dir,"version")
-config		  = None # instantiated filelevel later!
-
+cheesepi_dir = os.path.dirname(os.path.realpath(__file__))
+config_file  = os.path.join(cheesepi_dir,"cheesepi.conf")
+version_file = os.path.join(cheesepi_dir,"version")
+config       = None # instantiated filelevel later!
+logger       = None # instantiated filelevel later!
 
 def main():
 	print config
 
+def get_logger():
+	logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(levelname)s; %(message)s")
+	logger = logging.getLogger('CheesePi')
+	return logger
 
 def get_config():
 	config = {}
@@ -58,12 +62,12 @@ def get_config():
 		# strip comment and badly formed lines
 		if re.match('^\s*#', line) or not re.search('=',line):
 			continue
-		# print line
+		# logger.debug(line)
 		(key, value) = line.split("=",1)
 		config[clean(key)] = clean(value)
-	config['cheesepi_dir']= cheesepi_dir
-	config['config_file'] = config_file
-	config['version']	  = version()
+	config['cheesepi_dir'] = cheesepi_dir
+	config['config_file']  = config_file
+	config['version']      = version()
 	return config
 
 
@@ -76,7 +80,7 @@ def read_config():
 		lines = fd.readlines()
 		fd.close()
 	except Exception as e:
-		print "Error: can not read config file: "+str(e)
+		logger.error("Error: can not read config file: "+str(e))
 		# should copy from default location!
 		sys.exit(1)
 	return lines
@@ -99,10 +103,10 @@ def create_default_config():
 		except:
 			msg = "Problem copying files - check permissions of %" % cheesepi_dir
 			logging.error(msg)
-			print "Error: "+msg
+			logger.error(msg)
 			exit(1)
 	else:
-		print "Error: can not find default config file!"
+		logger.error("Can not find default config file!")
 
 
 def get_dao():
@@ -116,10 +120,8 @@ def get_dao():
 		return cheesepi.storage.dao.DAO()
 	# and so on for other database engines...
 
-	print config['database']
 	msg = "Fatal error: 'database' type not set to a valid value in config file, exiting."
-	print msg
-	logging.error(msg)
+	logger.error("Database type: "+config['database']+"\n"+msg)
 	exit(1)
 
 def get_controller():
@@ -133,7 +135,7 @@ def get_cheesepi_dir():
 
 def make_databases():
 	cmd = get_cheesepi_dir()+"/install/make_influx_DBs.sh"
-	print "Making databases: ",cmd
+	logger.warn("Making databases: "+cmd)
 	os.system(cmd)
 
 
@@ -193,7 +195,7 @@ def should_dump(dao=None):
 
 def copyfile(from_file, to_file, occurance, replacement):
 	"""Copy a file <from_file> to <to_file> replacing all occurrences"""
-	print from_file, to_file, occurance, replacement
+	logger.info(from_file+" "+to_file+" "+ occurance+" "+ replacement)
 	with open(from_file, "rt") as fin:
 		with open(to_file, "wt") as fout:
 			for line in fin:
@@ -203,12 +205,6 @@ def copyfile(from_file, to_file, occurance, replacement):
 def generate_secret():
 	"""Make a secret for this node, to use in signing data dumps"""
 	return str(uuid.uuid4())
-
-
-def log(message):
-	# should log message to a file
-	logging.info(message)
-	print message
 
 
 def version():
@@ -271,11 +267,11 @@ def load_remote_schedule():
 		schedule = response.read()
 		return schedule
 	except urllib2.HTTPError as e:
-		print 'The server couldn\'t fulfill the request. Code: ', e.code
+		logger.error('The server couldn\'t fulfill the request. Code: '+e.code)
 	except urllib2.URLError as e:
-		print 'We failed to reach the central server: ', e.reason
+		logger.error('We failed to reach the central server: '+e.reason)
 	except:
-		print "Unrecognised problem when downloading remote schedule..."
+		logger.error("Unrecognised problem when downloading remote schedule...")
 	return None
 
 # read config file
@@ -294,14 +290,10 @@ def load_local_schedule():
 			spec = json.loads(l)
 			schedule.append(spec)
 		except:
-			#print "JSON task spec not parsed: "+l
+			#logger.error("JSON task spec not parsed: "+l)
 			pass
 	return schedule
 
-def get_logger():
-	logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(levelname)s; %(message)s")
-	logger = logging.getLogger('CheesePi')
-	return logger
 
 
 # clean the identifiers
@@ -310,13 +302,13 @@ def clean(id):
 
 
 # Some accounting to happen on every import (mostly for config file making)
-config	= get_config()
+config = get_config()
 if config_defined('logfile'):
 	logfile = os.path.join(cheesepi_dir, config['logfile'])
 	try:
 		logger = get_logger()
 	except:
-		print "Error: failed to open log %s, probably lacking permissions" % logfile
+		logger.error("Failed to open log %s, probably lacking permissions" % logfile)
 		exit(1)
 
 

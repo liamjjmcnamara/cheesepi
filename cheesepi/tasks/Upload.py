@@ -9,7 +9,7 @@ import requests
 sys.path.append("/usr/local/")
 import cheesepi
 import Task
-
+logger = cheesepi.utils.get_logger()
 
 class Upload(Task.Task):
 	"""Task to upload data to central server"""
@@ -23,17 +23,17 @@ class Upload(Task.Task):
 
 	def run(self):
 		"""Upload data server, may take some time..."""
-		print "Uploading data... @ %f, PID: %d" % (time.time(), os.getpid())
+		logger.info("Uploading data... @ %f, PID: %d" % (time.time(), os.getpid()))
 
 
 	def dump_db_tempfile(self):
 		last_dumped = cheesepi.config.get_last_dumped(self.dao)
 		if last_dumped==-1:
-			print "Never dumped this DB..."
+			logger.info("Never dumped this DB...")
 		else:
-			print "Last dumped DB: "+str(last_dumped)
+			logger.info("Last dumped DB: "+str(last_dumped))
 		dumped_tables = self.dao.dump(last_dumped)
-		print dumped_tables
+		logger.debug(dumped_tables)
 		ethmac = cheesepi.utils.getCurrMAC()
 		parameters = {'ethmac': ethmac}
 
@@ -52,7 +52,7 @@ class Upload(Task.Task):
 
 		files = {'file': ('archive.tgz', fd), }
 		r = requests.post(self.spec['collector'], data=parameters, files=files)
-		print r.text
+		logger.debug(r.text)
 		#fd.close()
 		# remember when we last successfully dumped our data
 		cheesepi.config.set_last_dumped()

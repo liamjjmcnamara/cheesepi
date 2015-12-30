@@ -11,6 +11,7 @@ from twisted.internet import defer
 sys.path.append("/usr/local/")
 import cheesepi
 import Task
+logger = cheesepi.utils.get_logger()
 
 SERVER_PORT = 18080
 
@@ -25,7 +26,7 @@ class Beacon(Task.Task):
 		if not 'server' in spec: self.spec['server'] = cheesepi.config.get_controller()
 
 	def run(self):
-		print "Beaconing ID:%d to %s @ %f, PID: %d" % (self.spec['peer_id'], self.spec['server'], time(), os.getpid())
+		logger.info("Beaconing ID:%d to %s @ %f, PID: %d" % (self.spec['peer_id'], self.spec['server'], time(), os.getpid()))
 		self.beacon(self.spec['peer_id'])
 
 	@defer.inlineCallbacks

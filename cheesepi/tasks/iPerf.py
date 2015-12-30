@@ -7,6 +7,7 @@ from subprocess import Popen, PIPE
 sys.path.append("/usr/local/")
 import cheesepi.utils
 import Task
+logger = cheesepi.utils.get_logger()
 
 class iPerf(Task.Task):
 
@@ -20,7 +21,7 @@ class iPerf(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "iPerfing: %s:%d @ %f, PID: %d" % (self.spec['landmark'], self.spec['port'], time.time(), os.getpid())
+		logger.info("iPerfing: %s:%d @ %f, PID: %d" % (self.spec['landmark'], self.spec['port'], time.time(), os.getpid()))
 		self.measure()
 
 	# measure and record funtion
@@ -28,7 +29,7 @@ class iPerf(Task.Task):
 		self.spec['start_time'] = cheesepi.utils.now()
 		op_output  = self.perform(self.landmark, self.port)
 		self.spec['end_time']   = cheesepi.utils.now()
-		#print op_output
+		logger.debug(op_output)
 		parsed_output = self.parse_output(op_output)
 		self.dao.write_op(self.spec['taskname'], parsed_output)
 
@@ -36,7 +37,7 @@ class iPerf(Task.Task):
 	def perform(self, landmark, port):
 		execute = "iperf -yc -p %d -c %s"%(port, landmark)
 		logging.info("Executing: "+execute)
-		#print execute
+		logger.debug(execute)
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
 		ret = result.stdout.read()
 		result.stdout.flush()
@@ -62,3 +63,4 @@ if __name__ == "__main__":
 	}
 	iperf_task = iPerf(dao, spec)
 	iperf_task.run()
+

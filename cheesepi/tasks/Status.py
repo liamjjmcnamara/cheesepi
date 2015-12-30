@@ -8,6 +8,7 @@ from subprocess import Popen, PIPE
 sys.path.append("/usr/local/")
 import cheesepi.utils
 import Task
+logger = cheesepi.utils.get_logger()
 
 class Status(Task.Task):
 
@@ -18,7 +19,7 @@ class Status(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "Status @ %f, PID: %d" % (time.time(), os.getpid())
+		logger.info("Status @ %f, PID: %d" % (time.time(), os.getpid()))
 		self.measure()
 
 	#main measure funtion
@@ -33,7 +34,7 @@ class Status(Task.Task):
 	def perform(self):
 		execute = "uptime"
 		logging.info("Executing: "+execute)
-		#print execute
+		logger.debug(execute)
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=False)
 
 		ret = result.stdout.read()
@@ -62,3 +63,4 @@ if __name__ == "__main__":
 
 	status_task = Status(dao)
 	status_task.run()
+

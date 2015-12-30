@@ -11,6 +11,7 @@ from twisted.internet import defer
 sys.path.append("/usr/local/")
 import cheesepi
 import Task
+logger = cheesepi.utils.get_logger()
 
 SERVER_PORT = 18080
 
@@ -25,7 +26,7 @@ class Updatetasks(Task.Task):
 		if not 'server' in spec: self.spec['server'] = cheesepi.config.get_controller()
 
 	def run(self):
-		print "Getting tasks for ID:%d from %s @ %f, PID: %d" % (self.spec['peer_id'], self.spec['server'], time(), os.getpid())
+		logger.info("Getting tasks for ID:%d from %s @ %f, PID: %d" % (self.spec['peer_id'], self.spec['server'], time(), os.getpid()))
 		tasks = self.get_tasks(self.spec['peer_id'])
 		tasks.addCallback(self.act)
 
@@ -38,7 +39,7 @@ class Updatetasks(Task.Task):
 		defer.returnValue(res)
 
 	def act(self,d):
-		print d['result']
+		logger.info(d['result'])
 
 
 def main(peer_id):

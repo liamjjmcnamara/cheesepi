@@ -8,6 +8,7 @@ from subprocess import Popen, PIPE
 sys.path.append("/usr/local/")
 import Task
 import cheesepi.utils
+logger = cheesepi.utils.get_logger()
 
 class Traceroute(Task.Task):
 
@@ -16,7 +17,7 @@ class Traceroute(Task.Task):
 		self.spec['taskname'] = "traceroute"
 
 	def run(self):
-		print "Tracerouting %s @ %f PID: %d" % (self.landmark, time.time(), os.getpid())
+		logger.info("Tracerouting %s @ %f PID: %d" % (self.landmark, time.time(), os.getpid()))
 		self.measure(self.landmark)
 
 	def measure(self, landmark):
@@ -25,7 +26,7 @@ class Traceroute(Task.Task):
 		output	  = self.getData(landmark)
 		endTime   = cheesepi.utils.now()
 		#trc, hoplist = reformat(tracerouteResult, startTime, endTime)
-		print output
+		logger.debug(output)
 		parsed = self.parse(output, startTime, endTime)
 		parsed['uploaded']= 8 * 3 * len(parsed['hoplist'])
 		parsed['uploaded']= parsed['downloaded']
@@ -59,7 +60,7 @@ class Traceroute(Task.Task):
 		for line in lines[1:-1]:
 			hop_count = int(line[:3].strip())
 			hops.append(self.parse_hop(hop_count, line[4:]))
-		print "hops: ",hops
+		logger.debug("hops: ",hops)
 		ret['hops']=hops
 		return ret
 
@@ -102,7 +103,7 @@ class Traceroute(Task.Task):
 		while (len(lines)>0):
 			line = lines.pop(0)
 			hop_count = int(line[:3].strip())
-			print hop_count
+			logger.debug(hop_count)
 			host_line = line[4:] # extract everything after hopcount
 			host_fields = host_line.split()
 			if len(host_fields)==3:
@@ -115,7 +116,7 @@ class Traceroute(Task.Task):
 				retry3 = lines.pop(0)[4:]
 				hop_entries = self.parse_hop_3host(hop_count,host_line, retry2, retry3)
 				hops.extend(hop_entries)
-		print hops
+		logger.debug(hops)
 		return hops
 
 
@@ -140,12 +141,11 @@ class Traceroute(Task.Task):
 
 	#insert the tracetoute results into the database
 	def insertData(dao, traceroute, hoplist):
-		print "Writting to the Traceroute tabele"
+		logger.debug("Writting to the Traceroute table")
 		traceroute_id = dao.write_op("traceroute", traceroute)
 
-		print "writing to the Hop table"
 		for hop in hoplist:
-			print hop
+			logger.debug(hop)
 			#hop.traceroute = traceroute_id
 			hop['traceroute_id'] = traceroute_id
 			dao.write_op("traceroot_hop",hop)

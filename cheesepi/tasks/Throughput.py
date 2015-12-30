@@ -5,6 +5,7 @@ import os
 sys.path.append("/usr/local/")
 import cheesepi.utils
 import Task
+logger = cheesepi.utils.get_logger()
 
 # https://github.com/sivel/speedtest-cli
 import speedtest
@@ -18,7 +19,7 @@ class Throughput(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "Speedtest throughput: @ %f, PID: %d" % (time.time(), os.getpid())
+		logger.info("Speedtest throughput: @ %f, PID: %d" % (time.time(), os.getpid()))
 		self.measure()
 
 	# measure and record funtion
@@ -26,7 +27,7 @@ class Throughput(Task.Task):
 		self.spec['start_time'] = cheesepi.utils.now()
 		op_output = speedtest.speedtest()
 		self.spec['end_time']= cheesepi.utils.now()
-		#print op_output
+		logger.debug(op_output)
 
 		parsed_output = self.parse_output(op_output)
 		self.dao.write_op(self.spec['taskname'], parsed_output)

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import time
 import math
 import sys
@@ -16,6 +17,7 @@ start_time = time.time()
 
 dao    = cheesepi.config.get_dao()
 config = cheesepi.config.get_config()
+logger = cheesepi.config.get_logger()
 
 # Create scheduler object, use 'real' time
 s = sched.scheduler(time.time, time.sleep)
@@ -32,10 +34,10 @@ NORMAL     = 2
 
 results = []
 def log_result(result):
-	print "logging result..."+str(result)
+	logging.info("Logging task result..."+str(result))
 	results.append(result)
 def timestamp(): return (time.time()-start_time)
-def print_queue(): print s.queue
+def print_queue(): logger.debug(s.queue)
 
 # Need to catch Ctrl+C, and so wrap the Interupt as an Exception
 def async(task):
@@ -49,12 +51,13 @@ def async(task):
 		# Need to wrap the exception with something multiprocessing will recognise
 		import traceback
 		print "Unhandled exception %s (%s):\n%s" % (cls.__name__, exc, traceback.format_exc())
+		logger.error("Unhandled exception %s (%s):\n%s" % (cls.__name__, exc, traceback.format_exc()))
 		raise Exception("Unhandled exception: %s (%s)" % (cls.__name__, exc))
 
 # Perform a scheduled Task, and schedule the next
 def run(task, spec):
 	"""Run this task asychronously, and schedule the next period"""
-	print "\nRunning %s @ %f" % (task.spec['taskname'], timestamp())
+	logger.info("\nRunning %s @ %f" % (task.spec['taskname'], timestamp()))
 	pool.apply_async(async, args=[task], callback=log_result)
 	if repeat_schedule:
 		schedule_task(spec)
@@ -70,7 +73,7 @@ def schedule_task(spec):
 	next_period = 1 + math.floor(time.time() / task.spec['period'])
 	abs_start = (next_period*task.spec['period']) + task.spec['offset']
 	delay = abs_start-time.time()
-	#print "Time calculations: %d\t%f\t%f" % (next_period,abs_start,delay)
+	#logger.debug("Time calculations: %d\t%f\t%f" % (next_period,abs_start,delay))
 	# queue up a task, include spec for next period
 	s.enter(delay, NORMAL, run, [task, spec])
 
@@ -80,7 +83,6 @@ def get_queue():
 	for t in s.queue:
 		start_time = t.time
 		# extract the dict of the first parameter to the event
-		#print t
 		spec = t.argument[0].toDict()
 		spec['start_time'] = start_time
 		q.append(spec)
@@ -97,7 +99,7 @@ def load_schedule():
 
 schedule_list = load_schedule()
 
-#print "pid: %d" % os.getpid()
+logger.info("Dispatch PID: %d" % os.getpid())
 if __name__ == "__main__":
 	pool = multiprocessing.Pool(processes=pool_size)
 
@@ -111,5 +113,7 @@ if __name__ == "__main__":
 		pool.close()
 		pool.join()
 
-time.sleep(10000)
+# wait for the longest time between tasks
+max_period = 10000
+time.sleep(max_period)
 

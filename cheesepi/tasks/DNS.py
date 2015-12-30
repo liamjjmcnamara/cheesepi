@@ -10,6 +10,7 @@ from dns.exception import DNSException
 sys.path.append("/usr/local/")
 import cheesepi.utils
 import Task
+logger = cheesepi.utils.get_logger()
 
 class DNS(Task.Task):
 
@@ -21,13 +22,13 @@ class DNS(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "DNS: @ %f, PID: %d" % (time.time(), os.getpid())
+		logger.info("DNS: @ %f, PID: %d" % (time.time(), os.getpid()))
 		self.measure()
 
 	# measure and record funtion
 	def measure(self):
 		op_output = self.query_authoritative_ns(self.spec['domain'], log)
-		print op_output
+		logger.debug(op_output)
 
 		parsed_output = self.parse_output(op_output, self.spec['domain'])
 		self.dao.write_op(self.spec['taskname'], parsed_output)
@@ -53,7 +54,7 @@ class DNS(Task.Task):
 			response = dns.query.udp(query, ns)
 			end_time = cheesepi.utils.now()
 			delay = end_time - start_time
-			print "time: %f" % (delay)
+			logger.info("time: %f" % (delay))
 			delays.append(delay)
 
 			rcode = response.rcode()
@@ -103,3 +104,4 @@ if __name__ == "__main__":
 	spec = {'domain':"www.abc.net.au"}
 	dns_task = DNS(dao, spec)
 	dns_task.run()
+

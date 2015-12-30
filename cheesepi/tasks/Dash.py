@@ -12,9 +12,9 @@ import Task
 logger = cheesepi.config.get_logger()
 
 def callback(d):
-	print d
+	logger.info(d)
 	if d['status'] == 'finished':
-		print('Done downloading, now converting ...')
+		logger.debug(('Done downloading, now converting ...'))
 
 class Dash(Task.Task):
 
@@ -27,7 +27,7 @@ class Dash(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "Dash download: %s @ %f, PID: %d" % (self.source, time.time(), os.getpid())
+		logger.info("Dash download: %s @ %f, PID: %d" % (self.source, time.time(), os.getpid()))
 		self.measure()
 
 	# measure and record funtion
@@ -35,7 +35,7 @@ class Dash(Task.Task):
 		self.spec['start_time'] = cheesepi.utils.now()
 		op_output = self.perform()
 		self.spec['end_time'] = cheesepi.utils.now()
-		#print op_output
+		logger.debug(op_output)
 
 		#parsed_output = self.parse_output(op_output)
 		#self.dao.write_op(self.spec['taskname'], parsed_output)
@@ -69,3 +69,4 @@ if __name__ == "__main__":
 	spec = {'source':'http://www.youtube.com/watch?v=_OBlgSz8sSM'}
 	dash_task = Dash(dao, spec)
 	dash_task.run()
+

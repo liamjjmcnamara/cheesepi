@@ -9,6 +9,7 @@ from subprocess import Popen, PIPE
 sys.path.append("/usr/local/")
 import cheesepi.utils
 import Task
+logger = cheesepi.utils.get_logger()
 
 class Ping(Task.Task):
 
@@ -25,7 +26,7 @@ class Ping(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "Pinging: %s @ %f, PID: %d" % (self.spec['landmark'], time.time(), os.getpid())
+		logger.info("Pinging: %s @ %f, PID: %d" % (self.spec['landmark'], time.time(), os.getpid()))
 		self.measure()
 
 	# measure and record funtion
@@ -33,7 +34,7 @@ class Ping(Task.Task):
 		start_time = cheesepi.utils.now()
 		op_output = self.perform(self.spec['landmark'], self.spec['ping_count'], self.spec['packet_size'])
 		end_time = cheesepi.utils.now()
-		#print op_output
+		logger.debug(op_output)
 
 		parsed_output = self.parse_output(op_output, self.spec['landmark'],
 			start_time, end_time, self.spec['packet_size'], self.spec['ping_count'])
@@ -44,7 +45,7 @@ class Ping(Task.Task):
 		packet_size -= 8 # change packet size to payload length!
 		execute = "ping -c %s -s %s %s"%(ping_count, packet_size, landmark)
 		logging.info("Executing: "+execute)
-		print execute
+		logger.info(execute)
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
 		ret = result.stdout.read()
 		result.stdout.flush()
