@@ -1,0 +1,25 @@
+2015-12-22 08:43:06,544;ERROR; Task specification not valid: {u'landmark': u'sics.se', u'taskname': u'ping', u'period': 120}
+2015-12-22 08:43:06,544;ERROR; Task specification not valid: {u'landmark': u'sics.se', u'taskname': u'httping'}
+2015-12-22 08:43:06,545;ERROR; Task specification not valid: {u'taskname': u'dummy', u'message': u'ping', u'period': 10}
+2015-12-22 08:43:06,545;ERROR; Task specification not valid: {u'taskname': u'dummy', u'message': u'pong', u'period': 5}
+2015-12-22 08:43:21,853;ERROR; Task specification not valid: {u'landmark': u'sics.se', u'taskname': u'ping', u'period': 120}
+2015-12-22 08:43:21,853;ERROR; Task specification not valid: {u'landmark': u'sics.se', u'taskname': u'httping'}
+2015-12-22 08:43:21,853;ERROR; Task specification not valid: {u'taskname': u'dummy', u'message': u'ping', u'period': 10}
+2015-12-22 08:43:21,853;ERROR; Task specification not valid: {u'taskname': u'dummy', u'message': u'pong', u'period': 5}
+2015-12-22 08:48:05,767;ERROR; Task specification not valid: {u'landmark': u'sics.se', u'taskname': u'ping', u'period': 120}
+2015-12-22 08:48:05,768;ERROR; Task specification not valid: {u'landmark': u'sics.se', u'taskname': u'httping'}
+2015-12-22 08:48:05,768;ERROR; Task specification not valid: {u'taskname': u'dummy', u'message': u'ping', u'period': 10}
+2015-12-22 08:48:05,768;ERROR; Task specification not valid: {u'taskname': u'dummy', u'message': u'pong', u'period': 5}
+2015-12-22 08:48:55,529;ERROR; Task specification not valid: {u'landmark': u'sics.se', u'taskname': u'ping', u'period': 120}
+2015-12-22 08:48:55,530;ERROR; Task specification not valid: {u'landmark': u'sics.se', u'taskname': u'httping'}
+2015-12-22 08:48:55,530;ERROR; Task specification not valid: {u'taskname': u'dummy', u'message': u'ping', u'period': 10}
+2015-12-22 08:48:55,530;ERROR; Task specification not valid: {u'taskname': u'dummy', u'message': u'pong', u'period': 5}
+2015-12-22 08:50:36,186;ERROR; Task specification not valid: {u'landmark': u'sics.se', u'taskname': u'ping', u'period': 120}
+2015-12-22 08:50:36,186;ERROR; Task specification not valid: {u'landmark': u'sics.se', u'taskname': u'httping'}
+2015-12-22 08:50:36,186;ERROR; Task specification not valid: {u'taskname': u'dummy', u'message': u'ping', u'period': 10}
+2015-12-22 08:50:36,186;ERROR; Task specification not valid: {u'taskname': u'dummy', u'message': u'pong', u'period': 5}
+2015-12-30 15:47:26,893;ERROR; Problem connecting to InfluxDB when listing series: 400: {"error":"error parsing query: found list, expected SELECT, DELETE, SHOW, CREATE, DROP, GRANT, REVOKE, ALTER, SET at line 1, char 1"}
+2015-12-30 15:51:39,828;ERROR; Problem connecting to InfluxDB when listing series: 400: {"error":"error parsing query: found list, expected SELECT, DELETE, SHOW, CREATE, DROP, GRANT, REVOKE, ALTER, SET at line 1, char 1"}
+2015-12-30 15:52:46,065;ERROR; Problem connecting to InfluxDB when listing series: 400: {"error":"error parsing query: found list, expected SELECT, DELETE, SHOW, CREATE, DROP, GRANT, REVOKE, ALTER, SET at line 1, char 1"}
+2015-12-30 15:55:01,445;ERROR; Problem connecting to InfluxDB when listing series: 400: {"error":"error parsing query: found list, expected SELECT, DELETE, SHOW, CREATE, DROP, GRANT, REVOKE, ALTER, SET at line 1, char 1"}
+2015-12-30 16:01:48,500;ERROR; Problem connecting to InfluxDB when listing series: 400: {"error":"error parsing query: found list, expected SELECT, DELETE, SHOW, CREATE, DROP, GRANT, REVOKE, ALTER, SET at line 1, char 1"}
