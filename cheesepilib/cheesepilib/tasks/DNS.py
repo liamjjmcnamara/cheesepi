@@ -1,4 +1,3 @@
-import sys
 import time
 import os
 
@@ -7,10 +6,9 @@ import dns.query
 import dns.resolver
 from dns.exception import DNSException
 
-sys.path.append("/usr/local/")
-import cheesepi.utils
+import cheesepilib as cp
 import Task
-logger = cheesepi.utils.get_logger()
+logger = cp.config.get_logger()
 
 class DNS(Task.Task):
 
@@ -49,10 +47,10 @@ class DNS(Task.Task):
 		for i in xrange(len(n), 0, -1):
 			sub = '.'.join(n[i-1:])
 			log('Looking up %s on %s' % (sub, ns))
-			start_time = cheesepi.utils.now()
+			start_time = cp.utils.now()
 			query = dns.message.make_query(sub, dns.rdatatype.NS)
 			response = dns.query.udp(query, ns)
-			end_time = cheesepi.utils.now()
+			end_time = cp.utils.now()
 			delay = end_time - start_time
 			logger.info("time: %f" % (delay))
 			delays.append(delay)
@@ -94,12 +92,13 @@ class DNS(Task.Task):
 
 
 def log (msg):
-	sys.stderr.write(msg + u'\n')
+	pass
+	#sys.stderr.write(msg + u'\n')
 
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
-	dao = cheesepi.config.get_dao()
+	dao = cp.config.get_dao()
 
 	spec = {'domain':"www.abc.net.au"}
 	dns_task = DNS(dao, spec)

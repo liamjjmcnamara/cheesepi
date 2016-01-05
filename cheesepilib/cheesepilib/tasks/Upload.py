@@ -1,4 +1,3 @@
-import sys
 import time
 import os
 import tarfile
@@ -6,10 +5,9 @@ import tempfile
 import StringIO
 import requests
 
-sys.path.append("/usr/local/")
-import cheesepi
+import cheesepilib as cp
 import Task
-logger = cheesepi.utils.get_logger()
+logger = cp.config.get_logger()
 
 class Upload(Task.Task):
 	"""Task to upload data to central server"""
@@ -18,7 +16,7 @@ class Upload(Task.Task):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname']    = "upload"
 		if not 'collector' in self.spec: # no special endpoint
-			if not 'server' in self.spec: self.spec['server'] = cheesepi.config.get_controller()
+			if not 'server' in self.spec: self.spec['server'] = cp.config.get_controller()
 			self.spec['collector'] = self.spec['server']+"/upload.py"
 
 	def run(self):
@@ -27,14 +25,14 @@ class Upload(Task.Task):
 
 
 	def dump_db_tempfile(self):
-		last_dumped = cheesepi.config.get_last_dumped(self.dao)
+		last_dumped = cp.config.get_last_dumped(self.dao)
 		if last_dumped==-1:
 			logger.info("Never dumped this DB...")
 		else:
 			logger.info("Last dumped DB: "+str(last_dumped))
 		dumped_tables = self.dao.dump(last_dumped)
 		logger.debug(dumped_tables)
-		ethmac = cheesepi.utils.getCurrMAC()
+		ethmac = cp.utils.getCurrMAC()
 		parameters = {'ethmac': ethmac}
 
 		# make a temp file that dies on running out of scope
@@ -55,12 +53,12 @@ class Upload(Task.Task):
 		logger.debug(r.text)
 		#fd.close()
 		# remember when we last successfully dumped our data
-		cheesepi.config.set_last_dumped()
+		cp.config.set_last_dumped()
 		return r.text
 
 
 if __name__ == "__main__":
-	dao = cheesepi.config.get_dao()
+	dao = cp.config.get_dao()
 	dump_task = Upload(dao)
 	dump_task.dump_db_tempfile()
 

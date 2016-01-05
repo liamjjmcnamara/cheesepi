@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-import sys
 import os
 from time import time
 from builtins import str
@@ -7,11 +6,9 @@ from builtins import str
 from txmsgpackrpc.client import connect
 from twisted.internet import defer
 
-
-sys.path.append("/usr/local/")
-import cheesepi
+import cheesepilib as cp
 import Task
-logger = cheesepi.utils.get_logger()
+logger = cp.config.get_logger()
 
 SERVER_PORT = 18080
 
@@ -23,7 +20,7 @@ class Beacon(Task.Task):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname'] = "beacon"
 		self.spec['peer_id']  = spec['peer_id']
-		if not 'server' in spec: self.spec['server'] = cheesepi.config.get_controller()
+		if not 'server' in spec: self.spec['server'] = cp.config.get_controller()
 
 	def run(self):
 		logger.info("Beaconing ID:%d to %s @ %f, PID: %d" % (self.spec['peer_id'], self.spec['server'], time(), os.getpid()))

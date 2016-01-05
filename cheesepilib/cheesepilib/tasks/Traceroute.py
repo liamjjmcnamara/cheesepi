@@ -1,14 +1,12 @@
 import time
 import os
-import sys
 import platform
 import re
 from subprocess import Popen, PIPE
 
-sys.path.append("/usr/local/")
+import cheesepilib as cp
 import Task
-import cheesepi.utils
-logger = cheesepi.utils.get_logger()
+logger = cp.config.get_logger()
 
 class Traceroute(Task.Task):
 
@@ -22,9 +20,9 @@ class Traceroute(Task.Task):
 
 	def measure(self, landmark):
 		#Extract the ethernet MAC address of the PI
-		startTime = cheesepi.utils.now()
+		startTime = cp.utils.now()
 		output	  = self.getData(landmark)
-		endTime   = cheesepi.utils.now()
+		endTime   = cp.utils.now()
 		#trc, hoplist = reformat(tracerouteResult, startTime, endTime)
 		logger.debug(output)
 		parsed = self.parse(output, startTime, endTime)
@@ -45,7 +43,7 @@ class Traceroute(Task.Task):
 	def parse_null(self, hop_count):
 		return {'hop_count': hop_count,
 			'domain1': "*", 'domain2': "*", 'domain3': "*",
-			'ip1'	 : "*", 'ip2'	 : "*", 'ip3'	 : "*",
+			'ip1'    : "*", 'ip2'    : "*", 'ip3'    : "*",
 			'delay1': -1, 'delay2': -1, 'delay3': -1, }
 
 	#############################
@@ -158,8 +156,8 @@ if __name__ == "__main__":
 		exit(0)
 
 	#general logging here? unable to connect etc
-	config = cheesepi.config.get_config()
-	dao = cheesepi.config.get_dao()
+	config = cp.config.get_config()
+	dao = cp.config.get_dao()
 
 	spec = {'landmark':'google.com'}
 	traceroute_task = Traceroute(dao, spec)

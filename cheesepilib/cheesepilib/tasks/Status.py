@@ -1,14 +1,12 @@
-import sys
 import time
 import os
 import logging
 import socket
 from subprocess import Popen, PIPE
 
-sys.path.append("/usr/local/")
-import cheesepi.utils
+import cheesepilib as cp
 import Task
-logger = cheesepi.utils.get_logger()
+logger = cp.config.get_logger()
 
 class Status(Task.Task):
 
@@ -24,8 +22,8 @@ class Status(Task.Task):
 
 	#main measure funtion
 	def measure(self):
-		ethmac = cheesepi.utils.get_MAC()
-		self.spec['start_time'] = cheesepi.utils.now()
+		ethmac = cp.utils.get_MAC()
+		self.spec['start_time'] = cp.utils.now()
 		op_output  = self.perform()
 
 		parsed_output = self.parse_output(op_output, ethmac)
@@ -44,8 +42,8 @@ class Status(Task.Task):
 	#read the data from ping and reformat for database entry
 	def parse_output(self, data, ethmac):
 		self.spec["ethernet_MAC"]  = ethmac
-		self.spec["current_MAC"]   = cheesepi.utils.get_MAC()
-		self.spec["source_address"]= cheesepi.utils.get_SA()
+		self.spec["current_MAC"]   = cp.utils.get_MAC()
+		self.spec["source_address"]= cp.utils.get_SA()
 		# shakey
 		self.spec["local_address"] = [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
 
@@ -59,7 +57,7 @@ class Status(Task.Task):
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
-	dao = cheesepi.config.get_dao()
+	dao = cp.config.get_dao()
 
 	status_task = Status(dao)
 	status_task.run()

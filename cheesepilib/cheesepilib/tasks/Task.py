@@ -4,7 +4,7 @@ import json
 class Task:
 
 	def __init__(self, dao, spec):
-		self.dao        = dao
+		self.dao                = dao
 		self.spec               = {}
 		self.spec['taskname']   = "Superclass"
 		self.spec['cycle']      = 0 # deprecated

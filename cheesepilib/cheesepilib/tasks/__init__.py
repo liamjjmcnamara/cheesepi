@@ -1,4 +1,6 @@
 
+import json
+
 from Task import Task
 from Dummy import Dummy
 from Status import Status
@@ -13,7 +15,6 @@ from iPerf import iPerf
 from Beacon import Beacon
 from Upload import Upload
 
-import json
 
 def build_json(dao, json_str):
 	spec = json.loads(json_str)

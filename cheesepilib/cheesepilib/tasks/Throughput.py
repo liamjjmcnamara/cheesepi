@@ -1,11 +1,9 @@
-import sys
 import time
 import os
 
-sys.path.append("/usr/local/")
-import cheesepi.utils
+import cheesepilib as cp
 import Task
-logger = cheesepi.utils.get_logger()
+logger = cp.config.get_logger()
 
 # https://github.com/sivel/speedtest-cli
 import speedtest
@@ -24,9 +22,9 @@ class Throughput(Task.Task):
 
 	# measure and record funtion
 	def measure(self):
-		self.spec['start_time'] = cheesepi.utils.now()
+		self.spec['start_time'] = cp.utils.now()
 		op_output = speedtest.speedtest()
-		self.spec['end_time']= cheesepi.utils.now()
+		self.spec['end_time']= cp.utils.now()
 		logger.debug(op_output)
 
 		parsed_output = self.parse_output(op_output)
@@ -42,7 +40,7 @@ class Throughput(Task.Task):
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
-	dao = cheesepi.config.get_dao()
+	dao = cp.config.get_dao()
 
 	spec={}
 	throughput_task = Throughput(dao, spec)

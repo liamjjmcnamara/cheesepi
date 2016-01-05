@@ -28,7 +28,7 @@ Testers:
 
 import os
 
-import cheesepi
+import cheesepilib as cp
 
 def register_user(user):
     """Contact central server to register new account"""

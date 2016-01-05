@@ -28,10 +28,8 @@ Testers:
 
 import urllib2
 import uuid
-import datetime
 import time
 
-import cheesepi
 
 # time functions
 def now():

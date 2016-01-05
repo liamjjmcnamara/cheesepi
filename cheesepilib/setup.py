@@ -32,8 +32,8 @@ a local config file (if one does not exist, and initialising logging options
 from setuptools import setup, find_packages
 
 setup(
-        name='cheeselib',
-        version='0.1',
+        name='cheesepilib',
+        version='0.2',
         description='CheesePi Library',
 
         # Which versions we support
@@ -57,7 +57,7 @@ setup(
 
         entry_points={
             'console_scripts':[
-                'cheesepi_config = cheeselib.peer.config:main',
+                'cheesepi_config = cheesepilib.config:main',
             ]
         }
 )

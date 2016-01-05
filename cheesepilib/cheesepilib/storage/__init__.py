@@ -2,13 +2,13 @@ import dao
 
 try:
 	import dao_mongo
-except ImportError:
+except ImportError as e:
 	print "Missing Mongo python module (and GridFS and bson), use 'pip install pymongo'"
 	print str(e)
 
 try:
 	import dao_influx
-except ImportError:
+except ImportError as e:
 	print "Missing InfluxDB python module, use 'pip install influxdb'"
 	print str(e)
 

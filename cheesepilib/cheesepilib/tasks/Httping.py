@@ -1,4 +1,3 @@
-import sys
 import time
 import os
 import re
@@ -6,10 +5,9 @@ import logging
 import socket
 from subprocess import Popen, PIPE
 
-sys.path.append("/usr/local/")
 import Task
-import cheesepi.utils
-logger = cheesepi.utils.get_logger()
+import cheesepilib as cp
+logger = cp.config.get_logger()
 
 class Httping(Task.Task):
 
@@ -35,9 +33,9 @@ class Httping(Task.Task):
 
 	#main measure funtion
 	def measure(self, landmark, ping_count):
-		start_time = cheesepi.utils.now()
+		start_time = cp.utils.now()
 		op_output = self.perform(landmark, ping_count)
-		end_time = cheesepi.utils.now()
+		end_time = cp.utils.now()
 		logger.debug(op_output)
 
 		parsed_output = self.parse_output(op_output, landmark, start_time, end_time, ping_count)
@@ -98,15 +96,15 @@ class Httping(Task.Task):
 				ret["average_RTT"] = float(fields[1])
 				ret["maximum_RTT"] = float(fields[2])
 		ret['delays'] = str(delays)
-		ret["stddev_RTT"]  = cheesepi.utils.stdev(delays)
+		ret["stddev_RTT"]  = cp.utils.stdev(delays)
 		ret['breakdown'] = str(self.parse_breakdowns(breakdowns))
 		return ret
 
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
-	dao    = cheesepi.config.get_dao()
-	config = cheesepi.config.get_config()
+	dao    = cp.config.get_dao()
+	config = cp.config.get_config()
 
 	spec = {'landmark':'google.com'}
 	httping_task = Httping(dao, spec)

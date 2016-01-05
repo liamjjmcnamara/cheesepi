@@ -37,54 +37,25 @@ import logging
 import json
 import urllib2
 
-import cheesepi
+import cheesepilib as cp
 
 
 # Globals
 cheesepi_dir = os.path.dirname(os.path.realpath(__file__))
 config_file  = os.path.join(cheesepi_dir,"cheesepi.conf")
 version_file = os.path.join(cheesepi_dir,"version")
-config       = None # instantiated filelevel later!
-logger       = None # instantiated filelevel later!
 
-def main():
-	print config
+logfile = os.path.join(cheesepi_dir, "cheesepi.log")
+logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(levelname)s; %(message)s")
+logger = logging.getLogger('CheesePi')
+
+
 
 def get_logger():
-	logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(levelname)s; %(message)s")
-	logger = logging.getLogger('CheesePi')
 	return logger
-
-def get_config():
-	config = {}
-	lines  = read_config()
-	for line in lines:
-		# strip comment and badly formed lines
-		if re.match('^\s*#', line) or not re.search('=',line):
-			continue
-		# logger.debug(line)
-		(key, value) = line.split("=",1)
-		config[clean(key)] = clean(value)
-	config['cheesepi_dir'] = cheesepi_dir
-	config['config_file']  = config_file
-	config['version']      = version()
-	return config
-
-
-def read_config():
-	# ensure we have a config file to read
-	create_default_config()
-
-	try:
-		fd = open(config_file)
-		lines = fd.readlines()
-		fd.close()
-	except Exception as e:
-		logger.error("Error: can not read config file: "+str(e))
-		# should copy from default location!
-		sys.exit(1)
-	return lines
-
+def generate_secret():
+	"""Make a secret for this node, to use in signing data dumps"""
+	return str(uuid.uuid4())
 
 def create_default_config():
 	"""If config file does not exist, try to copy from default.
@@ -101,23 +72,60 @@ def create_default_config():
 		try:
 			copyfile(default_config, config_file, "_SECRET_", secret)
 		except:
-			msg = "Problem copying files - check permissions of %" % cheesepi_dir
-			logging.error(msg)
+			msg = "Problem copying files - check permissions of %s" % cheesepi_dir
 			logger.error(msg)
 			exit(1)
 	else:
 		logger.error("Can not find default config file!")
 
+def read_config():
+	# ensure we have a config file to read
+	create_default_config()
+	try:
+		fd = open(config_file)
+		lines = fd.readlines()
+		fd.close()
+	except Exception as e:
+		logger.error("Error: can not read config file: "+str(e))
+		# should copy from default location!
+		sys.exit(1)
+	return lines
+
+
+def get_config():
+	config = {}
+	lines  = read_config()
+	for line in lines:
+		# strip comment and badly formed lines
+		if re.match('^\s*#', line) or not re.search('=',line):
+			continue
+		# logger.debug(line)
+		(key, value) = line.split("=",1)
+		config[clean(key)] = clean(value)
+	config['cheesepi_dir'] = cheesepi_dir
+	config['config_file']  = config_file
+	config['version']      = version()
+	return config
+
+def main():
+	from pprint import PrettyPrinter
+	printer = PrettyPrinter(indent=4)
+	printer.pprint(config)
+
+
+
+
+
 
 def get_dao():
 	if config_equal('database',"mongo"):
-		return cheesepi.storage.dao_mongo.DAO_mongo()
+		return cp.storage.dao_mongo.DAO_mongo()
 	elif config_equal('database',"influx"):
-		return cheesepi.storage.dao_influx.DAO_influx()
+		return cp.storage.dao_influx.DAO_influx()
 	elif config_equal('database',"mysql"):
-		return cheesepi.storage.dao_mysql.DAO_mysql()
+		return cp.storage.dao_mysql.DAO_mysql()
 	elif config_equal('database',"null"):
-		return cheesepi.storage.dao.DAO()
+		return cp.storage.dao.DAO()
 	# and so on for other database engines...
 
 	msg = "Fatal error: 'database' type not set to a valid value in config file, exiting."
@@ -142,7 +150,7 @@ def make_databases():
 def set_last_updated(dao=None):
 	if dao==None:
 		dao = get_dao()
-	dao.write_user_attribute("last_updated",cheesepi.utils.now())
+	dao.write_user_attribute("last_updated",cp.utils.now())
 
 def get_last_updated(dao=None):
 	"""When did we last update our code from the central server?"""
@@ -162,7 +170,7 @@ def should_update(dao=None):
 		return False
 	last_updated = get_last_updated(dao)
 	update_period = get_update_period()
-	if (last_updated < (cheesepi.utils.now()-update_period)):
+	if (last_updated < (cp.utils.now()-update_period)):
 		return True
 	return False
 
@@ -170,7 +178,7 @@ def should_update(dao=None):
 def set_last_dumped(dao=None):
 	if dao==None:
 		dao = get_dao()
-	dao.write_user_attribute("last_dumped", cheesepi.utils.now())
+	dao.write_user_attribute("last_dumped", cp.utils.now())
 
 def get_last_dumped(dao=None):
 	"""When did we last dump our data to the central server?"""
@@ -188,7 +196,7 @@ def should_dump(dao=None):
 	"""Should we update our code?"""
 	last_dumped = get_last_dumped(dao)
 	dump_period = get_dump_period()
-	if (last_dumped < (cheesepi.utils.now()-dump_period)):
+	if (last_dumped < (cp.utils.now()-dump_period)):
 		return True
 	return False
 
@@ -202,9 +210,6 @@ def copyfile(from_file, to_file, occurance, replacement):
 				fout.write(line.replace(occurance, replacement))
 
 
-def generate_secret():
-	"""Make a secret for this node, to use in signing data dumps"""
-	return str(uuid.uuid4())
 
 
 def version():
@@ -303,13 +308,6 @@ def clean(id):
 
 # Some accounting to happen on every import (mostly for config file making)
 config = get_config()
-if config_defined('logfile'):
-	logfile = os.path.join(cheesepi_dir, config['logfile'])
-	try:
-		logger = get_logger()
-	except:
-		logger.error("Failed to open log %s, probably lacking permissions" % logfile)
-		exit(1)
 
 
 if __name__ == "__main__":

@@ -1,11 +1,9 @@
-import sys
 import time
 import os
 
-sys.path.append("/usr/local/")
-import cheesepi.utils
+import cheesepilib as cp
 import Task
-logger = cheesepi.utils.get_logger()
+logger = cheesepilib.config.get_logger()
 
 class Dummy(Task.Task):
 
@@ -22,7 +20,7 @@ class Dummy(Task.Task):
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
-	dao = cheesepi.config.get_dao()
+	dao = cp.config.get_dao()
 
 	spec = {}
 	dummy_task = Dummy(dao, spec)

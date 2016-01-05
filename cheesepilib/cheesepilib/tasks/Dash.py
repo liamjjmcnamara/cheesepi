@@ -1,15 +1,13 @@
 from __future__ import unicode_literals
-import sys
 import time
 import os
 
 import youtube_dl
 
-sys.path.append("/usr/local/")
-import cheesepi.utils
+import cheesepilib as cp
 import Task
 
-logger = cheesepi.config.get_logger()
+logger = cp.config.get_logger()
 
 def callback(d):
 	logger.info(d)
@@ -32,9 +30,9 @@ class Dash(Task.Task):
 
 	# measure and record funtion
 	def measure(self):
-		self.spec['start_time'] = cheesepi.utils.now()
+		self.spec['start_time'] = cp.utils.now()
 		op_output = self.perform()
-		self.spec['end_time'] = cheesepi.utils.now()
+		self.spec['end_time'] = cp.utils.now()
 		logger.debug(op_output)
 
 		#parsed_output = self.parse_output(op_output)
@@ -64,7 +62,7 @@ class Dash(Task.Task):
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
-	dao = cheesepi.config.get_dao()
+	dao = cp.config.get_dao()
 
 	spec = {'source':'http://www.youtube.com/watch?v=_OBlgSz8sSM'}
 	dash_task = Dash(dao, spec)
