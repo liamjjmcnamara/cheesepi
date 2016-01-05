@@ -1,5 +1,5 @@
 
-Introduction to the source files for the CheesePi infrastructure.
+Introduction to the source code for the CheesePi measurement platform
 
 # Install
 
