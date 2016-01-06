@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import logging
 import cherrypy
 
-sys.path.append("/usr/local")
-import cheesepi
+import cheesepilib as cp
 
 logger = logging.getLogger('CheesePi')
 logger.setLevel(logging.ERROR)
@@ -15,24 +13,24 @@ serveroot = os.path.dirname(os.path.realpath(__file__))
 confpath = os.path.join(serveroot,'cherrypy.conf')
 print "Webserver root: "+serveroot
 
-dao = cheesepi.config.get_dao()
+dao = cp.config.get_dao()
 
 class Root:
-    def index(self):
-        raise cherrypy.HTTPRedirect("/dashboard")
-        return
-    index.exposed = True
+	def index(self):
+		raise cherrypy.HTTPRedirect("/dashboard")
+		return
+	index.exposed = True
 
 class Dynamic:
-    def index(self, **params):
-        cherrypy.response.headers["Content-Type"]  = "application/json"
-        return '{[{"value":10},{"value":15}]}'
-        return '{["value":1],["value":2]}'
-        return dao.get_op("ping")
-    index.exposed = True
-    #def dynamic(self):
-    #	return "This is a DYNAMIC page"
-    #dynamic.exposed = True
+	def index(self, **params):
+		cherrypy.response.headers["Content-Type"]  = "application/json"
+		return '{[{"value":10},{"value":15}]}'
+		return '{["value":1],["value":2]}'
+		return dao.get_op("ping")
+	index.exposed = True
+	#def dynamic(self):
+	#return "This is a DYNAMIC page"
+	#dynamic.exposed = True
 
 def setup_server():
 	root = Root()

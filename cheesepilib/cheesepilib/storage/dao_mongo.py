@@ -35,7 +35,7 @@ import gridfs
 import bson
 from bson.json_util import dumps
 
-import cheesepi
+import cheesepilib as cp
 import dao
 
 class DAO_mongo(dao.DAO):
@@ -64,7 +64,7 @@ class DAO_mongo(dao.DAO):
         if binary!=None:
             # save binary, check its not too big
             dic['binary'] = bson.Binary(binary)
-        config = cheesepi.config.get_config()
+        config = cp.config.get_config()
         dic['version'] = config['version']
         md5 = hashlib.md5(config['secret']+str(dic)).hexdigest()
         dic['sign']    = md5

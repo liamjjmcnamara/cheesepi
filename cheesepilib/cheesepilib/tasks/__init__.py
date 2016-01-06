@@ -16,11 +16,11 @@ from Beacon import Beacon
 from Upload import Upload
 
 
-def build_json(dao, json_str):
+def _build_json(dao, json_str):
 	spec = json.loads(json_str)
 	return build_task(spec)
 
-def build_task(dao, spec):
+def _build_task(dao, spec):
 	if not 'taskname' in spec:
 		return None
 

@@ -37,7 +37,7 @@ import traceback
 from influxdb import InfluxDBClient
 from influxdb.client import InfluxDBClientError
 
-import cheesepi
+import cheesepilib as cp
 import dao
 
 host     = "localhost"
@@ -55,7 +55,7 @@ class DAO_influx(dao.DAO):
 			msg = "Error: Connection to Influx database failed! Ensure InfluxDB is running. "+str(e)
 			logging.error(msg)
 			print msg
-			cheesepi.config.make_databases()
+			cp.config.make_databases()
 			exit(1)
 
 
@@ -94,7 +94,7 @@ class DAO_influx(dao.DAO):
 		#if binary!=None:
 		#	 # save binary, check its not too big
 		#	 dic['binary'] = bson.Binary(binary)
-		config = cheesepi.config.get_config()
+		config = cp.config.get_config()
 		dic['version'] = config['version']
 		md5 = hashlib.md5(config['secret']+str(dic)).hexdigest()
 		dic['sign']    = md5

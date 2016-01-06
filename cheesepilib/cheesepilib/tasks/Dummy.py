@@ -3,7 +3,7 @@ import os
 
 import cheesepilib as cp
 import Task
-logger = cheesepilib.config.get_logger()
+logger = cp.config.get_logger()
 
 class Dummy(Task.Task):
 
