@@ -15,6 +15,7 @@ class Ping(Task.Task):
 	def __init__(self, dao, spec):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname']    = "ping"
+		if not 'landmark'    in self.spec: self.spec['landmark']    = "google.com"
 		if not 'ping_count'  in self.spec: self.spec['ping_count']  = 10
 		if not 'packet_size' in self.spec: self.spec['packet_size'] = 64
 		try:

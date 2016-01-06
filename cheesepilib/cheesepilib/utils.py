@@ -31,7 +31,9 @@ import urllib2
 import uuid
 import time
 
+import cheesepilib as cp
 from cheesepilib.tasks import *
+logger =cp.config.get_logger()
 
 def build_json(dao, json_str):
 	"""Build a Task object out of a JSON string spec"""
@@ -40,6 +42,7 @@ def build_json(dao, json_str):
 
 def build_task(dao, spec):
 	if not 'taskname' in spec:
+		logger.error("No 'taskname' specified!")
 		return None
 
 	if spec['taskname']=='ping':
