@@ -36,6 +36,7 @@ import traceback
 #from influxdb.influxdb08.client import InfluxDBClientError
 from influxdb import InfluxDBClient
 from influxdb.client import InfluxDBClientError
+from requests.exceptions import ConnectionError
 
 import cheesepilib as cp
 import dao
@@ -100,16 +101,20 @@ class DAO_influx(dao.DAO):
 		dic['sign']    = md5
 
 		points=self.toFormat(op_type,dic)
-		print "Saving Op: %s" % str(points)
+		print "Saving %s Op: %s" % (op_type, str(points))
 		try:
 			result = self.conn.write_points(points)
 		except InfluxDBClientError as e:
 			if e.code==204: # success!
 				return True
 			traceback.print_exc()
+		except ConnectionError as e:
+			print "Database connection error, is the database server runing?"
+			return None
 		except Exception as e:
 			msg = "Database Influx "+op_type+" Op write failed! "+str(e)
-			print e
+			print type(e)
+			print msg
 			logging.error(msg)
 			#cheesepi.config.make_databases()
 			#exit(1)

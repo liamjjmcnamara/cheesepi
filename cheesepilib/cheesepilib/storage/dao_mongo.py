@@ -69,7 +69,7 @@ class DAO_mongo(dao.DAO):
         md5 = hashlib.md5(config['secret']+str(dic)).hexdigest()
         dic['sign']    = md5
 
-        print "Saving %s Op: %s" % (op_type, dic)
+        print "Saving %s Operation: %s" % (op_type, dic)
         try:
             id = collection.insert(dic)
         except:
