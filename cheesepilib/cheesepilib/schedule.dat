@@ -8,4 +8,4 @@
 {"taskname": "Throughput", "period": 900, "offset":200}
 # admin
 {"taskname": "beacon",     "period": 14400,"offset":400}
-{"taskname": "upload",     "period": 86400,"offset":450}
+{"taskname": "upload",     "period": 86400,"offset":450, "peer_id":0}
