@@ -13,6 +13,8 @@ class PrintingObserver:
 ### Script entrypoints
 
 def start_control_server():
+	import argparse
+
 	from twisted.internet import reactor
 	from twisted.logger import Logger, globalLogPublisher
 
@@ -20,15 +22,19 @@ def start_control_server():
 	                                        CheeseRPCServer)
 	from cheesepilib.server.storage.mongo import MongoDAO
 
-	SERVER_PORT = 18080
+	# Argument parsing
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--port', type=int, default=18080,
+	                    help='Port to listen on')
+	args = parser.parse_args()
 
+	# Logging
 	log = Logger()
 	globalLogPublisher.addObserver(PrintingObserver())
 
 	dao = MongoDAO()
-
 	control_server = CheeseRPCServer(dao).getStreamFactory(CheeseRPCServerFactory)
 
-	reactor.listenTCP(SERVER_PORT, control_server)
-	log.info("Starting server on port %d..." % SERVER_PORT)
+	reactor.listenTCP(args.port, control_server)
+	log.info("Starting server on port %d..." % args.port)
 	reactor.run()
