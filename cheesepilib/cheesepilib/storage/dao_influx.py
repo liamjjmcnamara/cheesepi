@@ -151,7 +151,9 @@ class DAO_influx(dao.DAO):
 		# check we dont already exist
 		try:
 			print "Saving user attribute: %s to %s " % (attribute, value)
-			json = self.to_json("user", {attribute:value})
+			#json = self.to_json("user", {attribute:value})
+			json = self.toFormat("user", {attribute:value})
+			print json
 			return self.conn.write_points(json)
 		except Exception as e:
 			msg = "Problem connecting to InfluxDB: "+str(e)

@@ -52,7 +52,6 @@ setup(
             'dnspython',
             'influxdb',
             'pymongo',
-            'MySQL-python',
         ],
 
         entry_points={
