@@ -1,13 +1,14 @@
 import time
-import server_dao.dao as dao
-from server_dao.exception import ServerDaoError, NoSuchPeer
 
 import pymongo
+
+from .dao import DAO
+from cheesepilib.exceptions import ServerDaoError, NoSuchPeer
 
 # What is the threshold in seconds to be considered 'active'
 ACTIVE_THRESHOLD = 3600
 
-class MongoDAO(dao.DAO):
+class MongoDAO(DAO):
 
     def __init__(self):
         self.client = pymongo.MongoClient()
