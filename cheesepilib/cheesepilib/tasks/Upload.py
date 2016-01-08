@@ -30,6 +30,7 @@ class Upload(Task.Task):
 			logger.info("Never dumped this DB...")
 		else:
 			logger.info("Last dumped DB: "+str(last_dumped))
+
 		dumped_tables = self.dao.dump(last_dumped)
 		logger.debug(dumped_tables)
 		ethmac = cp.utils.getCurrMAC()
@@ -49,7 +50,7 @@ class Upload(Task.Task):
 		fd.seek(0) # flush and reset file handle, so it can be read for POST
 
 		files = {'file': ('archive.tgz', fd), }
-		r = requests.post(self.spec['collector'], data=parameters, files=files)
+		r = requests.post("http://"+self.spec['collector'], data=parameters, files=files)
 		logger.debug(r.text)
 		#fd.close()
 		# remember when we last successfully dumped our data

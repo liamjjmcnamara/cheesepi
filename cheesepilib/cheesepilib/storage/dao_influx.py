@@ -62,22 +62,21 @@ class DAO_influx(dao.DAO):
 
 	def dump(self, since=-1):
 		try:
-			series = self.conn.query("list series")
-			#series = self.conn.get_list_series()
+			series = self.conn.get_list_series()
 		except Exception as e:
 			msg = "Problem connecting to InfluxDB when listing series: "+str(e)
 			print msg
 			logging.error(msg)
 			exit(1)
-		#print "series",series[0]['points']
 
 		# maybe prune series?
 		dumped_db = {}
-		for s in series[0]['points']:
-			series_name = s[1]
-			dumped_series = self.conn.query('select * from %s where time > %d limit 1;' % (series_name,since*1000) )
-			#print dumped_series
-			dumped_db[series_name] = json.dumps(dumped_series)
+		for s in series:
+			series_name = s['name']
+			print series_name
+			dumped_series = self.conn.query('select * from %s where time > %d limit 5;' % (series_name,0*1000) )
+			print dumped_series.raw['results']
+			dumped_db[series_name] = json.dumps(dumped_series.raw['results'])
 		return dumped_db
 
 

@@ -45,6 +45,8 @@ def build_task(dao, spec):
 		logger.error("No 'taskname' specified!")
 		return None
 
+	spec['taskname'] = spec['taskname'].lower()
+
 	if spec['taskname']=='ping':
 		return Ping(dao, spec)
 	elif spec['taskname']=='httping':

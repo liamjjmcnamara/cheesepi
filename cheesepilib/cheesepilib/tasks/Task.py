@@ -7,7 +7,6 @@ class Task:
 		self.dao                = dao
 		self.spec               = {}
 		self.spec['taskname']   = "Superclass"
-		self.spec['cycle']      = 0 # deprecated
 		self.spec['period']     = 3600 # hourly
 		self.spec['offset']     = 0
 		self.spec['downloaded'] = 1 # bytes, placeholder

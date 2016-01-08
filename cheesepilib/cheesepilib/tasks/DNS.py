@@ -16,7 +16,7 @@ class DNS(Task.Task):
 	def __init__(self, dao, spec):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname'] = "dns"
-		if not 'domain' in spec: self.spec['domain'] = "www.abc.net.au"
+		if not 'landmark' in spec: self.spec['landmark'] = "sics.se"
 
 	# actually perform the measurements, no arguments required
 	def run(self):
@@ -25,10 +25,11 @@ class DNS(Task.Task):
 
 	# measure and record funtion
 	def measure(self):
-		op_output = self.query_authoritative_ns(self.spec['domain'], log)
+		op_output = self.query_authoritative_ns(self.spec['landmark'], log)
+		print op_output
 		logger.debug(op_output)
 
-		parsed_output = self.parse_output(op_output, self.spec['domain'])
+		parsed_output = self.parse_output(op_output, self.spec['landmark'])
 		self.dao.write_op(self.spec['taskname'], parsed_output)
 
 	#read the data from ping and reformat for database entry
@@ -71,6 +72,7 @@ class DNS(Task.Task):
 
 			# Handle all RRsets, not just the first one
 			for rrset in rrsets:
+				print rrset
 				for rr in rrset:
 					if rr.rdtype == dns.rdatatype.SOA:
 						#log('Same server is authoritative for %s' % (sub))
@@ -100,7 +102,7 @@ if __name__ == "__main__":
 	#general logging here? unable to connect etc
 	dao = cp.config.get_dao()
 
-	spec = {'domain':"www.abc.net.au"}
+	spec = {'landmark':"www.abc.net.au"}
 	dns_task = DNS(dao, spec)
 	dns_task.run()
 
