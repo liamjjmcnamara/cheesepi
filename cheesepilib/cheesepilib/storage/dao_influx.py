@@ -108,7 +108,7 @@ class DAO_influx(dao.DAO):
 				return True
 			traceback.print_exc()
 		except ConnectionError as e:
-			print "Database connection error, is the database server runing?"
+			print "Database connection error, is the database server running?"
 			return None
 		except Exception as e:
 			msg = "Database Influx "+op_type+" Op write failed! "+str(e)
