@@ -268,11 +268,12 @@ def config_true(key):
 # this should (in future) include authentication
 def load_remote_schedule():
 	try:
-		response = urllib2.urlopen('http://cheesepi.sics.se/schedule.dat')
+		url = 'http://cheesepi.sics.se/schedule.dat'
+		response = urllib2.urlopen(url)
 		schedule = response.read()
 		return schedule
 	except urllib2.HTTPError as e:
-		logger.error('The server couldn\'t fulfill the request. Code: '+e.code)
+		logger.error("The CheesePi controller server '%s' couldn\'t fulfill the request. Code: %s" % (url, str(e.code)))
 	except urllib2.URLError as e:
 		logger.error('We failed to reach the central server: '+e.reason)
 	except:

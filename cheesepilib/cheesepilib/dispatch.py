@@ -8,16 +8,16 @@ import sched
 import multiprocessing
 import logging
 
-import cheesepi
+import cheesepilib as cp
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 start_time = time.time()
 
-dao    = cheesepi.config.get_dao()
-config = cheesepi.config.get_config()
-logger = cheesepi.config.get_logger()
+dao    = cp.config.get_dao()
+config = cp.config.get_config()
+logger = cp.config.get_logger()
 
 # Create scheduler object, use 'real' time
 s = sched.scheduler(time.time, time.sleep)
@@ -65,7 +65,7 @@ def run(task, spec):
 
 def schedule_task(spec):
 	"""Ensure task defiend by specificaiton is executed"""
-	task = cheesepi.tasks.build_task(dao, spec)
+	task = cp.utils.build_task(dao, spec)
 	if task == None:
 		logger.error("Task specification not valid: "+str(spec))
 		return
@@ -91,10 +91,10 @@ def get_queue():
 def load_schedule():
 	"""Load a schedule of task specifications"""
 	#try to get from central server
-	tasks = cheesepi.config.load_remote_schedule()
+	tasks = cp.config.load_remote_schedule()
 	if tasks==None:
 		# just use local
-		tasks = cheesepi.config.load_local_schedule()
+		tasks = cp.config.load_local_schedule()
 	return tasks
 
 schedule_list = load_schedule()

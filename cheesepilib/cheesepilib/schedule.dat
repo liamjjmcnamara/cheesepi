@@ -1,3 +1,7 @@
-{"taskname": "ping",       "landmark": "sics.se", "period": 300, "offset":0}
-{"taskname": "httping",    "landmark": "sics.se", "period": 300, "offset":10}
-{"taskname": "traceroute", "landmark": "sics.se", "period": 300, "offset":20}
+{"taskname": "ping",       "period": 900, "offset":0,  "landmark": "sics.se"}
+{"taskname": "httping",    "period": 900, "offset":10, "landmark": "sics.se"}
+{"taskname": "traceroute", "period": 900, "offset":20, "landmark": "sics.se"}
+{"taskname": "DNS",        "period": 900, "offset":30, "landmark": "sics.se"}
+{"taskname": "Status",     "period": 900, "offset":40}
+{"taskname": "Dash",       "period": 900, "offset":50, "source":"http://www.youtube.com/watch?v=_OBlgSz8sSM"}
+{"taskname": "Throughput", "period": 900, "offset":200}

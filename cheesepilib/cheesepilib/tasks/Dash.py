@@ -25,7 +25,7 @@ class Dash(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info("Dash download: %s @ %f, PID: %d" % (self.source, time.time(), os.getpid()))
+		logger.info("Dash download: %s @ %f, PID: %d" % (self.spec['source'], time.time(), os.getpid()))
 		self.measure()
 
 	# measure and record funtion
@@ -33,6 +33,7 @@ class Dash(Task.Task):
 		self.spec['start_time'] = cp.utils.now()
 		op_output = self.perform()
 		self.spec['end_time'] = cp.utils.now()
+		print op_output
 		logger.debug(op_output)
 
 		#parsed_output = self.parse_output(op_output)
@@ -51,7 +52,7 @@ class Dash(Task.Task):
 		}
 		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 			#ydl.download(['http://www.youtube.com/watch?v=BaW_jenozKc'])
-			ydl.download([self.source])
+			ydl.download([self.spec['source']])
 
 	#read the data from ping and reformat for database entry
 	def parse_output(self, data, ):
