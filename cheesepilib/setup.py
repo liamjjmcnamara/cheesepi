@@ -58,7 +58,8 @@ setup(
         entry_points={
             'console_scripts':[
                 'cheesepi_config = cheesepilib.config:main',
-                'cheesepi_control_start = cheesepilib.server.utils:start_control_server',
+                'cheesepi_control_server_start = cheesepilib.server.utils:start_control_server',
+                'cheesepi_upload_server_start = cheesepilib.server.utils:start_upload_server',
             ]
         }
 )

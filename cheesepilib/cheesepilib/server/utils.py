@@ -36,5 +36,33 @@ def start_control_server():
 	control_server = CheeseRPCServer(dao).getStreamFactory(CheeseRPCServerFactory)
 
 	reactor.listenTCP(args.port, control_server)
-	log.info("Starting server on port %d..." % args.port)
+	log.info("Starting control server on port %d..." % args.port)
+	reactor.run()
+
+def start_upload_server():
+	import argparse
+
+	from twisted.internet import reactor
+	from twisted.logger import Logger, globalLogPublisher
+	from twisted.web.server import Site
+	from twisted.web.resource import Resource
+
+	from cheesepilib.server.upload import UploadHandler
+
+	# Argument parsing
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--port', type=int, default=18090,
+	                    help='Port to listen on')
+	args = parser.parse_args()
+
+	# Logging
+	log = Logger()
+	globalLogPublisher.addObserver(PrintingObserver())
+
+	root = Resource()
+	root.putChild("upload", UploadHandler())
+	upload_server = Site(root)
+
+	reactor.listenTCP(args.port, upload_server)
+	log.info("Starting upload server on port %d..." % args.port)
 	reactor.run()
