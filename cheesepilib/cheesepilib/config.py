@@ -291,7 +291,7 @@ def load_local_schedule():
 
 	for l in lines:
 		if l=="" or l.startswith("#"):
-			next
+			continue # skip this comment line
 		try:
 			spec = json.loads(l)
 			schedule.append(spec)
