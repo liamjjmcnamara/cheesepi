@@ -1,11 +1,14 @@
-#measurement
+# Measurement:
 {"taskname": "ping",       "period": 900, "offset":0,  "landmark": "sics.se"}
 {"taskname": "httping",    "period": 900, "offset":10, "landmark": "sics.se"}
 {"taskname": "traceroute", "period": 900, "offset":20, "landmark": "sics.se"}
 {"taskname": "DNS",        "period": 900, "offset":30, "landmark": "sics.se"}
 {"taskname": "Status",     "period": 900, "offset":40}
+
+# High bandwidth measurements:
 {"taskname": "Dash",       "period": 900, "offset":50, "source":"http://www.youtube.com/watch?v=_OBlgSz8sSM"}
 {"taskname": "Throughput", "period": 900, "offset":200}
-# admin
+
+# Admin:
 {"taskname": "beacon",     "period": 14400,"offset":400, "peer_id":0}
 {"taskname": "upload",     "period": 86400,"offset":450}

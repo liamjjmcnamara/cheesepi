@@ -296,7 +296,7 @@ def load_local_schedule():
 			spec = json.loads(l)
 			schedule.append(spec)
 		except:
-			#logger.error("JSON task spec not parsed: "+l)
+			logger.error("JSON task spec not parsed: "+l)
 			pass
 	return schedule
 
