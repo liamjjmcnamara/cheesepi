@@ -29,16 +29,14 @@ Testers:
 import logging
 import hashlib
 import json
-import traceback
 
 # Influx module, use legacy on RaspberryPi Linux
-#from influxdb.influxdb08 import InfluxDBClient
-#from influxdb.influxdb08.client import InfluxDBClientError
-from influxdb import InfluxDBClient
-from influxdb.client import InfluxDBClientError
-from requests.exceptions import ConnectionError
+from influxdb.influxdb08 import InfluxDBClient
+from influxdb.influxdb08.client import InfluxDBClientError
+#from influxdb import InfluxDBClient
+#from influxdb.client import InfluxDBClientError
 
-import cheesepilib as cp
+import cheesepi
 import dao
 
 host     = "localhost"
@@ -56,35 +54,30 @@ class DAO_influx(dao.DAO):
 			msg = "Error: Connection to Influx database failed! Ensure InfluxDB is running. "+str(e)
 			logging.error(msg)
 			print msg
-			cp.config.make_databases()
+			cheesepi.config.make_databases()
 			exit(1)
 
 
 	def dump(self, since=-1):
 		try:
-			series = self.conn.get_list_series()
+			series = self.conn.query("list series")
+			#series = self.conn.get_list_series()
 		except Exception as e:
 			msg = "Problem connecting to InfluxDB when listing series: "+str(e)
 			print msg
 			logging.error(msg)
 			exit(1)
+		#print "series",series[0]['points']
 
 		# maybe prune series?
 		dumped_db = {}
-		for s in series:
-			series_name = s['name']
-			print series_name
-			dumped_series = self.conn.query('select * from %s where time > %d limit 5;' % (series_name,0*1000) )
-			print dumped_series.raw['results']
-			dumped_db[series_name] = json.dumps(dumped_series.raw['results'])
+		for s in series[0]['points']:
+			series_name = s[1]
+			dumped_series = self.conn.query('select * from %s where time > %d limit 1;' % (series_name,since*1000) )
+			#print dumped_series
+			dumped_db[series_name] = json.dumps(dumped_series)
 		return dumped_db
 
-
-
-	def toFormat(self,table,dic):
-		#print [{"measurement":table,"fields":dic}]
-		return [{'measurement':table,"database": "cheesepi","fields":dic,"tags": {"source":"dao"} }]
-		#return json_body
 
 	# Operator interactions
 	def write_op(self, op_type, dic, binary=None):
@@ -94,31 +87,22 @@ class DAO_influx(dao.DAO):
 		#if binary!=None:
 		#	 # save binary, check its not too big
 		#	 dic['binary'] = bson.Binary(binary)
-		config = cp.config.get_config()
+		config = cheesepi.config.get_config()
 		dic['version'] = config['version']
 		md5 = hashlib.md5(config['secret']+str(dic)).hexdigest()
 		dic['sign']    = md5
 
-		points=self.toFormat(op_type,dic)
-		print "Saving %s Op: %s" % (op_type, str(points))
+		json = self.to_json(op_type, dic)
+		print "Saving Op: %s" % json
 		try:
-			result = self.conn.write_points(points)
-		except InfluxDBClientError as e:
-			if e.code==204: # success!
-				return True
-			traceback.print_exc()
-		except ConnectionError as e:
-			print "Database connection error, is the database server running?"
-			return None
+			return self.conn.write_points(json)
 		except Exception as e:
 			msg = "Database Influx "+op_type+" Op write failed! "+str(e)
-			print type(e)
-			print msg
 			logging.error(msg)
-			#cheesepi.config.make_databases()
-			#exit(1)
-			return None
-		return result
+			print msg
+			cheesepi.config.make_databases()
+			exit(1)
+		return id
 
 	def read_op(self, op_type, timestamp=0, limit=100):
 		op = self.conn.query('select * from '+op_type+' limit 1;')
@@ -151,9 +135,7 @@ class DAO_influx(dao.DAO):
 		# check we dont already exist
 		try:
 			print "Saving user attribute: %s to %s " % (attribute, value)
-			#json = self.to_json("user", {attribute:value})
-			json = self.toFormat("user", {attribute:value})
-			print json
+			json = self.to_json("user", {attribute:value})
 			return self.conn.write_points(json)
 		except Exception as e:
 			msg = "Problem connecting to InfluxDB: "+str(e)
@@ -162,13 +144,12 @@ class DAO_influx(dao.DAO):
 			exit(1)
 
 
+
 	def to_json(self, table, dic):
 		for k in dic.keys():
 				dic[k]=dic[k]
 		#json_dic = [{"name":table, "columns":dic.keys(), "points":[dic.values()]}]
-		#json_str = '[{"name":"%s", "columns":%s, "points":[%s]}]' % (table,json.dumps(dic.keys()),json.dumps(dic.values()))
-
-		json_str = '[{"measurement":"%s", "fields":%s, ' % (table,"")
+		json_str = '[{"name":"%s", "columns":%s, "points":[%s]}]' % (table,json.dumps(dic.keys()),json.dumps(dic.values()))
 		#json_str = '[{"name":"ping", "columns":["test"], "points":["value"]}]'
 		return json_str
 
