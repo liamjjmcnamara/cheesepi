@@ -7,7 +7,7 @@ except ImportError as e:
 	print str(e)
 
 try:
-	import dao_influx
+	import dao_influx08
 except ImportError as e:
 	print "Missing InfluxDB python module, use 'pip install influxdb'"
 	print str(e)

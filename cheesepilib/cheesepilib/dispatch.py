@@ -44,6 +44,8 @@ def async(task):
 	"""Wrapper around asynchronous task execution"""
 	try:
 		task.run()
+	except KeyboardInterrupt:
+		pass # probably just user destruction
 	except:
 		cls, exc, tb = sys.exc_info()
 		if issubclass(cls, Exception):
@@ -91,13 +93,14 @@ def get_queue():
 def load_schedule():
 	"""Load a schedule of task specifications"""
 	#try to get from central server
-	tasks = cp.config.load_remote_schedule()
+	tasks = None # cp.config.load_remote_schedule()
 	if tasks==None:
 		# just use local
 		tasks = cp.config.load_local_schedule()
 	return tasks
 
 schedule_list = load_schedule()
+print schedule_list
 
 logger.info("Dispatch PID: %d" % os.getpid())
 if __name__ == "__main__":

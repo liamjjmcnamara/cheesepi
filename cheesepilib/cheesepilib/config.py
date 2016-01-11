@@ -120,8 +120,10 @@ def main():
 def get_dao():
 	if config_equal('database',"mongo"):
 		return cp.storage.dao_mongo.DAO_mongo()
-	elif config_equal('database',"influx"):
-		return cp.storage.dao_influx.DAO_influx()
+	elif config_equal('database',"influx08"):
+		return cp.storage.dao_influx.DAO_influx08()
+	elif config_equal('database',"influx09"):
+		return cp.storage.dao_influx.DAO_influx08()
 	elif config_equal('database',"mysql"):
 		return cp.storage.dao_mysql.DAO_mysql()
 	elif config_equal('database',"null"):
@@ -290,13 +292,13 @@ def load_local_schedule():
 		lines = f.readlines()
 
 	for l in lines:
-		if l=="" or l.startswith("#"):
-			next
+		if l.strip()=="" or l.strip().startswith("#"):
+			continue # skip this comment line
 		try:
 			spec = json.loads(l)
 			schedule.append(spec)
 		except:
-			#logger.error("JSON task spec not parsed: "+l)
+			logger.error("JSON task spec not parsed: "+l)
 			pass
 	return schedule
 
