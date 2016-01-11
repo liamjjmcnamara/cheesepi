@@ -28,7 +28,8 @@ class MongoDAO(DAO):
         self.db.peers.create_index([("peer_id",pymongo.ASCENDING),
                                    ("results.target_id",pymongo.ASCENDING)])
         self.db.peers.create_index([("peer_id",pymongo.ASCENDING),
-                                   ("statistics.target_id",pymongo.ASCENDING)])
+                                   ("statistics.target_id",pymongo.ASCENDING)],
+                                   unique=True)
 
     def close(self):
         pass # Nothing to do??
