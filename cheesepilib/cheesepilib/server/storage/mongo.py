@@ -1,6 +1,7 @@
 import time
 
 import pymongo
+import math
 
 from .dao import DAO
 from cheesepilib.exceptions import ServerDaoError, NoSuchPeer
@@ -131,14 +132,22 @@ class MongoDAO(DAO):
         return self._return_status(update['updatedExisting'])
 
     def write_ping_results(self, peer_id, target_id, results):
+
+        ALPHA = 0.5 # Weight for calculating mean and variance
+
         stats = self.db.peers.find({
                 'peer_id':peer_id,
                 'statistics.target_id':target_id
             },
         )
 
+        mean = 0
+        variance = 0
+
         if stats.count() > 0:
-            print("found existing statistics")
+            old_stats = stats[0]['statistics'][0]['ping']
+            mean = old_stats['mean']
+            variance = old_stats['variance']
         else:
             # No previous stats
             self.db.peers.insert(
@@ -150,11 +159,21 @@ class MongoDAO(DAO):
         packet_loss = 0
         max_rtt = 0
         min_rtt = 0
+        avg_rtt = 0
         for result in results:
             probe_count = probe_count + result['value']['probe_count']
             packet_loss = packet_loss + result['value']['packet_loss']
-            max_rtt = max_rtt + result['value']['max_rtt']
-            min_rtt = min_rtt + result['value']['min_rtt']
+            max_rtt = result['value']['max_rtt']
+            min_rtt = result['value']['min_rtt']
+            avg_rtt = result['value']['avg_rtt']
+            print(avg_rtt)
+
+            # Online mean and variance
+            delta = avg_rtt - mean
+            increment = ALPHA * delta
+            mean = mean + increment
+            variance = (1-ALPHA) * (variance + (delta * increment))
+
             update = self.db.peers.update(
                     {
                         'peer_id':peer_id,
@@ -176,6 +195,11 @@ class MongoDAO(DAO):
                     },
                  '$max':{'statistics.$.ping.max_rtt':max_rtt},
                  '$min':{'statistics.$.ping.min_rtt':min_rtt},
+                 '$set':{
+                    'statistics.$.ping.mean':mean,
+                    'statistics.$.ping.variance':variance,
+                    'statistics.$.ping.std_dev':math.sqrt(variance),
+                     },
                 },
                 upsert=True
         )
