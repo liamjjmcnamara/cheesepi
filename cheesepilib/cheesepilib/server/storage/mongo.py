@@ -11,6 +11,9 @@ ACTIVE_THRESHOLD = 3600
 class MongoDAO(DAO):
 
     def __init__(self):
+        self.__init__('localhost', 27017)
+
+    def __init__(self, host, port):
         self.client = pymongo.MongoClient()
         self.db = self.client.cheesepi
 

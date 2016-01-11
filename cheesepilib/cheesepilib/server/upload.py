@@ -39,7 +39,7 @@ class UploadHandler(Resource):
 		# Schedule processing of file one second later
 		# NOTE: Maybe we'd like to chain together the completion of the
 		#       write with the processing using a callback?
-		from cheesepilib.server.processing import process_upload
+		from cheesepilib.server.processing.utils import process_upload
 		reactor.callLater(1, process_upload, filename)
 
 		response = b'Received upload of size %d bytes\n' % upload_size
