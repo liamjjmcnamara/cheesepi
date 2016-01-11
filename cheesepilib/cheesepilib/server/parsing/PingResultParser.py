@@ -8,8 +8,8 @@ class PingResultParser(ResultParser):
 
 	# Takes an object parsed from json
 	def __init__(self, obj):
-		self.input_obj = obj
-		self.output_obj = None
+		self._input_obj = obj
+		self._output_obj = None
 
 	def parse(self):
 		"""
@@ -17,7 +17,7 @@ class PingResultParser(ResultParser):
 		and handle any resulting errors in a sane way. Should ALWAYS
 		return an output that can be directly inserted into the database.
 		"""
-		inp = self.input_obj
+		inp = self._input_obj
 		out = []
 
 		entries = [entry for entry in inp[0]['series'][0]['values']]
@@ -46,11 +46,11 @@ class PingResultParser(ResultParser):
 
 			out.append(db_entry)
 
-		self.output_obj = out
+		self._output_obj = out
 		return out
 
 	def write_to_db(self):
-		if self.output_obj is None:
+		if self._output_obj is None:
 			raise Exception("No object parsed.")
 
 		# TODO This should be configured via config file

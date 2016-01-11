@@ -15,15 +15,15 @@ class ResultDataProcessor(object):
 		by the server. Should be initialized with the absolute path to a
 		tar archive with the results.
 		"""
-		self.extracted = False
-		self.filepath = filepath
-		self.path = os.path.dirname(filepath)
+		self._extracted = False
+		self._filepath = filepath
+		self._path = os.path.dirname(filepath)
 
 		hasher = hashlib.md5()
 		with open(filepath) as fd:
 			hasher.update(fd.read())
-		self.md5_hash = hasher.hexdigest()
-		self.extract_path = os.path.join(self.path, self.md5_hash)
+		self._md5_hash = hasher.hexdigest()
+		self._extract_path = os.path.join(self._path, self._md5_hash)
 
 	def __enter__(self):
 		"""
@@ -38,29 +38,29 @@ class ResultDataProcessor(object):
 		"""
 		self.delete_extracted()
 		self.delete()
-		os.listdir(self.path)
+		os.listdir(self._path)
 
 	def get_hash(self):
-		return self.md5_hash
+		return self._md5_hash
 
 	def extract(self):
-		untar(self.filepath, self.extract_path)
-		self.extracted = True
+		untar(self._filepath, self._extract_path)
+		self._extracted = True
 
 	def delete_extracted(self):
-		if not self.extracted:
+		if not self._extracted:
 			raise Exception("Data not extracted.")
 
-		shutil.rmtree(self.extract_path)
-		self.extracted = False
+		shutil.rmtree(self._extract_path)
+		self._extracted = False
 
 	def process(self):
-		if not self.extracted:
+		if not self._extracted:
 			raise Exception("Data not extracted.")
 
 		# Process every file in the extracted folder
-		files = [os.path.join(self.extract_path, f)
-				for f in os.listdir(self.extract_path)]
+		files = [os.path.join(self._extract_path, f)
+				for f in os.listdir(self._extract_path)]
 		for filename in files:
 			try:
 				parser = ResultParser.fromFile(filename)
@@ -78,4 +78,4 @@ class ResultDataProcessor(object):
 		"""
 		We're done, delete all files.
 		"""
-		os.remove(self.filepath)
+		os.remove(self._filepath)
