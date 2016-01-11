@@ -20,6 +20,8 @@ class PingResultParser(ResultParser):
 		inp = self._input_obj
 		out = []
 
+		# TODO WHAT ABOUT PEER_ID????
+
 		entries = [entry for entry in inp[0]['series'][0]['values']]
 		for entry in entries:
 			db_entry = {
@@ -27,8 +29,8 @@ class PingResultParser(ResultParser):
 				'timestamp':entry[0], # TODO should maybe be in unix epoch
 				'target': {
 					'type':'landmark', # TODO This should be dynamic
-					'ip':entry[4],
-					'domain':entry[5],
+					'ip':entry[3],
+					'domain':entry[4],
 					'port':'80', # TODO not in data
 				},
 				'value': {
@@ -55,4 +57,7 @@ class PingResultParser(ResultParser):
 
 		# TODO This should be configured via config file
 		dao = MongoDAO('localhost', 27017)
-		print(dao.get_peers()[0])
+
+		status = dao.write_ping_results(1, "sics.se", self._output_obj)
+		print(status)
+

@@ -26,6 +26,8 @@ class MongoDAO(DAO):
         # This (I think) ensures fast lookups for ('peer_id','results.target_id')
         self.db.peers.create_index([("peer_id",pymongo.ASCENDING),
                                    ("results.target_id",pymongo.ASCENDING)])
+        self.db.peers.create_index([("peer_id",pymongo.ASCENDING),
+                                   ("statistics.target_id",pymongo.ASCENDING)])
 
     def close(self):
         pass # Nothing to do??
@@ -111,21 +113,74 @@ class MongoDAO(DAO):
         update = self.db.peers.update(
                 {
                     'peer_id':peer_id,
-                    'tasks': {
-                        '$elemMatch':{'task_id':result['task_id']}
-                    }
+                    #'tasks': {
+                        #'$elemMatch':{'task_id':result['task_id']}
+                    #}
                 },
-                {'$push': {'results':result}}
+                {'$push': {'results':result}},
+                upsert=True
         )
         # Remove the task with that task_id
-        remove = self.db.peers.update(
-                {'peer_id':peer_id},
-                {'$pull': {
-                    'tasks':{'task_id':result['task_id']}
-                    }
-                }
-        )
+        #remove = self.db.peers.update(
+                #{'peer_id':peer_id},
+                #{'$pull': {
+                    #'tasks':{'task_id':result['task_id']}
+                    #}
+                #}
+        #)
         return self._return_status(update['updatedExisting'])
+
+    def write_ping_results(self, peer_id, target_id, results):
+        stats = self.db.peers.find({
+                'peer_id':peer_id,
+                'statistics.target_id':target_id
+            },
+        )
+
+        if stats.count() > 0:
+            print("found existing statistics")
+        else:
+            # No previous stats
+            self.db.peers.insert(
+                    {'peer_id':peer_id,
+                     'statistics':[{'target_id':target_id}]}
+            )
+
+        probe_count = 0
+        packet_loss = 0
+        max_rtt = 0
+        min_rtt = 0
+        for result in results:
+            probe_count = probe_count + result['value']['probe_count']
+            packet_loss = packet_loss + result['value']['packet_loss']
+            max_rtt = max_rtt + result['value']['max_rtt']
+            min_rtt = min_rtt + result['value']['min_rtt']
+            update = self.db.peers.update(
+                    {
+                        'peer_id':peer_id,
+                    },
+                    {'$push': {'results':result}},
+                    upsert=True
+            )
+
+
+        # Find the element in the statistics array for the peer where the
+        # target id matches, then update the stats accordingly
+        self.db.peers.update_one(
+                {'peer_id':peer_id,
+                 'statistics.target_id':target_id
+                },
+                {'$inc':{
+                    'statistics.$.ping.total_probe_count':probe_count,
+                    'statistics.$.ping.total_packet_loss':packet_loss
+                    },
+                 '$max':{'statistics.$.ping.max_rtt':max_rtt},
+                 '$min':{'statistics.$.ping.min_rtt':min_rtt},
+                },
+                upsert=True
+        )
+
+        return "bla"
 
     def purge_results(self, peer_id):
         result = self.db.peers.update(
