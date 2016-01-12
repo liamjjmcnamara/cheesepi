@@ -4,11 +4,9 @@ import os
 import re
 import subprocess
 
-sys.path.append("/usr/local/")
-import cheesepi.utils
-import cheesepi.config
+import cheesepilib as cp
 import Task
-logger = cheesepi.utils.get_logger()
+logger = cp.config.get_logger()
 
 class Wifi(Task.Task):
 
@@ -16,7 +14,7 @@ class Wifi(Task.Task):
 	def __init__(self, dao, spec={}):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname'] = "wifi"
-		self.config = cheesepi.config.get_config()
+		self.config = cp.config.get_config()
 		if not 'interface' in self.spec: self.spec['interface'] = self.config['wlan']
 
 	# actually perform the measurements, no arguments required
@@ -25,9 +23,9 @@ class Wifi(Task.Task):
 		self.measure()
 
 	def measure(self):
-		self.spec['start_time'] = cheesepi.utils.now()
+		self.spec['start_time'] = cp.utils.now()
 		op_output  = self.perform()
-		self.spec['end_time']   = cheesepi.utils.now()
+		self.spec['end_time']   = cp.utils.now()
 		logger.debug(op_output)
 		parsed_output = self.parse_output(op_output)
 		logger.debug(parsed_output)
@@ -38,7 +36,7 @@ class Wifi(Task.Task):
 
 	def perform(self):
 		try:
-			scan_output = subprocess.check_output(["iwlist", self.interface, "scanning"])
+			scan_output = subprocess.check_output(["iwlist", self.spec['interface'], "scanning"])
 		except Exception as e:
 			logger.error("Error: iwlist does not seem to run: "+str(e))
 			sys.exit(1)
@@ -106,7 +104,7 @@ class Wifi(Task.Task):
 
 if __name__ == "__main__":
 	# claim a database storage object
-	dao = cheesepi.config.get_dao()
+	dao = cp.config.get_dao()
 	wifi_task = Wifi(dao)
 
 	scanForever=False

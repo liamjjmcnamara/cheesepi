@@ -5,6 +5,7 @@
 {"taskname": "traceroute", "period": 900, "offset":20, "landmark": "www.sics.se"}
 {"taskname": "DNS",        "period": 900, "offset":30, "landmark": "www.sics.se"}
 {"taskname": "Status",     "period": 900, "offset":40}
+{"taskname": "Wifi",     "period": 900, "offset":45}
 
 # High bandwidth measurements:
 {"taskname": "Dash",       "period": 900, "offset":50, "source":"http://www.youtube.com/watch?v=_OBlgSz8sSM"}
