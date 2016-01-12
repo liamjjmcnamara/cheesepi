@@ -113,17 +113,13 @@ def main():
 	printer.pprint(config)
 
 
-
-
-
-
 def get_dao():
 	if config_equal('database',"mongo"):
 		return cp.storage.dao_mongo.DAO_mongo()
 	elif config_equal('database',"influx08"):
-		return cp.storage.dao_influx.DAO_influx08()
+		return cp.storage.dao_influx08.DAO_influx()
 	elif config_equal('database',"influx09"):
-		return cp.storage.dao_influx.DAO_influx08()
+		return cp.storage.dao_influx09.DAO_influx()
 	elif config_equal('database',"mysql"):
 		return cp.storage.dao_mysql.DAO_mysql()
 	elif config_equal('database',"null"):
@@ -210,8 +206,6 @@ def copyfile(from_file, to_file, occurance, replacement):
 		with open(to_file, "wt") as fout:
 			for line in fin:
 				fout.write(line.replace(occurance, replacement))
-
-
 
 
 def version():

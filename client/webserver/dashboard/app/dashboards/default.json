@@ -61,7 +61,7 @@
               "function": "last",
               "column": "uptime",
               "rawQuery": true,
-              "query": "select last(uptime) from \"local\" where $timeFilter group by time($interval) order asc",
+              "query": "select last(uptime) from \"status\" where $timeFilter group by time($interval) order asc",
               "hide": false,
               "series": "local"
             }
@@ -165,8 +165,8 @@
             {
               "function": "last",
               "column": "load5",
-              "series": "local",
-              "query": "select last(load5) from \"local\" where $timeFilter group by time($interval) order asc"
+              "series": "status",
+              "query": "select last(load5) from \"status\" where $timeFilter group by time($interval) order asc"
             }
           ],
           "cacheTimeout": null,
@@ -852,21 +852,21 @@
               "function": "mean",
               "column": "value",
               "rawQuery": true,
-              "query": "select load1 from local",
+              "query": "select load1 from status",
               "alias": "1minute"
             },
             {
               "function": "mean",
               "column": "value",
               "rawQuery": true,
-              "query": "select load5 from local",
+              "query": "select load5 from status",
               "alias": "5minute"
             },
             {
               "function": "mean",
               "column": "value",
               "rawQuery": true,
-              "query": "select load15 from local",
+              "query": "select load15 from status",
               "alias": "15minute"
             }
           ],
