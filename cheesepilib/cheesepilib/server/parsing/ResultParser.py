@@ -2,6 +2,8 @@ from __future__ import unicode_literals, absolute_import, print_function
 
 import json
 
+from cheesepilib.exceptions import UnsupportedResultType
+
 class ResultParser(object):
 
 	@staticmethod
@@ -17,7 +19,7 @@ class ResultParser(object):
 		name = ResultParser.get_taskname(json_obj)
 
 		if name == 'ping': return PingResultParser(json_obj)
-		else: raise Exception("Unknown task type '{}'.".format(name))
+		else: raise UnsupportedResultType("Unknown task type '{}'.".format(name))
 
 	@staticmethod
 	def get_taskname(obj):

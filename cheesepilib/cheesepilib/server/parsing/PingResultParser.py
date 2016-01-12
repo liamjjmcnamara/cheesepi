@@ -1,10 +1,13 @@
 from __future__ import unicode_literals, absolute_import, print_function
 
+import logging
+
 from .ResultParser import ResultParser
 
 from cheesepilib.server.storage.mongo import MongoDAO
 
 class PingResultParser(ResultParser):
+	log = logging.getLogger("cheesepi.server.parsing.PingResultParser")
 
 	# Takes an object parsed from json
 	def __init__(self, obj):
@@ -60,5 +63,5 @@ class PingResultParser(ResultParser):
 		dao = MongoDAO('localhost', 27017)
 
 		status = dao.write_ping_results(1, "sics.se", self._output_obj)
-		print(status)
+		self.log.info("Database write returned {}".format(status))
 

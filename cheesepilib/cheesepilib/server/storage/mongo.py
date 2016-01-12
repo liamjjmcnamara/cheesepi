@@ -1,5 +1,6 @@
 import time
 
+import logging
 import pymongo
 import math
 
@@ -10,6 +11,7 @@ from cheesepilib.exceptions import ServerDaoError, NoSuchPeer
 ACTIVE_THRESHOLD = 3600
 
 class MongoDAO(DAO):
+    log = logging.getLogger("cheesepi.server.storage.MongoDAO")
 
     def __init__(self):
         self.__init__('localhost', 27017)
@@ -28,8 +30,7 @@ class MongoDAO(DAO):
         self.db.peers.create_index([("peer_id",pymongo.ASCENDING),
                                    ("results.target_id",pymongo.ASCENDING)])
         self.db.peers.create_index([("peer_id",pymongo.ASCENDING),
-                                   ("statistics.target_id",pymongo.ASCENDING)],
-                                   unique=True)
+                                   ("statistics.target_id",pymongo.ASCENDING)])
 
     def close(self):
         pass # Nothing to do??
@@ -132,60 +133,54 @@ class MongoDAO(DAO):
         #)
         return self._return_status(update['updatedExisting'])
 
-    def write_ping_results(self, peer_id, target_id, results):
+    def get_stats(self, peer_id, target_id):
 
-        ALPHA = 0.5 # Weight for calculating mean and variance
-
-        stats = self.db.peers.find({
-                'peer_id':peer_id,
-                'statistics.target_id':target_id
-            },
+        stats = self.db.peers.find(
+                {'peer_id':peer_id,
+                 'statistics.target_id':target_id},
+                {'statistics.$':1},
         )
 
-        mean_delay_value = 0
-        mean_delay_variance = 0
-        average_median_delay_value = 0
-        average_median_delay_variance = 0
-        average_packet_loss_value = 0
-        average_packet_loss_variance = 0
-
+        # Should be unique so can only ever find one
         if stats.count() > 0:
-            # TODO THIS IS UGLY AS HELL... remember to clean it up into something
-            # more sane....
-            try:
-                old_stats = stats[0]['statistics'][0]['ping']
-            except Exception as e:
-                print("No stats for ping available.")
-            try:
-                mean_delay_value = old_stats['mean_delay']['value']
-            except Exception as e:
-                print("No mean for ping available.")
-            try:
-                mean_delay_variance = old_stats['mean_delay']['variance']
-            except Exception as e:
-                print("No variance for ping available.")
-            try:
-                average_median_delay_value = old_stats['average_median_delay']['value']
-            except Exception as e:
-                print("No average_median for ping available.")
-            try:
-                average_median_delay_variance = old_stats['average_median_delay']['variance']
-            except Exception as e:
-                print("No variance for ping available.")
-            try:
-                average_packet_loss_value = old_stats['average_packet_loss']['value']
-            except Exception as e:
-                print("No mean for ping available.")
-            try:
-                average_packet_loss_variance = old_stats['average_packet_loss']['variance']
-            except Exception as e:
-                print("No variance for ping available.")
+            return stats[0]['statistics'][0]
         else:
-            # No previous stats
-            self.db.peers.insert(
-                    {'peer_id':peer_id,
-                     'statistics':[{'target_id':target_id}]}
+            return None
+
+    def write_ping_results(self, peer_id, target_id, results):
+
+        from cheesepilib.server.processing.utils import StatObject, median
+
+        # PLACEHOLDER FOR TESTING add peer to database if peer does not exist
+        try:
+            self.find_peer(peer_id)
+        except NoSuchPeer as e:
+            self.log.info("No such peer, inserting...")
+            self.db.peers.insert({'peer_id':peer_id})
+
+        # Get previous statistics
+        stats = self.get_stats(peer_id, target_id)
+
+        from pprint import pformat
+        self.log.info("got stats object:\n{}\n".format(pformat(stats)))
+
+
+        if stats is None:
+            # No previous stats for this target, add an entry into the list
+            self.db.peers.update_one(
+                    {'peer_id':peer_id},
+                    {'$push':{
+                        'statistics':{'target_id':target_id}}
+                    }
             )
+            mean_delay = StatObject(0,0)
+            average_median_delay = StatObject(0,0)
+            average_packet_loss = StatObject(0,0)
+        else:
+            mean_delay = StatObject.fromJson(stats['ping']['mean_delay'])
+            average_median_delay = StatObject.fromJson(stats['ping']['average_median_delay'])
+            average_packet_loss = StatObject.fromJson(stats['ping']['average_packet_loss'])
+
 
         probe_count = 0
         packet_loss = 0
@@ -193,12 +188,7 @@ class MongoDAO(DAO):
         min_rtt = 999999999
         avg_rtt = 0
 
-        from cheesepilib.server.processing.utils import StatObject, median
-
-        mean_delay = StatObject(mean_delay_value, mean_delay_variance)
-        average_median_delay = StatObject(average_median_delay_value, average_median_delay_variance)
-        average_packet_loss = StatObject(average_packet_loss_value, average_packet_loss_variance)
-
+        # Main loop which calculates new stats
         for result in results:
             probe_count = probe_count + result['value']['probe_count']
             packet_loss = packet_loss + result['value']['packet_loss']
@@ -212,14 +202,13 @@ class MongoDAO(DAO):
             import ast
             delay_sequence = ast.literal_eval(result['value']['delay_sequence'])
 
+            # Increment the stat counters
             mean_delay.add_datum(avg_rtt)
             average_median_delay.add_datum(median(delay_sequence))
             average_packet_loss.add_datum(packet_loss/probe_count)
 
             update = self.db.peers.update(
-                    {
-                        'peer_id':peer_id,
-                    },
+                    {'peer_id':peer_id},
                     {'$push': {'results':result}},
                     upsert=True
             )

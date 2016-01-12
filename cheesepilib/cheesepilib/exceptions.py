@@ -1,20 +1,23 @@
 
 # The Root Exception
-class CheeseLibException(Exception):
+class CheesePiLibException(Exception):
     pass
 
 
 # Peer Exceptions
-class CheesePiException(CheeseLibException):
+class CheesePiException(CheesePiLibException):
     pass
 
 
 # Server Exceptions
-class CheeseServerException(CheeseLibException):
+class CheesePiServerException(CheesePiLibException):
     pass
 
-class ServerDaoError(CheeseServerException):
+class ServerDaoError(CheesePiServerException):
     pass
 
 class NoSuchPeer(ServerDaoError):
+    pass
+
+class UnsupportedResultType(CheesePiServerException):
     pass
