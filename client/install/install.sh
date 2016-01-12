@@ -65,14 +65,6 @@ else
 fi
 
 
-## Install a crontab entry so that $INSTALL_DIR/measure/measure.py is run
-#if ! grep --quiet measure.py /etc/crontab; then
-#	echo -e "\n*/5 *   * * *   root    /usr/local/cheesepi/measure/measure.py" | sudo tee --append /etc/crontab > /dev/null
-#	echo "Set measure.py to regularly run from /etc/crontab"
-#else
-#	echo "Seems measure.py is already in /etc/crontab"
-#fi
-
 sleep 5
 $INSTALL_DIR/install/make_influx_DBs.sh
 
