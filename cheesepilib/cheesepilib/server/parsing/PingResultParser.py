@@ -26,7 +26,8 @@ class PingResultParser(ResultParser):
 		for entry in entries:
 			db_entry = {
 				'task_name':'ping',
-				'timestamp':entry[0], # TODO should maybe be in unix epoch
+				'start_time':entry[17],
+				'end_time':entry[6],
 				'target': {
 					'type':'landmark', # TODO This should be dynamic
 					'ip':entry[3],

@@ -142,13 +142,44 @@ class MongoDAO(DAO):
             },
         )
 
-        mean = 0
-        variance = 0
+        mean_delay_value = 0
+        mean_delay_variance = 0
+        average_median_delay_value = 0
+        average_median_delay_variance = 0
+        average_packet_loss_value = 0
+        average_packet_loss_variance = 0
 
         if stats.count() > 0:
-            old_stats = stats[0]['statistics'][0]['ping']
-            mean = old_stats['mean']
-            variance = old_stats['variance']
+            # TODO THIS IS UGLY AS HELL... remember to clean it up into something
+            # more sane....
+            try:
+                old_stats = stats[0]['statistics'][0]['ping']
+            except Exception as e:
+                print("No stats for ping available.")
+            try:
+                mean_delay_value = old_stats['mean_delay']['value']
+            except Exception as e:
+                print("No mean for ping available.")
+            try:
+                mean_delay_variance = old_stats['mean_delay']['variance']
+            except Exception as e:
+                print("No variance for ping available.")
+            try:
+                average_median_delay_value = old_stats['average_median_delay']['value']
+            except Exception as e:
+                print("No average_median for ping available.")
+            try:
+                average_median_delay_variance = old_stats['average_median_delay']['variance']
+            except Exception as e:
+                print("No variance for ping available.")
+            try:
+                average_packet_loss_value = old_stats['average_packet_loss']['value']
+            except Exception as e:
+                print("No mean for ping available.")
+            try:
+                average_packet_loss_variance = old_stats['average_packet_loss']['variance']
+            except Exception as e:
+                print("No variance for ping available.")
         else:
             # No previous stats
             self.db.peers.insert(
@@ -159,21 +190,31 @@ class MongoDAO(DAO):
         probe_count = 0
         packet_loss = 0
         max_rtt = 0
-        min_rtt = 0
+        min_rtt = 999999999
         avg_rtt = 0
+
+        from cheesepilib.server.processing.utils import StatObject, median
+
+        mean_delay = StatObject(mean_delay_value, mean_delay_variance)
+        average_median_delay = StatObject(average_median_delay_value, average_median_delay_variance)
+        average_packet_loss = StatObject(average_packet_loss_value, average_packet_loss_variance)
+
         for result in results:
             probe_count = probe_count + result['value']['probe_count']
             packet_loss = packet_loss + result['value']['packet_loss']
-            max_rtt = result['value']['max_rtt']
-            min_rtt = result['value']['min_rtt']
+            max_rtt = max(max_rtt, result['value']['max_rtt'])
+            min_rtt = min(min_rtt, result['value']['min_rtt'])
             avg_rtt = result['value']['avg_rtt']
-            print(avg_rtt)
 
-            # Online mean and variance
-            delta = avg_rtt - mean
-            increment = ALPHA * delta
-            mean = mean + increment
-            variance = (1-ALPHA) * (variance + (delta * increment))
+            # TODO this is done because the sequence is stored as a string
+            # representation of a list, should be changed in the future so that
+            # it's a list from the start
+            import ast
+            delay_sequence = ast.literal_eval(result['value']['delay_sequence'])
+
+            mean_delay.add_datum(avg_rtt)
+            average_median_delay.add_datum(median(delay_sequence))
+            average_packet_loss.add_datum(packet_loss/probe_count)
 
             update = self.db.peers.update(
                     {
@@ -186,7 +227,7 @@ class MongoDAO(DAO):
 
         # Find the element in the statistics array for the peer where the
         # target id matches, then update the stats accordingly
-        self.db.peers.update_one(
+        update_result = self.db.peers.update_one(
                 {'peer_id':peer_id,
                  'statistics.target_id':target_id
                 },
@@ -194,18 +235,24 @@ class MongoDAO(DAO):
                     'statistics.$.ping.total_probe_count':probe_count,
                     'statistics.$.ping.total_packet_loss':packet_loss
                     },
-                 '$max':{'statistics.$.ping.max_rtt':max_rtt},
-                 '$min':{'statistics.$.ping.min_rtt':min_rtt},
+                 '$max':{'statistics.$.ping.all_time_max_rtt':max_rtt},
+                 '$min':{'statistics.$.ping.all_time_min_rtt':min_rtt},
                  '$set':{
-                    'statistics.$.ping.mean':mean,
-                    'statistics.$.ping.variance':variance,
-                    'statistics.$.ping.std_dev':math.sqrt(variance),
-                     },
+                    'statistics.$.ping.mean_delay.value':mean_delay.mean,
+                    'statistics.$.ping.mean_delay.variance':mean_delay.variance,
+                    'statistics.$.ping.mean_delay.std_dev':mean_delay.std_dev,
+                    'statistics.$.ping.average_median_delay.value':average_median_delay.mean,
+                    'statistics.$.ping.average_median_delay.variance':average_median_delay.variance,
+                    'statistics.$.ping.average_median_delay.std_dev':average_median_delay.std_dev,
+                    'statistics.$.ping.average_packet_loss.value':average_packet_loss.mean,
+                    'statistics.$.ping.average_packet_loss.variance':average_packet_loss.variance,
+                    'statistics.$.ping.average_packet_loss.std_dev':average_packet_loss.std_dev,
+                  },
                 },
                 upsert=True
         )
 
-        return "bla"
+        return self._return_status(update_result.modified_count>0)
 
     def purge_results(self, peer_id):
         result = self.db.peers.update(
