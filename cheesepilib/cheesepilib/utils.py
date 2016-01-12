@@ -67,6 +67,8 @@ def build_task(dao, spec):
 		return Upload(dao, spec)
 	elif spec['taskname']=='status':
 		return Status(dao, spec)
+	elif spec['taskname']=='wifi':
+		return Wifi(dao, spec)
 	elif spec['taskname']=='dummy':
 		return Dummy(dao, spec)
 	else:
