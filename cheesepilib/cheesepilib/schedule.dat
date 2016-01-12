@@ -1,8 +1,9 @@
 # Measurement:
-{"taskname": "ping",       "period": 900, "offset":0,  "landmark": "sics.se"}
-{"taskname": "httping",    "period": 900, "offset":10, "landmark": "sics.se"}
-{"taskname": "traceroute", "period": 900, "offset":20, "landmark": "sics.se"}
-{"taskname": "DNS",        "period": 900, "offset":30, "landmark": "sics.se"}
+{"taskname": "ping",       "period": 900, "offset":0,  "landmark": "www.sics.se"}
+{"taskname": "ping",       "period": 900, "offset":5,  "landmark": "www.facebook.com"}
+{"taskname": "httping",    "period": 900, "offset":10, "landmark": "www.sics.se"}
+{"taskname": "traceroute", "period": 900, "offset":20, "landmark": "www.sics.se"}
+{"taskname": "DNS",        "period": 900, "offset":30, "landmark": "www.sics.se"}
 {"taskname": "Status",     "period": 900, "offset":40}
 
 # High bandwidth measurements:

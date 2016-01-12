@@ -1,3 +1,4 @@
+import random
 import json
 
 # To be subclassed by explicit measurement tasks
@@ -14,6 +15,10 @@ class Task:
 		# overwrite defauls:
 		for s in spec.keys():
 			self.spec[s] = spec[s]
+
+		# allow random offsets
+		if self.spec['offset']=="rand":
+			self.spec['offset'] = random.randint(1, self.spec['period']-1)
 
 	def toDict(self):
 		return self.spec
