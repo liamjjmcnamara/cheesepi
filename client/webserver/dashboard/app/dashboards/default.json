@@ -10,7 +10,7 @@
   "sharedCrosshair": true,
   "rows": [
     {
-      "title": "New row",
+      "title": "Overview",
       "height": "150px",
       "editable": true,
       "collapse": false,
@@ -18,7 +18,7 @@
         {
           "title": "",
           "error": false,
-          "span": 2,
+          "span": 4,
           "editable": true,
           "type": "text",
           "id": 8,
@@ -35,18 +35,6 @@
           ]
         },
         {
-          "title": "",
-          "error": false,
-          "span": 2,
-          "editable": true,
-          "type": "text",
-          "id": 17,
-          "mode": "markdown",
-          "content": "",
-          "style": {},
-          "links": []
-        },
-        {
           "title": "Uptime",
           "error": false,
           "span": 2,
@@ -61,9 +49,59 @@
               "function": "last",
               "column": "uptime",
               "rawQuery": true,
-              "query": "select last(uptime) from \"status\" where $timeFilter group by time($interval) order asc",
+              "query": "select \"uptime\" from \"status\" limit 1",
               "hide": false,
               "series": "local"
+            }
+          ],
+          "cacheTimeout": null,
+          "format": "none",
+          "prefix": "",
+          "postfix": "hrs",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected",
+          "valueName": "current",
+          "prefixFontSize": "50%",
+          "valueFontSize": "80%",
+          "postfixFontSize": "50%",
+          "thresholds": "0,1,24",
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(225, 40, 40, 0.59)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(71, 212, 59, 0.4)"
+          ],
+          "sparkline": {
+            "show": false,
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "fillColor": "rgba(31, 118, 189, 0.18)"
+          }
+        },
+        {
+          "title": "CPU Load",
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "type": "singlestat",
+          "id": 13,
+          "links": [],
+          "maxDataPoints": 100,
+          "interval": null,
+          "targets": [
+            {
+              "function": "last",
+              "column": "load5",
+              "series": "status",
+              "query": "select last(load5) from \"status\" where $timeFilter group by time($interval) order asc"
             }
           ],
           "cacheTimeout": null,
@@ -83,13 +121,13 @@
           "prefixFontSize": "50%",
           "valueFontSize": "80%",
           "postfixFontSize": "50%",
-          "thresholds": "",
-          "colorBackground": false,
+          "thresholds": "0,0.19,0.25",
+          "colorBackground": true,
           "colorValue": false,
           "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
+            "rgba(71, 212, 59, 0.4)",
+            "rgba(245, 150, 40, 0.73)",
+            "rgba(225, 40, 40, 0.59)"
           ],
           "sparkline": {
             "show": false,
@@ -152,56 +190,6 @@
           }
         },
         {
-          "title": "CPU Load",
-          "error": false,
-          "span": 2,
-          "editable": true,
-          "type": "singlestat",
-          "id": 13,
-          "links": [],
-          "maxDataPoints": 100,
-          "interval": null,
-          "targets": [
-            {
-              "function": "last",
-              "column": "load5",
-              "series": "status",
-              "query": "select last(load5) from \"status\" where $timeFilter group by time($interval) order asc"
-            }
-          ],
-          "cacheTimeout": null,
-          "format": "none",
-          "prefix": "",
-          "postfix": "",
-          "nullText": null,
-          "valueMaps": [
-            {
-              "value": "null",
-              "op": "=",
-              "text": "N/A"
-            }
-          ],
-          "nullPointMode": "connected",
-          "valueName": "avg",
-          "prefixFontSize": "50%",
-          "valueFontSize": "80%",
-          "postfixFontSize": "50%",
-          "thresholds": "0,0.19,0.25",
-          "colorBackground": true,
-          "colorValue": false,
-          "colors": [
-            "rgba(71, 212, 59, 0.4)",
-            "rgba(245, 150, 40, 0.73)",
-            "rgba(225, 40, 40, 0.59)"
-          ],
-          "sparkline": {
-            "show": false,
-            "full": false,
-            "lineColor": "rgb(31, 120, 193)",
-            "fillColor": "rgba(31, 118, 189, 0.18)"
-          }
-        },
-        {
           "title": "Connection status",
           "error": false,
           "span": 2,
@@ -216,7 +204,7 @@
               "function": "mean",
               "column": "value",
               "series": "ping",
-              "query": "select sum(packet_loss) from \"ping\"  where time > now() - 6m",
+              "query": "select sum(packet_loss) from \"ping\"  where time > now() - 16m",
               "rawQuery": true
             }
           ],
@@ -255,7 +243,7 @@
       ]
     },
     {
-      "title": "test",
+      "title": "Delay",
       "height": "200px",
       "editable": true,
       "collapse": false,
@@ -294,7 +282,7 @@
           "stack": false,
           "percentage": false,
           "legend": {
-            "show": true,
+            "show": false,
             "values": false,
             "min": false,
             "max": false,
@@ -461,10 +449,11 @@
               "lines": false
             }
           ],
-          "links": []
+          "links": [],
+          "leftYAxisLabel": "ICMP Delay"
         },
         {
-          "title": "HTTP Ping",
+          "title": "Web Delay",
           "error": false,
           "span": 6,
           "editable": true,
@@ -545,109 +534,29 @@
           },
           "seriesOverrides": [],
           "links": [],
-          "leftYAxisLabel": ""
+          "leftYAxisLabel": "HTTP Ping"
         }
       ]
     },
     {
-      "title": "New row",
+      "title": "Throughput",
       "height": "200px",
       "editable": true,
       "collapse": false,
       "panels": [
         {
-          "title": "My Access Point",
+          "title": "Bandwidth",
           "error": false,
           "span": 6,
           "editable": true,
           "type": "graph",
-          "id": 11,
+          "id": 18,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
           "y-axis": true,
           "y_formats": [
-            "short",
-            "short"
-          ],
-          "grid": {
-            "leftMax": null,
-            "rightMax": null,
-            "leftMin": null,
-            "rightMin": null,
-            "threshold1": null,
-            "threshold2": null,
-            "threshold1Color": "rgba(216, 200, 27, 0.27)",
-            "threshold2Color": "rgba(234, 112, 112, 0.22)"
-          },
-          "lines": true,
-          "fill": 0,
-          "linewidth": 3,
-          "points": false,
-          "pointradius": 5,
-          "bars": false,
-          "stack": false,
-          "percentage": false,
-          "legend": {
-            "show": true,
-            "values": false,
-            "min": false,
-            "max": false,
-            "current": false,
-            "total": false,
-            "avg": false,
-            "rightSide": false
-          },
-          "nullPointMode": "connected",
-          "steppedLine": false,
-          "tooltip": {
-            "value_type": "cumulative",
-            "shared": false
-          },
-          "targets": [
-            {
-              "function": "mean",
-              "column": "value",
-              "rawQuery": true,
-              "query": "select signal from wifi_ap where ESSID='SICS'",
-              "hide": false,
-              "alias": "Signal"
-            },
-            {
-              "function": "mean",
-              "column": "value",
-              "rawQuery": true,
-              "query": "select quality from wifi_ap where ESSID='SICS'",
-              "hide": false,
-              "alias": "Quality"
-            }
-          ],
-          "aliasColors": {
-            "Signal": "#C15C17",
-            "Quality": "#64B0C8"
-          },
-          "seriesOverrides": [
-            {
-              "alias": "Signal",
-              "yaxis": 2
-            }
-          ],
-          "leftYAxisLabel": "Quality",
-          "links": []
-        },
-        {
-          "title": "Wifi Access Points",
-          "error": false,
-          "span": 6,
-          "editable": true,
-          "type": "graph",
-          "id": 5,
-          "datasource": null,
-          "renderer": "flot",
-          "x-axis": true,
-          "y-axis": true,
-          "y_formats": [
-            "short",
+            "bits",
             "short"
           ],
           "grid": {
@@ -660,12 +569,77 @@
             "threshold1Color": "rgba(216, 200, 27, 0.27)",
             "threshold2Color": "rgba(234, 112, 112, 0.22)"
           },
-          "lines": true,
+          "lines": false,
           "fill": 0,
-          "linewidth": 3,
+          "linewidth": 1,
           "points": false,
           "pointradius": 5,
-          "bars": false,
+          "bars": true,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": false,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false
+          },
+          "nullPointMode": "null",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select \"download\" from throughput",
+              "alias": "Speedtest"
+            }
+          ],
+          "aliasColors": {
+            "throughput.download": "#E24D42",
+            "Speedtest": "#BF1B00"
+          },
+          "seriesOverrides": [],
+          "leftYAxisLabel": "Downloaded",
+          "links": []
+        },
+        {
+          "title": "DNS Lookup",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 20,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "s",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": false,
+          "fill": 0,
+          "linewidth": 2,
+          "points": false,
+          "pointradius": 5,
+          "bars": true,
           "stack": false,
           "percentage": false,
           "legend": {
@@ -681,50 +655,23 @@
           "steppedLine": false,
           "tooltip": {
             "value_type": "cumulative",
-            "shared": true
+            "shared": false
           },
           "targets": [
             {
               "function": "mean",
-              "column": "channel1",
-              "rawQuery": false,
-              "query": "select mean(channel1) from \"wifi_scan\" where $timeFilter group by time($interval) order asc",
-              "alias": "channel1",
-              "hide": false,
-              "series": "wifi_scan",
-              "interval": "10m"
-            },
-            {
-              "function": "mean",
-              "column": "channel6",
-              "rawQuery": false,
-              "query": "select mean(channel6) from \"wifi_scan\" where $timeFilter group by time($interval) order asc",
-              "alias": "channel6",
-              "hide": false,
-              "series": "wifi_scan",
-              "interval": "10m"
-            },
-            {
-              "function": "mean",
-              "column": "channel11",
-              "rawQuery": false,
-              "query": "select mean(channel11) from \"wifi_scan\" where $timeFilter group by time($interval) order asc",
-              "alias": "channel11",
-              "hide": false,
-              "series": "wifi_scan",
-              "interval": "10m"
+              "column": "value",
+              "rawQuery": true,
+              "query": "select \"sum\" from \"dns\""
             }
           ],
-          "aliasColors": {
-            "channel1": "#F4D598",
-            "channel6": "#EAB839",
-            "channel11": "#967302"
-          },
+          "aliasColors": {},
           "seriesOverrides": [],
-          "links": [],
-          "leftYAxisLabel": "Number of APs"
+          "leftYAxisLabel": "Duration",
+          "links": []
         }
-      ]
+      ],
+      "showTitle": false
     },
     {
       "title": "New row",
@@ -766,7 +713,7 @@
           "stack": false,
           "percentage": false,
           "legend": {
-            "show": true,
+            "show": false,
             "values": false,
             "min": false,
             "max": false,
@@ -887,11 +834,181 @@
       ]
     },
     {
-      "title": "New row",
+      "title": "Wifi",
       "height": "200px",
       "editable": true,
       "collapse": false,
-      "panels": []
+      "panels": [
+        {
+          "title": "Wifi Access Points",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 5,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 3,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": true
+          },
+          "targets": [
+            {
+              "function": "mean",
+              "column": "channel1",
+              "rawQuery": false,
+              "query": "select mean(channel1) from \"wifi_scan\" where $timeFilter group by time($interval) order asc",
+              "alias": "channel1",
+              "hide": false,
+              "series": "wifi_scan",
+              "interval": "10m"
+            },
+            {
+              "function": "mean",
+              "column": "channel6",
+              "rawQuery": false,
+              "query": "select mean(channel6) from \"wifi_scan\" where $timeFilter group by time($interval) order asc",
+              "alias": "channel6",
+              "hide": false,
+              "series": "wifi_scan",
+              "interval": "10m"
+            },
+            {
+              "function": "mean",
+              "column": "channel11",
+              "rawQuery": false,
+              "query": "select mean(channel11) from \"wifi_scan\" where $timeFilter group by time($interval) order asc",
+              "alias": "channel11",
+              "hide": false,
+              "series": "wifi_scan",
+              "interval": "10m"
+            }
+          ],
+          "aliasColors": {
+            "channel1": "#F4D598",
+            "channel6": "#EAB839",
+            "channel11": "#967302"
+          },
+          "seriesOverrides": [],
+          "links": [],
+          "leftYAxisLabel": "Number of APs"
+        },
+        {
+          "title": "My Access Point",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 11,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 3,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false,
+            "rightSide": false
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select signal from wifi_ap where ESSID='SICS'",
+              "hide": false,
+              "alias": "Signal"
+            },
+            {
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select quality from wifi_ap where ESSID='SICS'",
+              "hide": false,
+              "alias": "Quality"
+            }
+          ],
+          "aliasColors": {
+            "Signal": "#C15C17",
+            "Quality": "#64B0C8"
+          },
+          "seriesOverrides": [
+            {
+              "alias": "Signal",
+              "yaxis": 2
+            }
+          ],
+          "leftYAxisLabel": "Quality",
+          "links": []
+        }
+      ]
     }
   ],
   "nav": [
