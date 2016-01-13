@@ -3,11 +3,14 @@ from __future__ import unicode_literals, absolute_import, print_function
 import os
 import hashlib
 import shutil
+import logging
 
 from cheesepilib.server.parsing.ResultParser import ResultParser
+from cheesepilib.exceptions import UnsupportedResultType
 from .utils import untar
 
 class ResultDataProcessor(object):
+	log = logging.getLogger("cheesepi.server.parsing.ResultDataProcessor")
 
 	def __init__(self, filepath):
 		"""
@@ -66,13 +69,18 @@ class ResultDataProcessor(object):
 				parser = ResultParser.fromFile(filename)
 				output = parser.parse()
 
-				from pprint import PrettyPrinter
-				printer = PrettyPrinter(indent=2)
-				printer.pprint(output)
+				#from pprint import PrettyPrinter
+				#printer = PrettyPrinter(indent=2)
+				#printer.pprint(output)
 
 				parser.write_to_db()
+			except UnsupportedResultType as e:
+				# TODO This suppresses the full stack trace for the moment, but
+				# should be removed once all parsers have been implemented. This
+				# is here to declutter the log while developing
+				self.log.warn("{}".format(e))
 			except Exception as e:
-				print(e)
+				self.log.exception("Error parsing file {}".format(filename))
 
 	def delete(self):
 		"""

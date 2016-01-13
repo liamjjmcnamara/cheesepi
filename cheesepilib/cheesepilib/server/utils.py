@@ -41,9 +41,11 @@ def start_control_server():
 
 def start_upload_server():
 	import argparse
+	import logging
+	import sys
 
 	from twisted.internet import reactor
-	from twisted.logger import Logger, globalLogPublisher
+	from twisted.logger import Logger, globalLogPublisher, STDLibLogObserver
 	from twisted.web.server import Site
 	from twisted.web.resource import Resource
 
@@ -55,9 +57,21 @@ def start_upload_server():
 	                    help='Port to listen on')
 	args = parser.parse_args()
 
-	# Logging
+	# Python Logging
+	logging.basicConfig()
+	logging.root.setLevel(logging.INFO)
+
+	# Write logs to stdout
+	out_handler = logging.StreamHandler(sys.stdout)
+	formatter = logging.Formatter('[%(levelname)s][%(name)s]: %(message)s')
+	out_handler.setFormatter(formatter)
+	logging.root.addHandler(out_handler)
+
+	# Make twisted logging write to pythons logging module
+	globalLogPublisher.addObserver(STDLibLogObserver(name="cheesepi.server.upload"))
+
+	# Use twisted logger when in twisted
 	log = Logger()
-	globalLogPublisher.addObserver(PrintingObserver())
 
 	root = Resource()
 	root.putChild("upload", UploadHandler())

@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, absolute_import, print_function
 
+import logging
 import math
 import tarfile
 
@@ -12,7 +13,6 @@ def process_upload(uploaded_file):
 
 	with ResultDataProcessor(uploaded_file) as data:
 		data.process()
-		print("Done processing.")
 
 # TODO Maybe this should be baked into ResultDataProcessor
 def untar(filename, destination):
@@ -36,8 +36,19 @@ class StatObject(object):
 	Keeps track of mean value, variance and standard deviation incrementally
 	while new data is supplied.
 	"""
+	log = logging.getLogger("cheesepi.server.processing.StatObject")
 
 	_DEFAULT_ALPHA = 0.5
+
+	@classmethod
+	def fromJson(cls, json_obj):
+		try:
+			value = json_obj['value']
+			variance = json_obj['variance']
+			return cls(json_obj['value'],json_obj['variance'])
+		except (KeyError,TypeError) as e:
+			cls.log.exception("{} while parsing json.".format(e.__class__.__name__))
+			return cls(0, 0)
 
 	def __init__(self, mean=0, variance=0, alpha=_DEFAULT_ALPHA):
 		self.mean = mean
