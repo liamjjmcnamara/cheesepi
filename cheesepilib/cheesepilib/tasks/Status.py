@@ -1,5 +1,6 @@
 import time
 import os
+import re
 import logging
 import socket
 from subprocess import Popen, PIPE
@@ -49,6 +50,7 @@ class Status(Task.Task):
 
 		fields = data.split()
 		self.spec["uptime"] = fields[2][:-1]
+		self.spec["uptime"] = re.search("up .*?,",data).group(0)[3:-1]
 		self.spec["load1"]  = float(fields[-3][:-1])
 		self.spec["load5"]  = float(fields[-2][:-1])
 		self.spec["load15"] = float(fields[-1])
