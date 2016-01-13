@@ -33,7 +33,9 @@ class iPerf(Task.Task):
 
 	#ping function
 	def perform(self, landmark, port):
-		execute = "iperf -yc -f k -p %d -c %s"%(port, landmark)
+		# an ARM version of this is located at 'client/tools/iperf3'
+		execute = "iperf3 -yc -f k -p %d -c %s"%(port, landmark)
+		print execute
 		logging.info("Executing: "+execute)
 		logger.debug(execute)
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)

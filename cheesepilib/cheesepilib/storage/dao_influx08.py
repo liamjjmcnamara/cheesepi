@@ -104,7 +104,7 @@ class DAO_influx(dao.DAO):
 		dic['sign']    = md5
 
 		json = self.format08(op_type, dic)
-		print "Saving Op: %s" % json
+		print "Saving %s Op: %s" % (op_type, json)
 		try:
 			return self.conn.write_points(json)
 		except Exception as e:
