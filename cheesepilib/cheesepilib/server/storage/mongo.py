@@ -182,6 +182,9 @@ class MongoDAO(DAO):
             average_packet_loss = StatObject.fromJson(stats['ping']['average_packet_loss'])
 
 
+        # Bulk write operation object
+        bulk_writer = self.db.peers.initialize_ordered_bulk_op()
+
         probe_count = 0
         packet_loss = 0
         max_rtt = 0
@@ -207,19 +210,21 @@ class MongoDAO(DAO):
             average_median_delay.add_datum(median(delay_sequence))
             average_packet_loss.add_datum(packet_loss/probe_count)
 
-            update = self.db.peers.update(
-                    {'peer_id':peer_id},
-                    {'$push': {'results':result}},
-                    upsert=True
+            bulk_writer.find(
+                    {'peer_id':peer_id}
+                    ).upsert(
+                    ).update(
+                    {'$push': {'results':result}}
             )
 
 
         # Find the element in the statistics array for the peer where the
         # target id matches, then update the stats accordingly
-        update_result = self.db.peers.update_one(
+        bulk_writer.find(
                 {'peer_id':peer_id,
-                 'statistics.target_id':target_id
-                },
+                 'statistics.target_id':target_id}
+                ).upsert(
+                ).update_one(
                 {'$inc':{
                     'statistics.$.ping.total_probe_count':probe_count,
                     'statistics.$.ping.total_packet_loss':packet_loss
@@ -227,21 +232,22 @@ class MongoDAO(DAO):
                  '$max':{'statistics.$.ping.all_time_max_rtt':max_rtt},
                  '$min':{'statistics.$.ping.all_time_min_rtt':min_rtt},
                  '$set':{
-                    'statistics.$.ping.mean_delay.value':mean_delay.mean,
+                    'statistics.$.ping.mean_delay.mean':mean_delay.mean,
                     'statistics.$.ping.mean_delay.variance':mean_delay.variance,
                     'statistics.$.ping.mean_delay.std_dev':mean_delay.std_dev,
-                    'statistics.$.ping.average_median_delay.value':average_median_delay.mean,
+                    'statistics.$.ping.average_median_delay.mean':average_median_delay.mean,
                     'statistics.$.ping.average_median_delay.variance':average_median_delay.variance,
                     'statistics.$.ping.average_median_delay.std_dev':average_median_delay.std_dev,
-                    'statistics.$.ping.average_packet_loss.value':average_packet_loss.mean,
+                    'statistics.$.ping.average_packet_loss.mean':average_packet_loss.mean,
                     'statistics.$.ping.average_packet_loss.variance':average_packet_loss.variance,
                     'statistics.$.ping.average_packet_loss.std_dev':average_packet_loss.std_dev,
                   },
-                },
-                upsert=True
+                }
         )
 
-        return self._return_status(update_result.modified_count>0)
+        update_result = bulk_writer.execute()
+
+        return self._return_status(update_result['nModified']>0)
 
     def purge_results(self, peer_id):
         result = self.db.peers.update(

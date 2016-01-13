@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import, print_function
 import logging
 import math
 import tarfile
+import hashlib
 
 # Processing functions, untar, calculating stats etc...
 # TODO some kind of logging??
@@ -18,6 +19,12 @@ def process_upload(uploaded_file):
 def untar(filename, destination):
 	with tarfile.open(filename) as tar:
 		tar.extractall(destination)
+
+def md5_filehash(filepath):
+	hasher = hashlib.md5()
+	with open(filepath) as fd:
+		hasher.update(fd.read())
+	return hasher.hexdigest()
 
 # This might be better to include from a well maintained library
 def median(input_list):
@@ -42,10 +49,13 @@ class StatObject(object):
 
 	@classmethod
 	def fromJson(cls, json_obj):
+		"""
+		Parses a json object which should contain the keys 'value'
+		"""
 		try:
-			value = json_obj['value']
+			mean = json_obj['mean']
 			variance = json_obj['variance']
-			return cls(json_obj['value'],json_obj['variance'])
+			return cls(mean, variance)
 		except (KeyError,TypeError) as e:
 			cls.log.exception("{} while parsing json.".format(e.__class__.__name__))
 			return cls(0, 0)
