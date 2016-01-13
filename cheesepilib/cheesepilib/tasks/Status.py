@@ -1,6 +1,7 @@
 import time
 import os
 import re
+import uptime
 import logging
 import socket
 from subprocess import Popen, PIPE
@@ -49,8 +50,9 @@ class Status(Task.Task):
 		self.spec["local_address"] = [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
 
 		fields = data.split()
-		self.spec["uptime"] = fields[2][:-1]
-		self.spec["uptime"] = re.search("up .*?,",data).group(0)[3:-1]
+		#self.spec["uptime"] = fields[2][:-1]
+		#self.spec["uptime"] = re.search("up .*?,",data).group(0)[3:-1]
+		self.spec["uptime"] = float(uptime.uptime() / (60*60))
 		self.spec["load1"]  = float(fields[-3][:-1])
 		self.spec["load5"]  = float(fields[-2][:-1])
 		self.spec["load15"] = float(fields[-1])
