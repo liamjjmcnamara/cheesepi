@@ -33,7 +33,7 @@ class iPerf(Task.Task):
 
 	#ping function
 	def perform(self, landmark, port):
-		execute = "iperf -yc -p %d -c %s"%(port, landmark)
+		execute = "iperf -yc -f k -p %d -c %s"%(port, landmark)
 		logging.info("Executing: "+execute)
 		logger.debug(execute)
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
@@ -46,8 +46,8 @@ class iPerf(Task.Task):
 
 		lines = data.split("\n")
 		fields = lines[0].split(',')
-		self.spec['bandwidth'] = fields[-1]
-		self.spec['transfer']  = fields[-2]
+		self.spec['bandwidth'] = int(fields[-1])
+		self.spec['transfer']  = int(fields[-2])
 		return self.spec
 
 
