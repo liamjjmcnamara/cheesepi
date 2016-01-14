@@ -28,46 +28,47 @@ class Dash(Task.Task):
 	# measure and record funtion
 	def measure(self):
 		self.spec['start_time'] = cp.utils.now()
-		op_output = self.perform()
+		self.perform()
 		self.spec['end_time'] = cp.utils.now()
-		print "Output: %s" % op_output
-		logger.debug(op_output)
-
-		#parsed_output = self.parse_output(op_output)
-		#self.dao.write_op(self.spec['taskname'], parsed_output)
+		#print "Output: %s" % op_output
+		#logger.debug(op_output)
+		self.dao.write_op(self.spec['taskname'], self.spec)
 
 	def perform(self):
 		ydl_opts = {
 			'format': 'bestaudio/best',
-			#'postprocessors': [{
-			#	'key': 'FFmpegExtractAudio',
-			#	'preferredcodec': 'mp3',
-			#	'preferredquality': '192',
-			#}],
+			'postprocessors': [{
+				'key': 'FFmpegExtractAudio',
+				'preferredcodec': 'mp3',
+				'preferredquality': '192',
+			}],
 			'logger': logger,
-			#logtostderr
 			'progress_hooks': [self.callback],
-			'forcejson': True,
 		}
 		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-			#ydl.download(['http://www.youtube.com/watch?v=BaW_jenozKc'])
-			ydl.download([self.spec['source']])
+			try:
+				ydl.download([self.spec['source']])
+			except Exception as e:
+				logger.error("Problem with Dash download: "+str(e))
+				#self.spec['status'] = "error"
+				pass
 
 	def callback(self, stats):
-		logger.info(stats)
+		#logger.info(stats)
 		if stats['status'] == 'finished':
 			logger.debug('Done downloading, now converting ...')
-			print('Done downloading, now converting ...')
-			print stats
-			self.spec['downloaded'] = stats['total_bytes']
-			self.spec['downloaded'] = stats['total_bytes']
+			#print stats
+			if 'downloaded_bytes' in stats:
+				self.spec['downloaded'] = stats['downloaded_bytes']
+				if 'elapsed' in stats:
+					self.spec['download_speed'] = stats['total_bytes'] / stats['elapsed']
+			try:
+				# avoid cluttering the filesystem
+				#os.remove(stats['filename'])
+				pass
+			except Exception as e:
+				logger.error("Problem removing Dash.py Youtube file %s: %s" % (stats['filename'], str(e)))
 
-	#read the data from ping and reformat for database entry
-	def parse_output(self, data, ):
-
-		lines = data.split("\n")
-		first_line = lines.pop(0).split()
-		return self.spec
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc

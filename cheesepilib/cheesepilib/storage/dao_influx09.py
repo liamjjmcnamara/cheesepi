@@ -44,7 +44,7 @@ username = "root"
 password = "root"
 database = "cheesepi"
 
-class DAO_influx09(dao.DAO):
+class DAO_influx(dao.DAO):
 	def __init__(self):
 		logging.info("Connecting to influx: %s %s %s" % (username,password,database))
 		try: # Get a hold of a Influx connection

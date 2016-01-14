@@ -13,6 +13,12 @@ except ImportError as e:
 	print str(e)
 
 try:
+	import dao_influx09
+except ImportError as e:
+	print "Missing InfluxDB python module, use 'pip install influxdb'"
+	print str(e)
+
+try:
 	import dao_mysql
 except ImportError as e:
 	print "Missing MySQL python module, use 'pip install MySQL-python'"
