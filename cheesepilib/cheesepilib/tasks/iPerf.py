@@ -25,7 +25,7 @@ class iPerf(Task.Task):
 	# measure and record funtion
 	def measure(self):
 		self.spec['start_time'] = cp.utils.now()
-		op_output  = self.perform(self.landmark, self.port)
+		op_output  = self.perform(self.spec['landmark'], self.spec['port'])
 		self.spec['end_time']   = cp.utils.now()
 		logger.debug(op_output)
 		parsed_output = self.parse_output(op_output)
@@ -33,7 +33,9 @@ class iPerf(Task.Task):
 
 	#ping function
 	def perform(self, landmark, port):
-		execute = "iperf -yc -p %d -c %s"%(port, landmark)
+		# an ARM version of this is located at 'client/tools/iperf3'
+		execute = "iperf3 -yc -f k -p %d -c %s"%(port, landmark)
+		print execute
 		logging.info("Executing: "+execute)
 		logger.debug(execute)
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
@@ -42,12 +44,12 @@ class iPerf(Task.Task):
 		return ret
 
 	#read the data from ping and reformat for database entry
-	def parse_output(self, data, landmark, start_time, end_time):
+	def parse_output(self, data):
 
 		lines = data.split("\n")
 		fields = lines[0].split(',')
-		self.spec['bandwidth'] = fields[-1]
-		self.spec['transfer']  = fields[-2]
+		self.spec['bandwidth'] = int(fields[-1])
+		self.spec['transfer']  = int(fields[-2])
 		return self.spec
 
 

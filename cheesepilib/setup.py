@@ -52,6 +52,7 @@ setup(
             'dnspython',
             'influxdb',
             'pymongo',
+            'uptime',
         ],
 
         entry_points={

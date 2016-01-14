@@ -44,7 +44,7 @@ username = "root"
 password = "root"
 database = "cheesepi"
 
-class DAO_influx09(dao.DAO):
+class DAO_influx(dao.DAO):
 	def __init__(self):
 		logging.info("Connecting to influx: %s %s %s" % (username,password,database))
 		try: # Get a hold of a Influx connection
@@ -78,10 +78,21 @@ class DAO_influx09(dao.DAO):
 
 
 
-	def toFormat(self,table,dic):
+	def format09(self,table,dic):
 		#print [{"measurement":table,"fields":dic}]
-		return [{'measurement':table,"database": "cheesepi","fields":dic,"tags": {"source":"dao"} }]
+		return [{'measurement':table, "database":"cheesepi", "fields":dic, "tags":{"source":"dao"} }]
 		#return json_body
+
+
+	def format08(self, table, dic):
+		for k in dic.keys():
+				dic[k]=dic[k]
+		#json_dic = [{"name":table, "columns":dic.keys(), "points":[dic.values()]}]
+		#json_str = '[{"name":"%s", "columns":%s, "points":[%s]}]' % (table,json.dumps(dic.keys()),json.dumps(dic.values()))
+		json_str = '[{"measurement":"%s", "fields":%s, ' % (table,"")
+		#json_str = '[{"name":"ping", "columns":["test"], "points":["value"]}]'
+		return json_str
+
 
 	# Operator interactions
 	def write_op(self, op_type, dic, binary=None):
@@ -96,8 +107,10 @@ class DAO_influx09(dao.DAO):
 		md5 = hashlib.md5(config['secret']+str(dic)).hexdigest()
 		dic['sign']    = md5
 
-		points=self.toFormat(op_type,dic)
+		points=self.format09(op_type, dic)
+		print points
 		print "Saving %s Op: %s" % (op_type, str(points))
+		result = None
 		try:
 			result = self.conn.write_points(points)
 		except InfluxDBClientError as e:
@@ -157,16 +170,4 @@ class DAO_influx09(dao.DAO):
 			print msg
 			logging.error(msg)
 			exit(1)
-
-
-	def to_json(self, table, dic):
-		for k in dic.keys():
-				dic[k]=dic[k]
-		#json_dic = [{"name":table, "columns":dic.keys(), "points":[dic.values()]}]
-		#json_str = '[{"name":"%s", "columns":%s, "points":[%s]}]' % (table,json.dumps(dic.keys()),json.dumps(dic.values()))
-
-		json_str = '[{"measurement":"%s", "fields":%s, ' % (table,"")
-		#json_str = '[{"name":"ping", "columns":["test"], "points":["value"]}]'
-		return json_str
-
 

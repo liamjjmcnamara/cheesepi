@@ -76,7 +76,7 @@ class DAO_influx(dao.DAO):
 			dumped_db[series_name] = json.dumps(dumped_series)
 		return dumped_db
 
-	def fotmat09(self,table,dic):
+	def format09(self,table,dic):
 		#print [{"measurement":table,"fields":dic}]
 		return [{'measurement':table,"database": "cheesepi","fields":dic,"tags": {"source":"dao"} }]
 		#return json_body
@@ -104,7 +104,7 @@ class DAO_influx(dao.DAO):
 		dic['sign']    = md5
 
 		json = self.format08(op_type, dic)
-		print "Saving Op: %s" % json
+		print "Saving %s Op: %s" % (op_type, json)
 		try:
 			return self.conn.write_points(json)
 		except Exception as e:
@@ -112,7 +112,8 @@ class DAO_influx(dao.DAO):
 			logging.error(msg)
 			print msg
 			#cp.config.make_databases()
-			exit(1)
+			#exit(1)
+			raise IOError(msg)
 		return id
 
 	def read_op(self, op_type, timestamp=0, limit=100):

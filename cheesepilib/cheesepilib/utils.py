@@ -80,6 +80,10 @@ def now():
 	return time.time()
 	#return int(datetime.datetime.utcnow().strftime("%s"))
 
+def isARM():
+	if "arm" in platform.machine():
+		return True
+	return False
 
 # logging facilities
 def write_file(ret, start_time, ethmac):

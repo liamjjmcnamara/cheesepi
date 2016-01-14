@@ -32,10 +32,13 @@ class Throughput(Task.Task):
 
 	#read the data and reformat for database entry
 	def parse_output(self, data):
-		self.spec['download'] = data['download']
-		self.spec['upload']   = data['upload']
+		self.spec['download_speed'] = data['download']
+		self.spec['upload_speed']   = data['upload']
 		self.spec['serverid'] = data['serverid']
 		self.spec['ping']     = data['ping']
+		# how much data was transferred? calcualted from speedtest.py
+		self.spec['downloaded'] = 19100
+		self.spec['uploaded']   = 750000
 		return self.spec
 
 if __name__ == "__main__":

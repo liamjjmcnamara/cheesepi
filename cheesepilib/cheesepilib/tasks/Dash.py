@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 import time
 import os
 
@@ -9,10 +8,6 @@ import Task
 
 logger = cp.config.get_logger()
 
-def callback(d):
-	logger.info(d)
-	if d['status'] == 'finished':
-		logger.debug(('Done downloading, now converting ...'))
 
 class Dash(Task.Task):
 
@@ -22,6 +17,7 @@ class Dash(Task.Task):
 		self.spec['taskname'] = "dash"
 		if not 'source' in spec:
 			self.spec['source'] = "http://www.youtube.com/watch?v=_OBlgSz8sSM"
+		print self.spec
 
 	# actually perform the measurements, no arguments required
 	def run(self):
@@ -31,13 +27,13 @@ class Dash(Task.Task):
 	# measure and record funtion
 	def measure(self):
 		self.spec['start_time'] = cp.utils.now()
-		op_output = self.perform()
+		self.perform()
 		self.spec['end_time'] = cp.utils.now()
-		print op_output
-		logger.debug(op_output)
-
-		#parsed_output = self.parse_output(op_output)
-		#self.dao.write_op(self.spec['taskname'], parsed_output)
+		#print "Output: %s" % op_output
+		#logger.debug(op_output)
+		if not 'download_speed' in self.spec:
+			self.spec['download_speed'] = self.spec['total_bytes'] /(self.spec['end_time']-self.spec['start_time'])
+		self.dao.write_op(self.spec['taskname'], self.spec)
 
 	def perform(self):
 		ydl_opts = {
@@ -48,18 +44,36 @@ class Dash(Task.Task):
 				'preferredquality': '192',
 			}],
 			'logger': logger,
-			'progress_hooks': [callback],
+			'progress_hooks': [self.callback],
 		}
 		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-			#ydl.download(['http://www.youtube.com/watch?v=BaW_jenozKc'])
-			ydl.download([self.spec['source']])
+			try:
+				ydl.download([self.spec['source']])
+			except Exception as e:
+				logger.error("Problem with Dash download: "+str(e))
+				#self.spec['status'] = "error"
+				pass
 
-	#read the data from ping and reformat for database entry
-	def parse_output(self, data, ):
+	def callback(self, stats):
+		#logger.info(stats)
+		if stats['status'] == 'finished':
+			logger.debug('Done downloading, now converting ...')
+			#print stats
+			if 'downloaded_bytes' in stats:
+				self.spec['downloaded'] = stats['downloaded_bytes']
+			else:
+				self.spec['downloaded'] = stats['total_bytes']
 
-		lines = data.split("\n")
-		first_line = lines.pop(0).split()
-		return self.spec
+			if 'elapsed' in stats:
+				self.spec['download_speed'] = stats['total_bytes'] / stats['elapsed']
+
+			try:
+				# avoid cluttering the filesystem
+				os.remove(stats['filename'])
+				pass
+			except Exception as e:
+				logger.error("Problem removing Dash.py Youtube file %s: %s" % (stats['filename'], str(e)))
+
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
