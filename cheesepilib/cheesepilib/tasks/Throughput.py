@@ -36,6 +36,9 @@ class Throughput(Task.Task):
 		self.spec['upload']   = data['upload']
 		self.spec['serverid'] = data['serverid']
 		self.spec['ping']     = data['ping']
+		# how much data was transferred? calcualted from speedtest.py
+		self.spec['downloaded'] = 19100
+		self.spec['uploaded']   = 750000
 		return self.spec
 
 if __name__ == "__main__":

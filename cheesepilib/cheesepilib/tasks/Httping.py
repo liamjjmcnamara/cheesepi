@@ -67,6 +67,7 @@ class Httping(Task.Task):
 		ret["ping_count"]  = int(ping_count)
 		delays=[]
 		breakdowns=[]
+		downloaded = 0 # how many bytes delivered?
 
 		lines = data.split("\n")
 		first_line = lines.pop(0).split()
@@ -77,6 +78,7 @@ class Httping(Task.Task):
 			if "time=" in line: # is this a PING return line?
 				# does the following string wrangling always hold? what if not "X ms" ?
 				# also need to check whether we are on linux-like or BSD-like ping
+				downloaded  += int(re.findall('[\d]+ bytes',line)[0][:-6])
 				sequence_num = int(re.findall('seq=[\d]+ ',line)[0][4:-1])
 
 				delay = re.findall('[\d\.]+ ms',line)[0][0:-3]
@@ -95,9 +97,10 @@ class Httping(Task.Task):
 				ret["minimum_RTT"] = float(fields[0])
 				ret["average_RTT"] = float(fields[1])
 				ret["maximum_RTT"] = float(fields[2])
-		ret['delays'] = str(delays)
-		ret["stddev_RTT"]  = cp.utils.stdev(delays)
-		ret['breakdown'] = str(self.parse_breakdowns(breakdowns))
+		ret['delays']     = str(delays)
+		ret["stddev_RTT"] = cp.utils.stdev(delays)
+		ret['breakdown']  = str(self.parse_breakdowns(breakdowns))
+		ret['downloaded'] = downloaded
 		return ret
 
 

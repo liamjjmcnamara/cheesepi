@@ -1,6 +1,5 @@
 import time
 import os
-import re
 import uptime
 import logging
 import socket
@@ -16,6 +15,8 @@ class Status(Task.Task):
 	def __init__(self, dao, spec={}):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname']    = "status"
+		self.spec['downloaded'] = 0
+		self.spec['uploaded']   = 0
 
 	# actually perform the measurements, no arguments required
 	def run(self):
