@@ -32,7 +32,7 @@ class Dash(Task.Task):
 		#print "Output: %s" % op_output
 		#logger.debug(op_output)
 		if not 'download_speed' in self.spec:
-			self.spec['download_speed'] = self.spec['total_bytes'] /(self.spec['end_time']-self.spec['start_time'])
+			self.spec['download_speed'] = self.spec['downloaded'] /(self.spec['end_time']-self.spec['start_time'])
 		self.dao.write_op(self.spec['taskname'], self.spec)
 
 	def perform(self):
@@ -65,7 +65,7 @@ class Dash(Task.Task):
 				self.spec['downloaded'] = stats['total_bytes']
 
 			if 'elapsed' in stats:
-				self.spec['download_speed'] = stats['total_bytes'] / stats['elapsed']
+				self.spec['download_speed'] = self.spec['downloaded'] / stats['elapsed']
 
 			try:
 				# avoid cluttering the filesystem
