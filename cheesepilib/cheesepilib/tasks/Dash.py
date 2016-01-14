@@ -9,10 +9,6 @@ import Task
 
 logger = cp.config.get_logger()
 
-def callback(d):
-	logger.info(d)
-	if d['status'] == 'finished':
-		logger.debug(('Done downloading, now converting ...'))
 
 class Dash(Task.Task):
 
@@ -22,6 +18,7 @@ class Dash(Task.Task):
 		self.spec['taskname'] = "dash"
 		if not 'source' in spec:
 			self.spec['source'] = "http://www.youtube.com/watch?v=_OBlgSz8sSM"
+		print self.spec
 
 	# actually perform the measurements, no arguments required
 	def run(self):
@@ -33,7 +30,7 @@ class Dash(Task.Task):
 		self.spec['start_time'] = cp.utils.now()
 		op_output = self.perform()
 		self.spec['end_time'] = cp.utils.now()
-		print op_output
+		print "Output: %s" % op_output
 		logger.debug(op_output)
 
 		#parsed_output = self.parse_output(op_output)
@@ -42,17 +39,28 @@ class Dash(Task.Task):
 	def perform(self):
 		ydl_opts = {
 			'format': 'bestaudio/best',
-			'postprocessors': [{
-				'key': 'FFmpegExtractAudio',
-				'preferredcodec': 'mp3',
-				'preferredquality': '192',
-			}],
+			#'postprocessors': [{
+			#	'key': 'FFmpegExtractAudio',
+			#	'preferredcodec': 'mp3',
+			#	'preferredquality': '192',
+			#}],
 			'logger': logger,
-			'progress_hooks': [callback],
+			#logtostderr
+			'progress_hooks': [self.callback],
+			'forcejson': True,
 		}
 		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 			#ydl.download(['http://www.youtube.com/watch?v=BaW_jenozKc'])
 			ydl.download([self.spec['source']])
+
+	def callback(self, stats):
+		logger.info(stats)
+		if stats['status'] == 'finished':
+			logger.debug('Done downloading, now converting ...')
+			print('Done downloading, now converting ...')
+			print stats
+			self.spec['downloaded'] = stats['total_bytes']
+			self.spec['downloaded'] = stats['total_bytes']
 
 	#read the data from ping and reformat for database entry
 	def parse_output(self, data, ):
