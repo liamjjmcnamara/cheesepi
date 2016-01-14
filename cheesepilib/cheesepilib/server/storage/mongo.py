@@ -131,20 +131,86 @@ class MongoDAO(DAO):
 		#)
 		return self._return_status(update['updatedExisting'])
 
-	def get_stats(self, peer_id, target_id):
+
+
+
+	def get_stats_set(self, peer_id, target):
+		target_hash = target.get_hash()
+		projection = "statistics.{}".format(target_hash)
 
 		stats = self.db.peers.find(
-			{'peer_id':peer_id,
-			 'statistics.target_id':target_id},
-			{'statistics.$':1},
+			{'peer_id':peer_id},
+			{projection:1},
 		)
 
 		# Should be unique so can only ever find one
 		if stats.count() > 0:
-			return stats[0]['statistics'][0]
+			return stats[0]['statistics'][target_hash]
 		else:
 			return None
 
+	def write_stats_set(self, peer_id, target, statistics_set):
+		bulk_writer = self.db.peers.initialize_ordered_bulk_op()
+
+		bulk_writer = self.bulk_write_stats_set(bulk_writer, peer_id,
+		                                    target, statistics_set)
+
+		result = bulk_writer.execute()
+		self.log.info(result)
+		return result
+
+	def bulk_write_stats_set(self, bulk_writer, peer_id, target, statistics_set):
+		"""
+		Write a statistics set object to the database.
+		"""
+		self.log.info("IN WRITE_STATS")
+
+		prefix_key = "statistics" #.format(target.get_hash())
+
+		stat_object = {}
+
+		for stat in statistics_set:
+			stat_target_hash = stat.get_target_hash()
+			stat_type = stat.get_type()
+			if stat_target_hash not in stat_object:
+				stat_object[stat_target_hash] = {'target':target.toDict()}
+			stat_object[stat_target_hash][stat_type] = stat.toDict()
+
+		bulk_writer.find(
+			{'peer_id':peer_id}
+			).upsert(
+			).update_one(
+			{'$set':{prefix_key:stat_object}}
+		)
+		self.log.info("EXITING WRITE_STATS")
+
+		return bulk_writer
+
+	def write_results(self, peer_id, results):
+		bulk_writer = self.db.peers.initialize_ordered_bulk_op()
+
+		bulk_writer = self.bulk_write_results(bulk_writer, peer_id, results)
+
+		result = bulk_writer.execute()
+		self.log.info(result)
+		return result
+
+	def bulk_write_results(self, bulk_writer, peer_id, results):
+		"""
+		Bulk writes a list of result objects
+		"""
+		for result in results:
+			bulk_writer.find(
+				{'peer_id':peer_id}
+				).upsert(
+				).update(
+				{'$push': {'results':result.toDict()}}
+			)
+		return bulk_writer
+
+	#############
+	# DEPRECATED#
+	#############
 	def write_ping_results(self, peer_id, target_id, results):
 
 		from cheesepilib.server.processing.utils import StatObject, median
@@ -174,9 +240,9 @@ class MongoDAO(DAO):
 			average_median_delay = StatObject(0,0)
 			average_packet_loss = StatObject(0,0)
 		else:
-			mean_delay = StatObject.fromJson(stats['ping']['mean_delay'])
-			average_median_delay = StatObject.fromJson(stats['ping']['average_median_delay'])
-			average_packet_loss = StatObject.fromJson(stats['ping']['average_packet_loss'])
+			mean_delay = StatObject.fromDict(stats['ping']['mean_delay'])
+			average_median_delay = StatObject.fromDict(stats['ping']['average_median_delay'])
+			average_packet_loss = StatObject.fromDict(stats['ping']['average_packet_loss'])
 
 
 		# Bulk write operation object
@@ -196,11 +262,7 @@ class MongoDAO(DAO):
 			min_rtt = min(min_rtt, result['value']['min_rtt'])
 			avg_rtt = result['value']['avg_rtt']
 
-			# TODO this is done because the sequence is stored as a string
-			# representation of a list, should be changed in the future so that
-			# it's a list from the start
-			import ast
-			delay_sequence = ast.literal_eval(result['value']['delay_sequence'])
+			delay_sequence = result['value']['delay_sequence']
 
 			# Increment the stat counters
 			mean_delay.add_datum(avg_rtt)
@@ -229,15 +291,16 @@ class MongoDAO(DAO):
 			 '$max':{'statistics.$.ping.all_time_max_rtt':max_rtt},
 			 '$min':{'statistics.$.ping.all_time_min_rtt':min_rtt},
 			 '$set':{
-				'statistics.$.ping.mean_delay.mean':mean_delay.mean,
-				'statistics.$.ping.mean_delay.variance':mean_delay.variance,
-				'statistics.$.ping.mean_delay.std_dev':mean_delay.std_dev,
-				'statistics.$.ping.average_median_delay.mean':average_median_delay.mean,
-				'statistics.$.ping.average_median_delay.variance':average_median_delay.variance,
-				'statistics.$.ping.average_median_delay.std_dev':average_median_delay.std_dev,
-				'statistics.$.ping.average_packet_loss.mean':average_packet_loss.mean,
-				'statistics.$.ping.average_packet_loss.variance':average_packet_loss.variance,
-				'statistics.$.ping.average_packet_loss.std_dev':average_packet_loss.std_dev,
+				'statistics.$.ping.task_name':'ping',
+				'statistics.$.ping.mean_delay.mean':mean_delay._mean,
+				'statistics.$.ping.mean_delay.variance':mean_delay._variance,
+				'statistics.$.ping.mean_delay.std_dev':mean_delay._std_dev,
+				'statistics.$.ping.average_median_delay.mean':average_median_delay._mean,
+				'statistics.$.ping.average_median_delay.variance':average_median_delay._variance,
+				'statistics.$.ping.average_median_delay.std_dev':average_median_delay._std_dev,
+				'statistics.$.ping.average_packet_loss.mean':average_packet_loss._mean,
+				'statistics.$.ping.average_packet_loss.variance':average_packet_loss._variance,
+				'statistics.$.ping.average_packet_loss.std_dev':average_packet_loss._std_dev,
 				},
 			}
 		)

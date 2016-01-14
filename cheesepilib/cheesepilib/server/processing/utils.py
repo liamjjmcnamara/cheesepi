@@ -48,41 +48,48 @@ class StatObject(object):
 	_DEFAULT_ALPHA = 0.5
 
 	@classmethod
-	def fromJson(cls, json_obj):
+	def fromDict(cls, dct):
 		"""
-		Parses a json object which should contain the keys 'value'
+		Parses a dict object which should contain the keys 'value'
 		"""
 		try:
-			mean = json_obj['mean']
-			variance = json_obj['variance']
+			mean = dct['mean']
+			variance = dct['variance']
 			return cls(mean, variance)
 		except (KeyError,TypeError) as e:
-			cls.log.exception("{} while parsing json.".format(e.__class__.__name__))
+			cls.log.exception("{} while parsing dict.".format(e.__class__.__name__))
 			return cls(0, 0)
 
+	def toDict(self):
+		return {
+			'mean':self._mean,
+			'variance':self._variance,
+			'std_dev':self._std_dev,
+		}
+
 	def __init__(self, mean=0, variance=0, alpha=_DEFAULT_ALPHA):
-		self.mean = mean
-		self.variance = variance
-		self.std_dev = math.sqrt(variance)
-		self.alpha = self._DEFAULT_ALPHA
+		self._mean = mean
+		self._variance = variance
+		self._std_dev = math.sqrt(variance)
+		self._alpha = self._DEFAULT_ALPHA
 
 	def __repr__(self):
 		return "StatObject({mean}, {variance}, {std_dev}, alpha={alpha})".format(
-				mean=self.mean,
-				variance=self.variance,
-				std_dev=self.std_dev,
-				alpha=self.alpha)
+				mean=self._mean,
+				variance=self._variance,
+				std_dev=self._std_dev,
+				alpha=self._alpha)
 
 	def set_alpha(self, alpha):
-		self.alpha = alpha
+		self._alpha = alpha
 
 	def add_datum(self, new_datum, alpha=_DEFAULT_ALPHA):
 		"""
 		Add a new data point
 		"""
-		delta = new_datum - self.mean
+		delta = new_datum - self._mean
 		increment = alpha * delta
 
-		self.mean = self.mean + increment
-		self.variance = (1-alpha) * (self.variance + (delta * increment))
-		self.std_dev = math.sqrt(self.variance)
+		self._mean = self._mean + increment
+		self._variance = (1-alpha) * (self._variance + (delta * increment))
+		self._std_dev = math.sqrt(self._variance)

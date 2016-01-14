@@ -45,6 +45,8 @@ class ResultDataProcessor(object):
 		return self._md5_hash
 
 	def extract(self):
+		self.log.info("Extracting {} --> {}".format(
+			self._filepath, self._extract_path))
 		untar(self._filepath, self._extract_path)
 		self._extracted = True
 
@@ -52,6 +54,7 @@ class ResultDataProcessor(object):
 		if not self._extracted:
 			raise Exception("Data not extracted.")
 
+		self.log.info("Deleting folder {}".format(self._extract_path))
 		shutil.rmtree(self._extract_path)
 		self._extracted = False
 
@@ -59,19 +62,21 @@ class ResultDataProcessor(object):
 		if not self._extracted:
 			raise Exception("Data not extracted.")
 
+		self.log.info("Processing files in {}".format(self._extract_path))
 		# Process every file in the extracted folder
 		files = [os.path.join(self._extract_path, f)
 				for f in os.listdir(self._extract_path)]
 		for filename in files:
 			try:
-				parser = ResultParser.fromFile(filename)
-				output = parser.parse()
+				#parser = ResultParser.fromFile(filename)
+				with ResultParser.fromFile(filename) as parser:
+					parser.parse()
+					parser.write_to_db()
 
 				#from pprint import PrettyPrinter
 				#printer = PrettyPrinter(indent=2)
 				#printer.pprint(output)
 
-				parser.write_to_db()
 			except UnsupportedResultType as e:
 				# TODO This suppresses the full stack trace for the moment, but
 				# should be removed once all parsers have been implemented. This
@@ -84,4 +89,5 @@ class ResultDataProcessor(object):
 		"""
 		We're done, delete all files.
 		"""
+		self.log.info("Deleting file {}".format(self._filepath))
 		os.remove(self._filepath)
