@@ -1,6 +1,8 @@
 import random
 import json
 
+import cheesepilib as cp
+
 # To be subclassed by explicit measurement tasks
 class Task:
 
@@ -8,7 +10,8 @@ class Task:
 		self.dao                = dao
 		self.spec               = {}
 		self.spec['taskname']   = "Superclass"
-		self.spec['period']     = 3600 # hourly
+		self.spec['inititator'] = cp.utils.get_host_id()
+		self.spec['period']     = 0
 		self.spec['offset']     = 0
 		self.spec['downloaded'] = 1 # bytes, placeholder
 		self.spec['uploaded']   = 1 # bytes, placeholder

@@ -30,10 +30,12 @@ import json
 import urllib2
 import uuid
 import time
+import md5
 
 import cheesepilib as cp
 from cheesepilib.tasks import *
-logger =cp.config.get_logger()
+
+logger = cp.config.get_logger()
 
 def build_json(dao, json_str):
 	"""Build a Task object out of a JSON string spec"""
@@ -96,6 +98,10 @@ def write_file(ret, start_time, ethmac):
 def get_MAC():
 	"""Return the MAC of this device's first NIC"""
 	return str(hex(uuid.getnode()))[2:]
+
+def get_host_id():
+	"""Return this host's ID"""
+	return str(md5.new(get_MAC()).hexdigest())
 
 
 #get our currently used MAC address
