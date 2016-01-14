@@ -6,17 +6,17 @@ from cheesepilib.exceptions import UnsupportedResultType
 
 class ResultParser(object):
 
-	@staticmethod
-	def fromFile(filename):
+	@classmethod
+	def fromFile(cls, filename):
 		with open(filename) as fd:
 			json_obj = json.load(fd)
-		return ResultParser.fromJson(json_obj)
+		return cls.fromJson(json_obj)
 
-	@staticmethod
-	def fromJson(json_obj):
+	@classmethod
+	def fromJson(cls, json_obj):
 		from .PingResultParser import PingResultParser
 
-		name = ResultParser.get_taskname(json_obj)
+		name = cls.get_taskname(json_obj)
 
 		if name == 'ping': return PingResultParser(json_obj)
 		else: raise UnsupportedResultType("Unknown task type '{}'.".format(name))

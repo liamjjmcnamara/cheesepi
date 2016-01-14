@@ -1,15 +1,17 @@
 from __future__ import unicode_literals, absolute_import, print_function
 
 import os
-import hashlib
 import shutil
 import logging
 
 from cheesepilib.server.parsing.ResultParser import ResultParser
 from cheesepilib.exceptions import UnsupportedResultType
-from .utils import untar
+from .utils import untar, md5_filehash
 
 class ResultDataProcessor(object):
+	"""
+	Encapsulates file handling and cleanup of processing result data.
+	"""
 	log = logging.getLogger("cheesepi.server.parsing.ResultDataProcessor")
 
 	def __init__(self, filepath):
@@ -22,10 +24,7 @@ class ResultDataProcessor(object):
 		self._filepath = filepath
 		self._path = os.path.dirname(filepath)
 
-		hasher = hashlib.md5()
-		with open(filepath) as fd:
-			hasher.update(fd.read())
-		self._md5_hash = hasher.hexdigest()
+		self._md5_hash = md5_filehash(filepath)
 		self._extract_path = os.path.join(self._path, self._md5_hash)
 
 	def __enter__(self):
@@ -41,7 +40,6 @@ class ResultDataProcessor(object):
 		"""
 		self.delete_extracted()
 		self.delete()
-		os.listdir(self._path)
 
 	def get_hash(self):
 		return self._md5_hash
