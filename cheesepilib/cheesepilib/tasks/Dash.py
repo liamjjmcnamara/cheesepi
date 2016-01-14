@@ -31,6 +31,8 @@ class Dash(Task.Task):
 		self.spec['end_time'] = cp.utils.now()
 		#print "Output: %s" % op_output
 		#logger.debug(op_output)
+		if not 'download_speed' in self.spec:
+			self.spec['download_speed'] = self.spec['total_bytes'] /(self.spec['end_time']-self.spec['start_time'])
 		self.dao.write_op(self.spec['taskname'], self.spec)
 
 	def perform(self):
@@ -59,11 +61,15 @@ class Dash(Task.Task):
 			#print stats
 			if 'downloaded_bytes' in stats:
 				self.spec['downloaded'] = stats['downloaded_bytes']
-				if 'elapsed' in stats:
-					self.spec['download_speed'] = stats['total_bytes'] / stats['elapsed']
+			else:
+				self.spec['downloaded'] = stats['total_bytes']
+
+			if 'elapsed' in stats:
+				self.spec['download_speed'] = stats['total_bytes'] / stats['elapsed']
+
 			try:
 				# avoid cluttering the filesystem
-				#os.remove(stats['filename'])
+				os.remove(stats['filename'])
 				pass
 			except Exception as e:
 				logger.error("Problem removing Dash.py Youtube file %s: %s" % (stats['filename'], str(e)))
