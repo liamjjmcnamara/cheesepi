@@ -28,7 +28,6 @@ class Status(Task.Task):
 		ethmac = cp.utils.get_MAC()
 		self.spec['start_time'] = cp.utils.now()
 		op_output  = self.perform()
-
 		parsed_output = self.parse_output(op_output, ethmac)
 		self.dao.write_op("status", parsed_output)
 
@@ -37,7 +36,6 @@ class Status(Task.Task):
 		logging.info("Executing: "+execute)
 		logger.debug(execute)
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=False)
-
 		ret = result.stdout.read()
 		result.stdout.flush()
 		return ret
@@ -57,6 +55,9 @@ class Status(Task.Task):
 		self.spec["load1"]  = float(fields[-3][:-1])
 		self.spec["load5"]  = float(fields[-2][:-1])
 		self.spec["load15"] = float(fields[-1])
+		temp = cp.utils.get_temperature()
+		if temp!=None:
+			self.spec['temperature'] = float(temp/1000.0)
 		return self.spec
 
 

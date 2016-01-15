@@ -116,8 +116,19 @@ def get_SA():
 	ret = urllib2.urlopen('http://ip.42.pl/raw').read()
 	return ret
 
-
+def get_temperature():
+	"""Return the current temperature sensor, if possible"""
+	filename = "/sys/class/thermal/thermal_zone0/temp"
+	try:
+		f = open(filename, 'r')
+		data = f.read()
+		return data.strip()
+	except:
+		pass
+	return None
+#
 # Simple statistics to avoid numpy
+#
 def mean(data):
 	"""Return the sample arithmetic mean of data."""
 	n = len(data)
