@@ -42,8 +42,9 @@ try:
 	from influxdb.influxdb08.client import InfluxDBClientError
 except AttributeError as e:
 	msg =  "Problem importing Python InfluxDB module!\n"
-	msg += "Probably due to this computer not having a timezone set.\n"
-	msg += "Use `raspi-config` > Internationalisation Options to set one."
+	msg += "Either due to this computer not having a timezone set.\n"
+	msg += "Use `raspi-config` > Internationalisation Options to set one.\n"
+	msg += "Alternatively, install 'pandas' through pip, rather than apt."
 	print msg
 	logger.error(msg)
 	sys.exit(1)
