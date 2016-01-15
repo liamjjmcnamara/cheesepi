@@ -30,12 +30,21 @@ import logging
 import hashlib
 import json
 
-# Influx module, use legacy on RaspberryPi Linux
-from influxdb.influxdb08 import InfluxDBClient
-from influxdb.influxdb08.client import InfluxDBClientError
-
 import cheesepilib as cp
 import dao
+
+logger = cp.config.get_logger()
+
+# Influx module, use legacy on RaspberryPi Linux
+try:
+	from influxdb.influxdb08 import InfluxDBClient
+	from influxdb.influxdb08.client import InfluxDBClientError
+except AttributeError as e:
+	msg =  "Problem importing Python InfluxDB module"
+	msg += "Probably due to this computer not having a timezone set."
+	msg += "Use `raspi-config` > Internationalisation Options to set one."
+	print msg
+	logger.error(msg)
 
 host     = "localhost"
 port     = 8086
@@ -45,7 +54,7 @@ database = "cheesepi"
 
 class DAO_influx(dao.DAO):
 	def __init__(self):
-		logging.info("Connecting to influx: %s %s %s" % (username,password,database))
+		#logging.info("Connecting to influx: %s %s %s" % (username,password,database))
 		try: # Get a hold of a Influx connection
 			self.conn = InfluxDBClient(host, port, username, password, database)
 		except Exception as e:
