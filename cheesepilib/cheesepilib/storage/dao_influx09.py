@@ -30,13 +30,22 @@ import logging
 import hashlib
 import json
 import traceback
-
-from influxdb import InfluxDBClient
-from influxdb.client import InfluxDBClientError
 from requests.exceptions import ConnectionError
 
 import cheesepilib as cp
 import dao
+
+logger = cp.config.get_logger()
+
+try:
+	from influxdb import InfluxDBClient
+	from influxdb.client import InfluxDBClientError
+except AttributeError as e:
+	msg =  "Problem importing Python InfluxDB module"
+	msg += "Probably due to this computer not having a timezone set."
+	msg += "Use `raspi-config` > Internationalisation Options to set one."
+	print msg
+	logger.error(msg)
 
 host     = "localhost"
 port     = 8086
