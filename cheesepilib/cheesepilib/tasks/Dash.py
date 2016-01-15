@@ -17,7 +17,6 @@ class Dash(Task.Task):
 		self.spec['taskname'] = "dash"
 		if not 'source' in spec:
 			self.spec['source'] = "http://www.youtube.com/watch?v=_OBlgSz8sSM"
-		print self.spec
 
 	# actually perform the measurements, no arguments required
 	def run(self):
@@ -57,7 +56,6 @@ class Dash(Task.Task):
 	def callback(self, stats):
 		#logger.info(stats)
 		if stats['status'] == 'finished':
-			logger.debug('Done downloading, now converting ...')
 			#print stats
 			if 'downloaded_bytes' in stats:
 				self.spec['downloaded'] = stats['downloaded_bytes']

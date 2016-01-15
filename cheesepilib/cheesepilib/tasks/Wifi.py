@@ -26,6 +26,8 @@ class Wifi(Task.Task):
 		self.spec['start_time'] = cp.utils.now()
 		op_output  = self.perform()
 		self.spec['end_time']   = cp.utils.now()
+		if op_output==None:
+			return
 		logger.debug(op_output)
 		parsed_output = self.parse_output(op_output)
 		logger.debug(parsed_output)
@@ -39,10 +41,10 @@ class Wifi(Task.Task):
 			scan_output = subprocess.check_output(["iwlist", self.spec['interface'], "scanning"])
 		except Exception as e:
 			logger.error("Error: iwlist does not seem to run: "+str(e))
-			sys.exit(1)
+			return None
 		if "Interface doesn't support scanning" in scan_output:
 			logger.error("Interface doesn't support scanning")
-			sys.exit(1)
+			return None
 		logger.debug(scan_output)
 		return scan_output
 
