@@ -122,7 +122,7 @@ def get_temperature():
 	try:
 		f = open(filename, 'r')
 		data = f.read()
-		return data.strip()
+		return float(data.strip())
 	except:
 		pass
 	return None
