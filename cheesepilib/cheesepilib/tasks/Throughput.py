@@ -23,7 +23,11 @@ class Throughput(Task.Task):
 	# measure and record funtion
 	def measure(self):
 		self.spec['start_time'] = cp.utils.now()
-		op_output = speedtest.speedtest()
+		try:
+			op_output = speedtest.speedtest()
+		except:
+			logger.error("speedtest.py failed to run...")
+			return
 		self.spec['end_time']= cp.utils.now()
 		logger.debug(op_output)
 
