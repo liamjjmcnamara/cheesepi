@@ -6,11 +6,10 @@ from cheesepilib.server.storage.models.target import Target
 
 class PingStatistics(Statistics):
 
-	# TODO do we even care about knowing the target here???
-
 	@classmethod
-	def fromDict(cls, target, dct):
-		p = PingStatistics(target)
+	def fromDict(cls, dct):
+		p = PingStatistics()
+		p._target = Target.fromDict(dct['target'])
 		p._mean_delay = StatObject.fromDict(dct['mean_delay'])
 		p._average_median_delay = StatObject.fromDict(dct['average_median_delay'])
 		p._average_packet_loss = StatObject.fromDict(dct['average_packet_loss'])
@@ -21,9 +20,8 @@ class PingStatistics(Statistics):
 
 		return p
 
-	def __init__(self, target):
+	def __init__(self, target=None):
 		self._target = target
-
 		self._mean_delay = StatObject(0,0)
 		self._average_median_delay = StatObject(0,0)
 		self._average_packet_loss = StatObject(0,0)
@@ -35,6 +33,7 @@ class PingStatistics(Statistics):
 	def toDict(self):
 		return {
 			'task_name':'ping',
+			'target':self._target.toDict(),
 			'mean_delay':self._mean_delay.toDict(),
 			'average_median_delay':self._average_median_delay.toDict(),
 			'average_packet_loss':self._average_packet_loss.toDict(),
@@ -56,7 +55,7 @@ class PingStatistics(Statistics):
 	def absorb_result(self, result):
 		from cheesepilib.server.processing.utils import median
 
-		assert result.taskname() == 'ping'
+		assert result.get_taskname() == 'ping'
 
 		self._total_probe_count = self._total_probe_count + result._probe_count
 		self._total_packet_loss = self._total_packet_loss + result._packet_loss

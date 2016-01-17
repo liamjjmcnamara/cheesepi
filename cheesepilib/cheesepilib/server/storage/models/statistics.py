@@ -1,20 +1,27 @@
 from __future__ import unicode_literals, absolute_import
 
+import logging
+from collections import namedtuple
+
 from cheesepilib.server.storage.models.target import Target
 
+TargetStatistic = namedtuple("TargetStatistic", ["target", "stat_type"])
+
 class Statistics(object):
+	log = logging.getLogger("cheesepi.server.storage.models.statistics.Statistics")
 
 	@classmethod
-	def fromDict(cls, target, dct):
+	def fromDict(cls, dct):
 		name = dct['task_name']
 
 		from .PingStatistics import PingStatistics
-		if name == 'ping': return PingStatistics.fromDict(target, dct)
+		if name == 'ping': return PingStatistics.fromDict(dct)
 		else: raise UnsupportedStatisticsType("Unknown statistics type '{}'.".format(name))
 
 	@classmethod
 	def fromName(cls, name, target):
 
+		from .PingStatistics import PingStatistics
 		if name == 'ping': return PingStatistics(target)
 		else: raise UnsupportedStatisticsType("Unknown statistics type '{}'.".format(name))
 	def get_type(self):
@@ -30,25 +37,54 @@ class Statistics(object):
 		raise NotImplementedError("Abstract method 'toDict' not implemented.")
 
 class StatisticsSet(object):
+	"""
+	A StatisticsSet can contain a set of statistics that can come from different
+	tasks and for different targets.
+	"""
+	log = logging.getLogger("cheesepi.server.storage.models.statistics.StatisticsSet")
 
 	@classmethod
 	def fromDict(cls, dct):
-		target = Target.fromDict(dct['target'])
-		stats_set = {}
-		for key in dct:
-			if key == 'target':
-				continue
-			else:
-				assert key not in stats_set
-				stats_set[key] = Statistics.fromDict(target, dct[key])
-		return StatisticsSet(target, stats_set)
+		from pprint import pformat
+		#target = Target.fromDict(dct['target'])
+		stats_list = []
+		#stats_set = {}
+		#cls.log.info("\n{}".format(pformat(dct)))
+		for target_hash in dct:
+			for stat_type in dct[target_hash]:
+				if stat_type == 'target':
+					# TODO remnant, to remove later
+					continue
+				else:
+					#target = Target.fromDict(dct[target_hash][stat_type]['target'])
+					#stats_set[(target,stat_type)] = Statistics.fromDict(
+							#dct[target_hash][stat_type])
+					#cls.log.info(target_hash)
+					#cls.log.info(stat_type)
+					stats_list.append(Statistics.fromDict(dct[target_hash][stat_type]))
+		#cls.log.info(stats_list)
+		return cls.fromList(stats_list)
 
-	def __init__(self, target, statistics_set):
+	@classmethod
+	def fromList(cls, lst):
+
+		ss = StatisticsSet()
+
+		for statistic in lst:
+			assert isinstance(statistic, Statistics)
+			#cls.log.info(statistic)
+			target_stat = TargetStatistic(target=statistic.get_target_hash(),
+			                              stat_type=statistic.get_type())
+
+			ss._statistics_set[target_stat] = statistic
+
+		return ss
+
+	def __init__(self): #target, statistics_set):
 		"""
 		Takes a target id and a list of statistics objects
 		"""
-		self._target = target
-		self._statistics_set = statistics_set
+		self._statistics_set = {}
 
 	def __iter__(self):
 		"""
@@ -57,8 +93,12 @@ class StatisticsSet(object):
 		return iter(self._statistics_set.values())
 
 	def toDict(self):
-		dct = {'target':self._target}
+		dct = {} #{'target':self._target}
+		#self.log.info(self._statistics_set)
 		for stat in self._statistics_set.itervalues():
+			#self.log.info("#")
+			#self.log.info(stat)
+			#self.log.info("#")
 			stat_dct = stat.toDict()
 			dct[stat_dct['task_name']] = stat_dct
 		return dct
@@ -70,8 +110,14 @@ class StatisticsSet(object):
 
 		for result in result_list:
 
-			task_name = result.taskname()
-			if task_name not in self._statistics_set:
-				self._statistics_set[task_name] = Statistics.fromName(task_name)
+			task_name = result.get_taskname()
+			target = result.get_target()
+			target_hash = target.get_hash()
 
-			self._statistics_set[task_name].absorb_result(result)
+			target_stat = TargetStatistic(target=target_hash, stat_type=task_name)
+
+			if target_stat not in self._statistics_set:
+				self.log.info("TargetStat '{}' not present in set, inserting.".format(target_stat))
+				self._statistics_set[target_stat] = Statistics.fromName(task_name,
+				                                                        target)
+			self._statistics_set[target_stat].absorb_result(result)

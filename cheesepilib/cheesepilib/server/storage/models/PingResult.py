@@ -6,10 +6,10 @@ from .target import Target
 class PingResult(Result):
 
 	@classmethod
-	def fromDict(cls, dct):
+	def fromDict(cls, peer_id, dct):
 		assert dct['task_name'] == 'ping'
 
-		p = PingResult()
+		p = PingResult(peer_id)
 		p._start_time = dct['start_time']
 		p._end_time = dct['end_time']
 		p._target = Target.fromDict(dct['target'])
@@ -23,6 +23,21 @@ class PingResult(Result):
 		p._stddev_rtt = dct['value']['stddev_rtt']
 
 		return p
+
+	def __init__(self, peer_id):
+		self._peer_id = peer_id
+
+		self._start_time = 0
+		self._end_time = 0
+		self._target = None
+		self._delay_sequence = 0
+		self._probe_count = 0
+		self._packet_loss = 0
+		self._packet_size = 0
+		self._max_rtt = 0
+		self._min_rtt = 0
+		self._avg_rtt = 0
+		self._stddev_rtt = 0
 
 	def toDict(self):
 		return {
@@ -42,5 +57,8 @@ class PingResult(Result):
 			},
 		}
 
-	def taskname(self):
+	def get_taskname(self):
 		return 'ping'
+
+	def get_target(self):
+		return self._target

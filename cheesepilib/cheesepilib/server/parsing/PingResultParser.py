@@ -68,40 +68,44 @@ class PingResultParser(ResultParser):
 			# TODO
 			from cheesepilib.server.storage.models.result import Result
 			from pprint import pformat
-			r = Result.fromDict(db_entry)
+			# TODO first argument should be peer_id
+			r = Result.fromDict(1, db_entry)
 			result_objects.append(r)
-			self.log.info(pformat(r.toDict()))
+			#self.log.info(pformat(r.toDict()))
 			# TODO
 
 			results.append(db_entry)
 
 		# TODO
-		from cheesepilib.server.storage.models.statistics import StatisticsSet
-		from cheesepilib.server.storage.models.target import LandmarkTarget
-		from cheesepilib.server.storage.models.PingStatistics import PingStatistics
-		dao = MongoDAO('localhost', 27017)
-		target = LandmarkTarget("127.0.0.1", 80, "sics.se")
-		stats = dao.get_stats_set(1, target)
-		if stats is not None:
-			self.log.info(stats)
-			stat_set = StatisticsSet.fromDict(stats)
-		else:
-			stat_set = StatisticsSet(target, {'ping':PingStatistics(target)})
-		self.log.info("PRINTING STATISTICS SET MODEL")
-		self.log.info(pformat(stat_set.toDict()))
-		stat_set.absorb_results(result_objects)
-		self.log.info("RESULTS ABSORBED, PRINTING AGAIN")
-		self.log.info(pformat(stat_set.toDict()))
-		tmp = dao.write_stats_set(1, target, stat_set)
+		#from cheesepilib.server.storage.models.statistics import StatisticsSet
+		#from cheesepilib.server.storage.models.target import LandmarkTarget
+		#from cheesepilib.server.storage.models.PingStatistics import PingStatistics
+		#dao = MongoDAO('localhost', 27017)
+		#target = LandmarkTarget("127.0.0.1", 80, "sics.se")
+		#stats_set = dao.get_stats_set(1, target)
+		#if stats_set is None:
+			#stats_set = StatisticsSet([PingStatistics(target)])
+		#self.log.info("PRINTING STATISTICS SET MODEL")
+		#self.log.info(pformat(stats_set.toDict()))
+		#stats_set.absorb_results(result_objects)
+		#self.log.info("RESULTS ABSORBED, PRINTING AGAIN")
+		#self.log.info(pformat(stats_set.toDict()))
+		#tmp = dao.write_stats_set(1, stats_set)
 		# TODO
 
 		self._result_objects = result_objects
 
 		self._result_set = results
 		self._parsed = True
+
+		return result_objects
 	
-	def get_result_set():
+	def get_result_set(self):
 		return self._result_set
+
+	def get_peer_id(self):
+		# TODO This should return peer_id as parsed from the file
+		return 1
 
 	def write_to_db(self):
 		if len(self._result_set) == 0:

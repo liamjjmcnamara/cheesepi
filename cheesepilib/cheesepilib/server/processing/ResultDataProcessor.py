@@ -63,6 +63,12 @@ class ResultDataProcessor(object):
 			raise Exception("Data not extracted.")
 
 		self.log.info("Processing files in {}".format(self._extract_path))
+
+		from cheesepilib.server.storage.mongo import MongoDAO
+		from pprint import pformat
+
+		dao = MongoDAO('localhost', 27017)
+
 		# Process every file in the extracted folder
 		files = [os.path.join(self._extract_path, f)
 				for f in os.listdir(self._extract_path)]
@@ -70,8 +76,23 @@ class ResultDataProcessor(object):
 			try:
 				#parser = ResultParser.fromFile(filename)
 				with ResultParser.fromFile(filename) as parser:
-					parser.parse()
-					parser.write_to_db()
+					results = parser.parse()
+					peer_id = parser.get_peer_id()
+					#self.log.info(results)
+
+					stats = dao.get_stats_set_for_results(peer_id, results)
+					self.log.info("Fetched:\n{}".format(pformat(stats.toDict())))
+
+					stats.absorb_results(results)
+					self.log.info("Absorbed:\n{}".format(pformat(stats.toDict())))
+
+					bulk_writer = dao.get_bulk_writer()
+
+					bulk_writer = dao.bulk_write_stats_set(bulk_writer, peer_id, stats)
+
+					result = bulk_writer.execute()
+					self.log.info("Bulk wrote to database with result: {}".format(result))
+					#parser.write_to_db()
 
 				#from pprint import PrettyPrinter
 				#printer = PrettyPrinter(indent=2)

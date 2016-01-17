@@ -7,6 +7,8 @@ import math
 from .dao import DAO
 from cheesepilib.exceptions import ServerDaoError, NoSuchPeer
 
+from cheesepilib.server.storage.models.statistics import StatisticsSet
+
 # What is the threshold in seconds to be considered 'active'
 ACTIVE_THRESHOLD = 3600
 
@@ -34,6 +36,9 @@ class MongoDAO(DAO):
 
 	def close(self):
 		pass # Nothing to do??
+
+	def get_bulk_writer(self):
+		return self.db.peers.initialize_ordered_bulk_op()
 
 	def peer_beacon(self, peer_id, host, last_seen=0):
 		if last_seen==0: last_seen=time.time()
@@ -135,69 +140,153 @@ class MongoDAO(DAO):
 
 
 	def get_stats_set(self, peer_id, target):
-		target_hash = target.get_hash()
-		projection = "statistics.{}".format(target_hash)
+		"""
+		Returns a StatisticsSet object loaded with all the statistics for
+		measurements from peer_id to target.
+
+		Args:
+			peer_id: a peer id
+			target: a Target object
+		Returns:
+			A StatisticsSet object if query is successful, None otherwise.
+		"""
+		return self.get_stats_set_for_targets(peer_id, [target])
+
+	def get_stats_set_for_results(self, peer_id, results):
+		"""
+		Returns a StatisticsSet object loaded with all the statistics for
+		measurements from peer_id to all targets that concern the results in
+		the result list.
+
+		Args:
+			peer_id: a peer id
+			results: a list of Result objects
+		Returns:
+			A StatisticsSet object if query is successful, None otherwise.
+		"""
+		targets = [result._target for result in results]
+
+		return self.get_stats_set_for_targets(peer_id, targets)
+
+	def get_stats_set_for_targets(self, peer_id, targets):
+		"""
+		Returns a StatisticsSet object loaded with all the statistics for
+		measurements from peer_id to all targets in the targets list.
+
+		Args:
+			peer_id: a peer id
+			targets: a list of Target objects
+		Returns:
+			A StatisticsSet object if query is successful, None otherwise.
+		"""
+
+		projection = {}
+
+		for target in targets:
+			key = "statistics.{}".format(target.get_hash())
+			projection[key] = 1
 
 		stats = self.db.peers.find(
 			{'peer_id':peer_id},
-			{projection:1},
+			projection,
 		)
 
 		# Should be unique so can only ever find one
 		if stats.count() > 0:
-			return stats[0]['statistics'][target_hash]
+			#self.log.info(stats[0])
+			return StatisticsSet.fromDict(stats[0]['statistics'])
 		else:
-			return None
+			return StatisticsSet()
 
-	def write_stats_set(self, peer_id, target, statistics_set):
+	def write_stats_set(self, peer_id, statistics_set):
+		"""
+		Write a statistics set object to the database.
+
+		Args:
+			peer_id: a peer id
+			statistcs_set: a StatisticsSet object
+		Returns:
+			the result from the write operation
+		"""
 		bulk_writer = self.db.peers.initialize_ordered_bulk_op()
 
 		bulk_writer = self.bulk_write_stats_set(bulk_writer, peer_id,
-		                                    target, statistics_set)
+		                                        statistics_set)
 
 		result = bulk_writer.execute()
-		self.log.info(result)
+		self.log.info("Wrote statistics set with result: {}".format(result))
 		return result
 
-	def bulk_write_stats_set(self, bulk_writer, peer_id, target, statistics_set):
+	def bulk_write_stats_set(self, bulk_writer, peer_id, statistics_set):
 		"""
-		Write a statistics set object to the database.
+		Queue writing of a StatisticsSet object to a bulk writer object.
+
+		Args:
+			bulk_writer: a bulk writer object
+			peer_id: a peer id
+			statistcs_set: a StatisticsSet object
+		Returns:
+			the modified bulk writer object
 		"""
-		self.log.info("IN WRITE_STATS")
+		#self.log.info("IN WRITE_STATS")
 
 		prefix_key = "statistics" #.format(target.get_hash())
 
 		stat_object = {}
+		#self.log.info(statistics_set)
 
 		for stat in statistics_set:
 			stat_target_hash = stat.get_target_hash()
-			stat_type = stat.get_type()
-			if stat_target_hash not in stat_object:
-				stat_object[stat_target_hash] = {'target':target.toDict()}
-			stat_object[stat_target_hash][stat_type] = stat.toDict()
+			#stat_type = stat.get_type()
+			#if stat_target_hash not in stat_object:
+				#stat_object[stat_target_hash] = {}
+			#stat_object[stat_target_hash][stat_type] = stat.toDict()
 
-		bulk_writer.find(
-			{'peer_id':peer_id}
-			).upsert(
-			).update_one(
-			{'$set':{prefix_key:stat_object}}
-		)
-		self.log.info("EXITING WRITE_STATS")
+			key = "{}.{}".format(prefix_key, stat_target_hash)
+
+			bulk_writer.find(
+				{'peer_id':peer_id}
+				).upsert(
+				).update_one(
+				{'$set':{
+					key:{
+						stat.get_type():stat.toDict(),
+						},
+					}
+				},
+			)
+		#self.log.info("EXITING WRITE_STATS")
 
 		return bulk_writer
 
 	def write_results(self, peer_id, results):
+		"""
+		Writes a list of results from a peer to the database.
+
+		Args:
+			peer_id: a peer id
+			results: a list of Result objects
+		Returns:
+			the result of the write operation
+		"""
 		bulk_writer = self.db.peers.initialize_ordered_bulk_op()
 
 		bulk_writer = self.bulk_write_results(bulk_writer, peer_id, results)
 
 		result = bulk_writer.execute()
-		self.log.info(result)
+		self.log.info("Wrote a list of results objects with result: {}".format(result))
 		return result
 
 	def bulk_write_results(self, bulk_writer, peer_id, results):
 		"""
-		Bulk writes a list of result objects
+		Queue writing of a list of Result objects to a bulk writer object.
+
+		Args:
+			bulk_writer: a bulk writer object
+			peer_id: a peer id
+			results: a list of Result objects
+		Returns:
+			the modified bulk writer object
 		"""
 		for result in results:
 			bulk_writer.find(
