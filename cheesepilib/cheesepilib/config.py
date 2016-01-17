@@ -72,7 +72,7 @@ def create_default_config():
 		try:
 			copyfile(default_config, config_file, "_SECRET_", secret)
 		except:
-			msg = "Problem copying files - check permissions of %s" % cheesepi_dir
+			msg = "Problem copying config file - check permissions of %s" % cheesepi_dir
 			logger.error(msg)
 			exit(1)
 	else:
@@ -91,7 +91,6 @@ def read_config():
 		sys.exit(1)
 	return lines
 
-
 def get_config():
 	config = {}
 	lines  = read_config()
@@ -106,6 +105,26 @@ def get_config():
 	config['config_file']  = config_file
 	config['version']      = version()
 	return config
+
+def create_default_schedule():
+	"""If schedule file does not exist, try to copy from default."""
+	schedule_file = config['schedule']
+	# is there already a local schedule file?
+	if os.path.isfile(schedule_file):
+		return
+
+	logging.warning("Copying default schedule file to a local version")
+	default_schedule = os.path.join(cheesepi_dir,"schedule.default.dat")
+	# Can we find the default schedule file?
+	if os.path.isfile(default_schedule):
+		try:
+			copyfile(default_schedule, schedule_file)
+		except:
+			msg = "Problem copying schedule file - check permissions of %s" % cheesepi_dir
+			logger.error(msg)
+			exit(1)
+	else:
+		logger.error("Can not find default schedulefile!")
 
 def main():
 	from pprint import PrettyPrinter
@@ -199,13 +218,16 @@ def should_dump(dao=None):
 	return False
 
 
-def copyfile(from_file, to_file, occurance, replacement):
+def copyfile(from_file, to_file, occurance=None, replacement=None):
 	"""Copy a file <from_file> to <to_file> replacing all occurrences"""
 	logger.info(from_file+" "+to_file+" "+ occurance+" "+ replacement)
 	with open(from_file, "rt") as fin:
 		with open(to_file, "wt") as fout:
 			for line in fin:
-				fout.write(line.replace(occurance, replacement))
+				if occurance==None:
+					fout.write(line)
+				else:
+					fout.write(line.replace(occurance, replacement))
 
 
 def version():
