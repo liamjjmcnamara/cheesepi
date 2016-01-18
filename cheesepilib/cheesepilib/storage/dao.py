@@ -57,10 +57,11 @@ class DAO:
 		logging.error("Method not implemented in this DAO class")
 		return None
 
+	# misversion formatting!
 	def to_json(self, table, dic):
 		for k in dic.keys():
-				dic[k]=dic[k]
-		json_str = '[{"measurement":"%s", "fields":%s, ' % (table,"")
+			dic[k]=dic[k]
+		json_str = '[{"measurement":"%s", "fields":%s} "database":"cheesepi"]' % (table,dic)
 		return json_str
 
 # The following need not be reimplemented in subclasses
