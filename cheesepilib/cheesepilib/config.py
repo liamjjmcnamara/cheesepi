@@ -41,9 +41,9 @@ import cheesepilib as cp
 
 
 # Globals
-cheesepi_dir = os.path.dirname(os.path.realpath(__file__))
-config_file  = os.path.join(cheesepi_dir,"cheesepi.conf")
-version_file = os.path.join(cheesepi_dir,"version")
+cheesepi_dir  = os.path.dirname(os.path.realpath(__file__))
+config_file   = os.path.join(cheesepi_dir, "cheesepi.conf")
+version_file  = os.path.join(cheesepi_dir, "version")
 
 logfile = os.path.join(cheesepi_dir, "cheesepi.log")
 logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(levelname)s; %(message)s")
@@ -53,9 +53,28 @@ logger = logging.getLogger('CheesePi')
 
 def get_logger():
 	return logger
+
+def get_dao():
+	if config_equal('database',"mongo"):
+		return cp.storage.dao_mongo.DAO_mongo()
+	elif config_equal('database',"influx08"):
+		return cp.storage.dao_influx08.DAO_influx()
+	elif config_equal('database',"influx09"):
+		return cp.storage.dao_influx09.DAO_influx()
+	elif config_equal('database',"mysql"):
+		return cp.storage.dao_mysql.DAO_mysql()
+	elif config_equal('database',"null"):
+		return cp.storage.dao.DAO()
+	# and so on for other database engines...
+
+	msg = "Fatal error: 'database' type not set to a valid value in config file, exiting."
+	logger.error("Database type: "+config['database']+"\n"+msg)
+	exit(1)
+
 def generate_secret():
 	"""Make a secret for this node, to use in signing data dumps"""
 	return str(uuid.uuid4())
+
 
 def create_default_config():
 	"""If config file does not exist, try to copy from default.
@@ -106,62 +125,61 @@ def get_config():
 	config['version']      = version()
 	return config
 
-def create_default_schedule():
-	"""If schedule file does not exist, try to copy from default."""
-	schedule_file = config['schedule']
-	# is there already a local schedule file?
-	if os.path.isfile(schedule_file):
-		return
 
+def create_default_schedule(schedule_filename):
+	"""If schedule file does not exist, try to copy from default."""
+	# is there already a local schedule file?
 	logging.warning("Copying default schedule file to a local version")
 	default_schedule = os.path.join(cheesepi_dir,"schedule.default.dat")
 	# Can we find the default schedule file?
 	if os.path.isfile(default_schedule):
-		try:
-			copyfile(default_schedule, schedule_file)
-		except:
-			msg = "Problem copying schedule file - check permissions of %s" % cheesepi_dir
-			logger.error(msg)
-			exit(1)
+		#try:
+		copyfile(default_schedule, schedule_filename)
+		#except Exception as e:
+		#	msg = "Problem copying schedule file - check permissions of %s: %s" % (cheesepi_dir, str(e))
+		#	logger.error(msg)
+		#	exit(1)
 	else:
 		logger.error("Can not find default schedulefile!")
 
-def main():
-	from pprint import PrettyPrinter
-	printer = PrettyPrinter(indent=4)
-	printer.pprint(config)
+def load_local_schedule():
 
+	schedule_filename = os.path.join(cheesepi_dir, config['schedule'])
+	if not os.path.isfile(schedule_filename):
+		create_default_schedule(schedule_filename)
 
-def get_dao():
-	if config_equal('database',"mongo"):
-		return cp.storage.dao_mongo.DAO_mongo()
-	elif config_equal('database',"influx08"):
-		return cp.storage.dao_influx08.DAO_influx()
-	elif config_equal('database',"influx09"):
-		return cp.storage.dao_influx09.DAO_influx()
-	elif config_equal('database',"mysql"):
-		return cp.storage.dao_mysql.DAO_mysql()
-	elif config_equal('database',"null"):
-		return cp.storage.dao.DAO()
-	# and so on for other database engines...
+	lines = []
+	with open(schedule_filename) as f:
+		lines = f.readlines()
 
-	msg = "Fatal error: 'database' type not set to a valid value in config file, exiting."
-	logger.error("Database type: "+config['database']+"\n"+msg)
-	exit(1)
+	schedule = []
+	for l in lines:
+		if l.strip()=="" or l.strip().startswith("#"):
+			continue # skip this comment line
+		try:
+			spec = json.loads(l)
+			schedule.append(spec)
+		except:
+			logger.error("JSON task spec not parsed: "+l)
+			pass
+	return schedule
 
-def get_controller():
-	if "controller" in config:
-		return config['controller']
-	else:
-		return "http://cheesepi.sics.se"
+def load_remote_schedule():
+	"""See if we can grab a schedule from the central server
+	this should (in future) include authentication"""
+	try:
+		url = 'http://cheesepi.sics.se/schedule.dat'
+		response = urllib2.urlopen(url)
+		schedule = response.read()
+		return schedule
+	except urllib2.HTTPError as e:
+		logger.error("The CheesePi controller server '%s' couldn\'t fulfill the request. Code: %s" % (url, str(e.code)))
+	except urllib2.URLError as e:
+		logger.error('We failed to reach the central server: '+e.reason)
+	except:
+		logger.error("Unrecognised problem when downloading remote schedule...")
+	return None
 
-def get_cheesepi_dir():
-	return config['cheesepi_dir']
-
-def make_databases():
-	cmd = get_cheesepi_dir()+"/install/make_influx_DBs.sh"
-	logger.warn("Making databases: "+cmd)
-	os.system(cmd)
 
 
 def set_last_updated(dao=None):
@@ -218,17 +236,31 @@ def should_dump(dao=None):
 	return False
 
 
-def copyfile(from_file, to_file, occurance=None, replacement=None):
+def copyfile(from_file, to_file, occurance="", replacement=""):
 	"""Copy a file <from_file> to <to_file> replacing all occurrences"""
 	logger.info(from_file+" "+to_file+" "+ occurance+" "+ replacement)
 	with open(from_file, "rt") as fin:
 		with open(to_file, "wt") as fout:
 			for line in fin:
-				if occurance==None:
+				if occurance=="":
 					fout.write(line)
 				else:
 					fout.write(line.replace(occurance, replacement))
 
+
+def get_controller():
+	if "controller" in config:
+		return config['controller']
+	else:
+		return "http://cheesepi.sics.se"
+
+def get_cheesepi_dir():
+	return config['cheesepi_dir']
+
+def make_databases():
+	cmd = get_cheesepi_dir()+"/install/make_influx_DBs.sh"
+	logger.warn("Making databases: "+cmd)
+	os.system(cmd)
 
 def version():
 	"""Which version of the code are we running?"""
@@ -282,52 +314,20 @@ def config_true(key):
 			return True
 	return False
 
-# see if we can grab a schedule from the central server
-# this should (in future) include authentication
-def load_remote_schedule():
-	try:
-		url = 'http://cheesepi.sics.se/schedule.dat'
-		response = urllib2.urlopen(url)
-		schedule = response.read()
-		return schedule
-	except urllib2.HTTPError as e:
-		logger.error("The CheesePi controller server '%s' couldn\'t fulfill the request. Code: %s" % (url, str(e.code)))
-	except urllib2.URLError as e:
-		logger.error('We failed to reach the central server: '+e.reason)
-	except:
-		logger.error("Unrecognised problem when downloading remote schedule...")
-	return None
-
-# read config file
-def load_local_schedule():
-	filename = get_cheesepi_dir()+"/"+config['schedule']
-	lines = []
-	schedule = []
-
-	with open(filename) as f:
-		lines = f.readlines()
-
-	for l in lines:
-		if l.strip()=="" or l.strip().startswith("#"):
-			continue # skip this comment line
-		try:
-			spec = json.loads(l)
-			schedule.append(spec)
-		except:
-			logger.error("JSON task spec not parsed: "+l)
-			pass
-	return schedule
-
-
 
 # clean the identifiers
 def clean(id):
 	return id.strip().lower()
 
+def main():
+	from pprint import PrettyPrinter
+	printer = PrettyPrinter(indent=4)
+	printer.pprint(config)
+
+
 
 # Some accounting to happen on every import (mostly for config file making)
 config = get_config()
-
 
 if __name__ == "__main__":
 	main()
