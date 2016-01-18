@@ -33,6 +33,9 @@ class PingResultParser(ResultParser):
 		result_objects = []
 
 		# TODO WHAT ABOUT PEER_ID????
+		from pprint import pformat
+		columns = inp[0]['series'][0]['columns']
+		self.log.info("\n{}".format(pformat(columns)))
 
 		entries = [entry for entry in inp[0]['series'][0]['values']]
 		for entry in entries:
@@ -40,28 +43,40 @@ class PingResultParser(ResultParser):
 			# representation of a list, should be changed in the future so that
 			# it's a list from the start
 			import ast
-			delay_sequence = ast.literal_eval(entry[2])
+			delay_sequence = ast.literal_eval(entry[columns.index('delays')])
+
+			landmark = entry[columns.index('landmark')]
+			target_id = entry[columns.index('target_id')]
+
+			self.log.info("landmark entry is {} of type {}".format(landmark, type(landmark)))
+			target = {}
+
+			if landmark is None and target_id is not None:
+				target['type'] = 'peer'
+				target['ip'] = entry[columns.index('destination_address')]
+				target['peer_id'] = entry[columns.index('target_id')]
+				target['port'] = '80' # TODO not in data
+			elif landmark is not None:
+				target['type'] = 'landmark'
+				target['ip'] = entry[columns.index('destination_address')]
+				target['domain'] = entry[columns.index('landmark')]
+				target['port'] = '80' # TODO not in data
 
 			db_entry = {
 				'task_name':'ping',
-				'start_time':entry[17],
-				'end_time':entry[6],
-				'target': {
-					'type':'landmark', # TODO This should be dynamic
-					'ip':entry[3],
-					'domain':entry[4],
-					'port':'80', # TODO not in data
-				},
+				'start_time':entry[columns.index('start_time')],
+				'end_time':entry[columns.index('end_time')],
+				'target': target,
 				'value': {
 					# This is where the actual results go
 					'delay_sequence':delay_sequence,
-					'probe_count':entry[14],
-					'packet_loss':entry[11],
-					'packet_size':entry[12],
-					'max_rtt':entry[8],
-					'min_rtt':entry[9],
-					'avg_rtt':entry[20],
-					'stddev_rtt':entry[18],
+					'probe_count':entry[columns.index('ping_count')],
+					'packet_loss':entry[columns.index('packet_loss')],
+					'packet_size':entry[columns.index('packet_size')],
+					'max_rtt':entry[columns.index('maximum_RTT')],
+					'min_rtt':entry[columns.index('minimum_RTT')],
+					'avg_rtt':entry[columns.index('average_RTT')],
+					'stddev_rtt':entry[columns.index('stddev_RTT')],
 				},
 			}
 
@@ -99,7 +114,7 @@ class PingResultParser(ResultParser):
 		self._parsed = True
 
 		return result_objects
-	
+
 	def get_result_set(self):
 		return self._result_set
 

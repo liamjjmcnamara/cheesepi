@@ -1,0 +1,92 @@
+[
+    {
+        "series": [
+            {
+                "values": [
+                    [
+                        "beef",
+                        "deed",
+                        "2015-12-11T14:44:16.200341755Z",
+                        null,
+                        "[10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0]",
+                        "192.168.2.2",
+                        null,
+                        null,
+                        1449841456.0,
+                        null,
+                        2.498,
+                        1.143,
+                        null,
+                        0,
+                        64,
+                        null,
+                        10,
+                        "86dac129876f4ba634f356a8827050b3",
+                        null,
+                        1449841445.0,
+                        0.36,
+                        null,
+                        1.876,
+                        null,
+                        "826f3a9"
+                    ],
+                    [
+                        "beef",
+                        "deed",
+                        "2015-12-11T14:45:59.467571393Z",
+                        null,
+                        "[10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0]",
+                        "192.168.2.2",
+                        null,
+                        null,
+                        1449841559.0,
+                        null,
+                        3.384,
+                        1.45,
+                        null,
+                        0,
+                        64,
+                        null,
+                        10,
+                        "9d7e851f4da1c7212d67ec8359b94e03",
+                        null,
+                        1449841550.0,
+                        0.519,
+                        null,
+                        1.959,
+                        null,
+                        "826f3a9"
+                    ]
+                ],
+                "name": "ping",
+                "columns": [
+                    "peer_id",
+                    "target_id",
+                    "time",
+                    "cycle",
+                    "delays",
+                    "destination_address",
+                    "destination_domain",
+                    "downloaded",
+                    "end_time",
+                    "landmark",
+                    "maximum_RTT",
+                    "minimum_RTT",
+                    "offset",
+                    "packet_loss",
+                    "packet_size",
+                    "period",
+                    "ping_count",
+                    "sign",
+                    "source",
+                    "start_time",
+                    "stddev_RTT",
+                    "taskname",
+                    "average_RTT",
+                    "uploaded",
+                    "version"
+                ]
+            }
+        ]
+    }
+]

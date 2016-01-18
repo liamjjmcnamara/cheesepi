@@ -63,5 +63,6 @@ class PingStatistics(Statistics):
 		self._all_time_max_rtt = max(self._all_time_max_rtt, result._max_rtt)
 
 		self._mean_delay.add_datum(result._avg_rtt)
+		self.log.info("MEDIAN {}".format(median(result._delay_sequence)))
 		self._average_median_delay.add_datum(median(result._delay_sequence))
 		self._average_packet_loss.add_datum(result._packet_loss/result._probe_count)
