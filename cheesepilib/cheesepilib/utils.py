@@ -112,8 +112,10 @@ def getCurrMAC():
 
 #get our source address
 def get_SA():
-	# this probably needs a try catch around it when offline...
-	ret = urllib2.urlopen('http://ip.42.pl/raw').read()
+	try:
+		ret = urllib2.urlopen('http://ip.42.pl/raw').read()
+	except: # We may be offline
+		return "0.0.0.0"
 	return ret
 
 def get_temperature():
