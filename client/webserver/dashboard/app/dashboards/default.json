@@ -11,7 +11,7 @@
   "rows": [
     {
       "title": "Overview",
-      "height": "150px",
+      "height": "100px",
       "editable": true,
       "collapse": false,
       "panels": [
