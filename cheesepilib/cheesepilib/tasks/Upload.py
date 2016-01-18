@@ -52,6 +52,7 @@ class Upload(Task.Task):
 		files = {'file': ('archive.tgz', fd), }
 		r = requests.post("http://"+self.spec['collector'], data=parameters, files=files)
 		logger.debug(r.text)
+		print "Posted: %s" % r.text
 		#fd.close()
 		# remember when we last successfully dumped our data
 		cp.config.set_last_dumped()

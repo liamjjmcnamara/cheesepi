@@ -99,17 +99,22 @@ def load_schedule():
 		tasks = cp.config.load_local_schedule()
 	return tasks
 
+def print_schedule(schedule_list):
+	print "Using the following schedule:"
+	for t in schedule_list:
+		print t
+
+
 schedule_list = load_schedule()
-print schedule_list
+print_schedule(schedule_list)
 
 logger.info("Dispatch PID: %d" % os.getpid())
 if __name__ == "__main__":
 	pool = multiprocessing.Pool(processes=pool_size)
 
-	# reschedule all tasks from the config file
+	# reschedule all tasks from the schedule specified in config file
 	for t in schedule_list:
 		schedule_task(t)
-	#print get_queue()
 	s.run()
 
 	if pool is not None:
