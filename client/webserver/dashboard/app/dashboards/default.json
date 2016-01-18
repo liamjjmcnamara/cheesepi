@@ -148,10 +148,10 @@
           "interval": null,
           "targets": [
             {
-              "function": "max",
+              "function": "sum",
               "column": "packet_loss",
               "rawQuery": false,
-              "query": "select max(packet_loss) from \"ping\" where $timeFilter group by time($interval) order asc",
+              "query": "select sum(packet_loss) from \"ping\" where $timeFilter group by time($interval) order asc",
               "hide": false,
               "series": "ping",
               "interval": "1h"
