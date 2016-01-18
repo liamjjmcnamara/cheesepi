@@ -174,7 +174,7 @@
           "prefixFontSize": "50%",
           "valueFontSize": "80%",
           "postfixFontSize": "50%",
-          "thresholds": "",
+          "thresholds": "0,10,100",
           "colorBackground": true,
           "colorValue": false,
           "colors": [
@@ -218,6 +218,11 @@
               "value": "0",
               "op": "=",
               "text": "Online"
+            },
+            {
+              "value": ">1",
+              "op": "=",
+              "text": "Offline"
             }
           ],
           "nullPointMode": "connected",
