@@ -1,4 +1,3 @@
-import sys
 import time
 import os
 import re
@@ -7,6 +6,7 @@ import subprocess
 import cheesepilib as cp
 import Task
 logger = cp.config.get_logger()
+TAG = __file__+" "
 
 class Wifi(Task.Task):
 
@@ -19,7 +19,7 @@ class Wifi(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info("Wifi scan @ %f, PID: %d" % (time.time(), os.getpid()))
+		logger.info(TAG+"Wifi scan @ %f, PID: %d" % (time.time(), os.getpid()))
 		self.measure()
 
 	def measure(self):
@@ -40,7 +40,7 @@ class Wifi(Task.Task):
 		try:
 			scan_output = subprocess.check_output(["iwlist", self.spec['interface'], "scanning"])
 		except Exception as e:
-			logger.error("Error: iwlist does not seem to run: "+str(e))
+			logger.warning("iwlist does not seem to run: "+str(e))
 			return None
 		if "Interface doesn't support scanning" in scan_output:
 			logger.error("Interface doesn't support scanning")

@@ -25,10 +25,13 @@ class DNS(Task.Task):
 
 	# measure and record funtion
 	def measure(self):
-		op_output = self.query_authoritative_ns(self.spec['landmark'], log)
-		print op_output
+		try:
+			op_output = self.query_authoritative_ns(self.spec['landmark'], log)
+			print op_output
+		except Exception as e:
+			logger.error("DNS query failed: %s" % e)
+			return
 		logger.debug(op_output)
-
 		parsed_output = self.parse_output(op_output, self.spec['landmark'])
 		self.dao.write_op(self.spec['taskname'], parsed_output)
 
