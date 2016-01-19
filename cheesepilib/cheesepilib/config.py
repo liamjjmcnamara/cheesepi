@@ -53,7 +53,6 @@ logger = logging.getLogger('CONFIG')
 
 def get_logger(source=""):
 	"""Return logger for the specific file"""
-	print source
 	return logging.getLogger(source)
 
 def get_dao():
