@@ -114,7 +114,8 @@ def getCurrMAC():
 def get_SA():
 	try:
 		ret = urllib2.urlopen('http://ip.42.pl/raw').read()
-	except: # We may be offline
+	except Exception as e: # We may be offline
+		logger.error("Unable to request ip.42.pl server's view of our IP, we may be offline: %s" % e)
 		return "0.0.0.0"
 	return ret
 
