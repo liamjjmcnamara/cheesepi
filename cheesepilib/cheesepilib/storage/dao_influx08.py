@@ -34,7 +34,7 @@ import json
 import cheesepilib as cp
 import dao
 
-logger = cp.config.get_logger()
+logger = cp.config.get_logger(__name__)
 
 # Influx module, use legacy on RaspberryPi Linux
 try:

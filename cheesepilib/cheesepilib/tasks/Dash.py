@@ -6,8 +6,7 @@ import youtube_dl
 import cheesepilib as cp
 import Task
 
-logger = cp.config.get_logger()
-
+logger = cp.config.get_logger(__name__)
 
 class Dash(Task.Task):
 

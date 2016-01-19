@@ -7,7 +7,8 @@ from subprocess import Popen, PIPE
 
 import Task
 import cheesepilib as cp
-logger = cp.config.get_logger()
+
+logger = cp.config.get_logger(__name__)
 
 class Httping(Task.Task):
 

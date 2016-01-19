@@ -46,13 +46,15 @@ config_file   = os.path.join(cheesepi_dir, "cheesepi.conf")
 version_file  = os.path.join(cheesepi_dir, "version")
 
 logfile = os.path.join(cheesepi_dir, "cheesepi.log")
-logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(levelname)s; %(message)s")
-logger = logging.getLogger('CheesePi')
+logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(name)s-%(levelname)s; %(message)s")
+logger = logging.getLogger('CONFIG')
 
 
 
-def get_logger():
-	return logger
+def get_logger(source=""):
+	"""Return logger for the specific file"""
+	print source
+	return logging.getLogger(source)
 
 def get_dao():
 	if config_equal('database',"mongo"):

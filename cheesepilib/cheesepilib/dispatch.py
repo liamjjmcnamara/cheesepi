@@ -17,7 +17,7 @@ start_time = time.time()
 
 dao    = cp.config.get_dao()
 config = cp.config.get_config()
-logger = cp.config.get_logger()
+logger = cp.config.get_logger(__name__)
 
 # Create scheduler object, use 'real' time
 s = sched.scheduler(time.time, time.sleep)

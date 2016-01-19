@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-import sys
 import os
 from time import time
 from builtins import str
@@ -7,11 +6,10 @@ from builtins import str
 from txmsgpackrpc.client import connect
 from twisted.internet import defer
 
-
-sys.path.append("/usr/local/")
 import cheesepi
 import Task
-logger = cheesepi.utils.get_logger()
+
+logger = cheesepi.utils.get_logger(__name__)
 
 SERVER_PORT = 18080
 

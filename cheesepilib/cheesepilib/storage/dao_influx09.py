@@ -36,7 +36,7 @@ from requests.exceptions import ConnectionError
 import cheesepilib as cp
 import dao
 
-logger = cp.config.get_logger()
+logger = cp.config.get_logger(__name__)
 
 try:
 	from influxdb import InfluxDBClient

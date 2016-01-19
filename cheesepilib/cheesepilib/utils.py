@@ -35,7 +35,7 @@ import md5
 import cheesepilib as cp
 from cheesepilib.tasks import *
 
-logger = cp.config.get_logger()
+logger = cp.config.get_logger(__name__)
 
 def build_json(dao, json_str):
 	"""Build a Task object out of a JSON string spec"""

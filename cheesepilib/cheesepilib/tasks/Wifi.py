@@ -5,8 +5,8 @@ import subprocess
 
 import cheesepilib as cp
 import Task
-logger = cp.config.get_logger()
-TAG = __file__+" "
+
+logger = cp.config.get_logger(__name__)
 
 class Wifi(Task.Task):
 
@@ -19,7 +19,7 @@ class Wifi(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info(TAG+"Wifi scan @ %f, PID: %d" % (time.time(), os.getpid()))
+		logger.info("Wifi scan @ %f, PID: %d" % (time.time(), os.getpid()))
 		self.measure()
 
 	def measure(self):

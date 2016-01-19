@@ -6,11 +6,11 @@ import cherrypy
 
 import cheesepilib as cp
 
-logger = logging.getLogger('CheesePi')
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.ERROR)
 resultLimit = 5 # number of results per page
 serveroot = os.path.dirname(os.path.realpath(__file__))
-confpath = os.path.join(serveroot,'cherrypy.conf')
+confpath  = os.path.join(serveroot,'cherrypy.conf')
 print "Webserver root: "+serveroot
 
 dao = cp.config.get_dao()
@@ -38,7 +38,7 @@ def setup_server():
 	config = {
 		'global': {
 			'environment': 'embedded',
-			'log.screen': True,
+			'log.screen': False,
 		},
 		'/dashboard': {
 			'tools.staticdir.on': True,
@@ -54,7 +54,7 @@ def setup_server():
 	except IOError as e:
 		msg = "Error: Can't start server, port probably already in use: "+str(e)
 		print msg
-		logging.error(msg)
+		logging.warning(msg)
 
 setup_server()
 

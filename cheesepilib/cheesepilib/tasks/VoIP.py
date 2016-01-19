@@ -4,7 +4,8 @@ from subprocess import Popen, PIPE
 
 import cheesepilib as cp
 import Task
-logger = cp.config.get_logger()
+
+logger = cp.config.get_logger(__name__)
 
 class VoIP(Task.Task):
 
