@@ -69,13 +69,20 @@ class PingResultObjectConstructor(object):
 		stddev_rtt = 0
 		average_rtt = 0
 		packet_loss = 0
-		ping_count = 0
+		ping_count = len(data)
+
+		total_sum = 0
+		for d in data:
+			total_sum = total_sum + d
+
+		average_rtt = total_sum/ping_count
+
 		result = [
 		    self._peer_id,
 		    target_id,
 		    None,
 		    None,
-		    data,
+		    str(data),
 		    destination_address,
 		    None,
 		    None,
@@ -184,7 +191,8 @@ if __name__ == "__main__":
 
 		# Make sure we get different sets from every target even if the
 		# distribution is identical
-		seed = seed + 1
+		if seed is not None:
+			seed = seed + 1
 
 	obj = proc.construct()
 	obj[0]['series'][0]['distribution_stats'] = dist_stats

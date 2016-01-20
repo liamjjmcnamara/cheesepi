@@ -48,7 +48,6 @@ class PingResultParser(ResultParser):
 			landmark = entry[columns.index('landmark')]
 			target_id = entry[columns.index('target_id')]
 
-			self.log.info("landmark entry is {} of type {}".format(landmark, type(landmark)))
 			target = {}
 
 			if landmark is None and target_id is not None:
