@@ -6,6 +6,13 @@ from cheesepilib.exceptions import UnsupportedResultType
 
 class ResultParser(object):
 
+	def __enter__(self):
+		self.parse()
+		return self
+
+	def __exit__(self, exc_type, exc_value, traceback):
+		pass
+
 	@classmethod
 	def fromFile(cls, filename):
 		with open(filename) as fd:
@@ -28,6 +35,10 @@ class ResultParser(object):
 	def parse(self):
 		raise NotImplementedError(
 		        "Abstract method 'parse' not implemented")
+
+	def get_result_set():
+		raise NotImplementedError(
+		        "Abstract method 'get_result_set' not implemented")
 
 	def write_to_db(self):
 		raise NotImplementedError(
