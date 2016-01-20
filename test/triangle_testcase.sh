@@ -10,12 +10,19 @@ P1_IP='192.168.1.1'
 P2_IP='192.168.2.2'
 P3_IP='192.168.3.3'
 
+P1_P2_ARGS="'shape':3"
+P1_P3_ARGS=""
+P2_P1_ARGS="'loc':15"
+P2_P3_ARGS=""
+P3_P1_ARGS="'scale':5"
+P3_P2_ARGS=""
+
 # Generate the test data
-python2 mock_ping.py --peerid=$P1 --samplesize=100 --target "{'id':'$P2','ip':'$P2_IP'}" --target "{'id':'$P3','ip':'$P3_IP'}" > triangle/peer_1/ping.json
+python2 mock_ping.py --peerid=$P1 --samplesize=100 --target "{'id':'$P2','ip':'$P2_IP',$P1_P2_ARGS}" --target "{'id':'$P3','ip':'$P3_IP',$P1_P3_ARGS}" > triangle/peer_1/ping.json
 
-python2 mock_ping.py --peerid=$P2 --samplesize=100 --target "{'id':'$P1','ip':'$P1_IP'}" --target "{'id':'$P3','ip':'$P3_IP'}" > triangle/peer_2/ping.json
+python2 mock_ping.py --peerid=$P2 --samplesize=100 --target "{'id':'$P1','ip':'$P1_IP',$P2_P1_ARGS}" --target "{'id':'$P3','ip':'$P3_IP',$P2_P3_ARGS}" > triangle/peer_2/ping.json
 
-python2 mock_ping.py --peerid=$P3 --samplesize=100 --target "{'id':'$P1','ip':'$P1_IP'}" --target "{'id':'$P2','ip':'$P2_IP'}" > triangle/peer_3/ping.json
+python2 mock_ping.py --peerid=$P3 --samplesize=100 --target "{'id':'$P1','ip':'$P1_IP',$P3_P1_ARGS}" --target "{'id':'$P2','ip':'$P2_IP',$P3_P2_ARGS}" > triangle/peer_3/ping.json
 
 cd triangle
 

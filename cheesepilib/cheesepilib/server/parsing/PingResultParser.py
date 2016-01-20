@@ -14,6 +14,7 @@ class PingResultParser(ResultParser):
 		self._parsed = False
 		self._input_obj = obj
 		self._result_set = []
+		self._peer_id = None
 
 	def __enter__(self):
 		self.parse()
@@ -39,6 +40,14 @@ class PingResultParser(ResultParser):
 
 		entries = [entry for entry in inp[0]['series'][0]['values']]
 		for entry in entries:
+			peer_id = self._peer_id = entry[columns.index('peer_id')]
+			if self._peer_id is None:
+				self._peer_id = peer_id
+			elif self._peer_id != peer_id:
+				raise Exception(
+					"Found inconsistent peer_id: {}, expected: {}".format(
+						peer_id, self._peer_id)
+				)
 			# TODO this is done because the sequence is stored as a string
 			# representation of a list, should be changed in the future so that
 			# it's a list from the start
@@ -118,8 +127,7 @@ class PingResultParser(ResultParser):
 		return self._result_set
 
 	def get_peer_id(self):
-		# TODO This should return peer_id as parsed from the file
-		return 1
+		return self._peer_id
 
 	def write_to_db(self):
 		if len(self._result_set) == 0:

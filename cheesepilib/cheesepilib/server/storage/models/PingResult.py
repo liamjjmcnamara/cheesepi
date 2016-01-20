@@ -13,7 +13,13 @@ class PingResult(Result):
 		p._start_time = dct['start_time']
 		p._end_time = dct['end_time']
 		p._target = Target.fromDict(dct['target'])
-		p._delay_sequence = dct['value']['delay_sequence']
+
+		seq = dct['value']['delay_sequence']
+		if isinstance(seq, str):
+		    import ast
+		    seq = ast.literal_eval(seq)
+		p._delay_sequence = seq
+
 		p._probe_count = dct['value']['probe_count']
 		p._packet_loss = dct['value']['packet_loss']
 		p._packet_size = dct['value']['packet_size']
@@ -30,7 +36,7 @@ class PingResult(Result):
 		self._start_time = 0
 		self._end_time = 0
 		self._target = None
-		self._delay_sequence = 0
+		self._delay_sequence = None
 		self._probe_count = 0
 		self._packet_loss = 0
 		self._packet_size = 0

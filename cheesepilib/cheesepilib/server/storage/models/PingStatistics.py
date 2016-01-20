@@ -10,7 +10,8 @@ class PingStatistics(Statistics):
 	def fromDict(cls, dct):
 		p = PingStatistics()
 		p._target = Target.fromDict(dct['target'])
-		p._mean_delay = StatObject.fromDict(dct['mean_delay'])
+		p._delay = StatObject.fromDict(dct['delay'])
+		p._average_delay = StatObject.fromDict(dct['average_delay'])
 		p._average_median_delay = StatObject.fromDict(dct['average_median_delay'])
 		p._average_packet_loss = StatObject.fromDict(dct['average_packet_loss'])
 		p._all_time_min_rtt = dct['all_time_min_rtt']
@@ -22,7 +23,8 @@ class PingStatistics(Statistics):
 
 	def __init__(self, target=None):
 		self._target = target
-		self._mean_delay = StatObject(0,0)
+		self._delay = StatObject(0,0)
+		self._average_delay = StatObject(0,0)
 		self._average_median_delay = StatObject(0,0)
 		self._average_packet_loss = StatObject(0,0)
 		self._all_time_min_rtt = 999999999
@@ -34,7 +36,8 @@ class PingStatistics(Statistics):
 		return {
 			'task_name':'ping',
 			'target':self._target.toDict(),
-			'mean_delay':self._mean_delay.toDict(),
+			'delay':self._delay.toDict(),
+			'average_delay':self._average_delay.toDict(),
 			'average_median_delay':self._average_median_delay.toDict(),
 			'average_packet_loss':self._average_packet_loss.toDict(),
 			'all_time_min_rtt':self._all_time_min_rtt,
@@ -62,7 +65,10 @@ class PingStatistics(Statistics):
 		self._all_time_min_rtt = min(self._all_time_min_rtt, result._min_rtt)
 		self._all_time_max_rtt = max(self._all_time_max_rtt, result._max_rtt)
 
-		self._mean_delay.add_datum(result._avg_rtt)
+		for d in result._delay_sequence:
+			self._delay.add_datum(d)
+
+		self._average_delay.add_datum(result._avg_rtt)
 		self.log.info("MEDIAN {}".format(median(result._delay_sequence)))
 		self._average_median_delay.add_datum(median(result._delay_sequence))
 		self._average_packet_loss.add_datum(result._packet_loss/result._probe_count)

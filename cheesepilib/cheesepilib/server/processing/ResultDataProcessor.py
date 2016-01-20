@@ -78,7 +78,7 @@ class ResultDataProcessor(object):
 				with ResultParser.fromFile(filename) as parser:
 					results = parser.parse()
 					peer_id = parser.get_peer_id()
-					#self.log.info(results)
+					#self.log.info(peer_id)
 
 					stats = dao.get_stats_set_for_results(peer_id, results)
 					self.log.info("Fetched:\n{}".format(pformat(stats.toDict())))
