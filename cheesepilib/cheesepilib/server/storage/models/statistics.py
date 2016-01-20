@@ -67,6 +67,7 @@ class StatisticsSet(object):
 
 	@classmethod
 	def fromList(cls, lst):
+		#cls.log.info(lst)
 
 		ss = StatisticsSet()
 
@@ -93,14 +94,19 @@ class StatisticsSet(object):
 		return iter(self._statistics_set.values())
 
 	def toDict(self):
-		dct = {} #{'target':self._target}
+		dct = {}
+		#print(self._statistics_set)
 		#self.log.info(self._statistics_set)
-		for stat in self._statistics_set.itervalues():
-			#self.log.info("#")
-			#self.log.info(stat)
-			#self.log.info("#")
-			stat_dct = stat.toDict()
-			dct[stat_dct['task_name']] = stat_dct
+		for target_stat, stat in self._statistics_set.iteritems():
+
+			key = target_stat.target
+			value = stat.toDict()
+
+			if key not in dct:
+				dct[key] = {}
+
+			dct[key][value['task_name']] = value
+
 		return dct
 
 	def absorb_results(self, result_list):
