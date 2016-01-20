@@ -15,7 +15,7 @@ P1_P3_ARGS=""
 P2_P1_ARGS="'loc':15"
 P2_P3_ARGS=""
 P3_P1_ARGS="'scale':5"
-P3_P2_ARGS=""
+P3_P2_ARGS="'lossrate':0.5"
 
 # Generate the test data
 python2 mock_ping.py --peerid=$P1 --samplesize=100 --target "{'id':'$P2','ip':'$P2_IP',$P1_P2_ARGS}" --target "{'id':'$P3','ip':'$P3_IP',$P1_P3_ARGS}" > triangle/peer_1/ping.json

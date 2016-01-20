@@ -11,7 +11,7 @@ from scipy.stats import gamma
 
 class PingResultMocker(object):
 
-	def __init__(self, shape=2, loc=10, scale=3, seed=None):
+	def __init__(self, shape=2, loc=10, scale=3, lossrate=0, seed=None):
 
 		if seed is not None:
 			np.random.seed(seed)
@@ -32,7 +32,14 @@ class PingResultMocker(object):
 		self._dist = gamma(self._shape, loc=self._loc, scale=self._scale)
 
 	def sample_n(self, n):
-		return self._dist.rvs(size=n)
+		samples = self._dist.rvs(size=n)
+		if lossrate != 0:
+			for i in range(0, len(samples)):
+				if random.uniform(0,1) < lossrate:
+					samples[i] = -1
+
+		return samples
+
 
 	def set_seed(self, seed):
 		np.random.seed(seed)
@@ -64,18 +71,38 @@ class PingResultObjectConstructor(object):
 		self._results = []
 
 	def add_result(self, data, target_id, destination_address):
+		# TODO packet loss assumed 0 for now but should extend so we can model
+		# that as well in the future
 		max_rtt = 0
-		min_rtt = 0
+		min_rtt = sys.maxint
 		stddev_rtt = 0
 		average_rtt = 0
 		packet_loss = 0
 		ping_count = len(data)
 
 		total_sum = 0
+		square_sum = 0
 		for d in data:
-			total_sum = total_sum + d
+			# Make sure to catch packet loss before anything else
+			if d < 0:
+				packet_loss = packet_loss + 1
+				continue
 
-		average_rtt = total_sum/ping_count
+			if d < min_rtt:
+				min_rtt = d
+			if d > max_rtt:
+				max_rtt = d
+			total_sum = total_sum + d
+			square_sum = square_sum + math.pow(d, 2)
+
+		# NOTE We need to account for lost packets when calculating things
+		success_count = ping_count - packet_loss
+
+		variance = square_sum/success_count
+
+		stddev_rtt = math.sqrt(variance)
+		average_rtt = total_sum/success_count
+
 
 		result = [
 		    self._peer_id,
@@ -152,7 +179,7 @@ if __name__ == "__main__":
 	parser.add_argument('--samplesize', type=int, default=10,
 	                    help='number of samples for each result')
 	parser.add_argument('--target', type=str, action='append',
-	        help='the targets on the form: "{\'id\':id,\'ip\':ip}" with optional arguments \'shape\', \'loc\' and \'scale\' to modify the distribution')
+	        help='the targets on the form: "{\'id\':id,\'ip\':ip}" with optional arguments \'shape\', \'loc\', \'scale\' and \'lossrate\' to modify the distribution')
 	parser.add_argument('--seed', type=int, default=None,
 	                    help='a random number seed')
 
@@ -167,14 +194,18 @@ if __name__ == "__main__":
 		shape = None
 		loc = None
 		scale = None
+		lossrate = None
 		if 'shape' in dct:
 			shape = dct['shape']
 		if 'loc' in dct:
 			loc = dct['loc']
 		if 'scale' in dct:
 			scale = dct['scale']
+		if 'lossrate' in dct:
+			lossrate = dct['lossrate']
 
-		prm = PingResultMocker(shape=shape, loc=loc, scale=scale, seed=seed)
+		prm = PingResultMocker(shape=shape, loc=loc, scale=scale,
+		                       lossrate=lossrate, seed=seed)
 		samples = prm.sample_n(args.samplesize)
 
 		proc.add_result(list(samples), dct['id'], dct['ip'])
