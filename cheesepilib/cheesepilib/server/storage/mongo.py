@@ -7,6 +7,8 @@ import math
 from .dao import DAO
 from cheesepilib.exceptions import ServerDaoError, NoSuchPeer
 
+from cheesepilib.server.storage.models.statistics import StatisticsSet
+
 # What is the threshold in seconds to be considered 'active'
 ACTIVE_THRESHOLD = 3600
 
@@ -34,6 +36,9 @@ class MongoDAO(DAO):
 
 	def close(self):
 		pass # Nothing to do??
+
+	def get_bulk_writer(self):
+		return self.db.peers.initialize_ordered_bulk_op()
 
 	def peer_beacon(self, peer_id, host, last_seen=0):
 		if last_seen==0: last_seen=time.time()
@@ -131,20 +136,170 @@ class MongoDAO(DAO):
 		#)
 		return self._return_status(update['updatedExisting'])
 
-	def get_stats(self, peer_id, target_id):
+
+
+
+	def get_stats_set(self, peer_id, target):
+		"""
+		Returns a StatisticsSet object loaded with all the statistics for
+		measurements from peer_id to target.
+
+		Args:
+			peer_id: a peer id
+			target: a Target object
+		Returns:
+			A StatisticsSet object if query is successful, None otherwise.
+		"""
+		return self.get_stats_set_for_targets(peer_id, [target])
+
+	def get_stats_set_for_results(self, peer_id, results):
+		"""
+		Returns a StatisticsSet object loaded with all the statistics for
+		measurements from peer_id to all targets that concern the results in
+		the result list.
+
+		Args:
+			peer_id: a peer id
+			results: a list of Result objects
+		Returns:
+			A StatisticsSet object if query is successful, None otherwise.
+		"""
+		targets = [result._target for result in results]
+
+		return self.get_stats_set_for_targets(peer_id, targets)
+
+	def get_stats_set_for_targets(self, peer_id, targets):
+		"""
+		Returns a StatisticsSet object loaded with all the statistics for
+		measurements from peer_id to all targets in the targets list.
+
+		Args:
+			peer_id: a peer id
+			targets: a list of Target objects
+		Returns:
+			A StatisticsSet object if query is successful, None otherwise.
+		"""
+
+		projection = {}
+
+		for target in targets:
+			key = "statistics.{}".format(target.get_hash())
+			projection[key] = 1
 
 		stats = self.db.peers.find(
-			{'peer_id':peer_id,
-			 'statistics.target_id':target_id},
-			{'statistics.$':1},
+			{'peer_id':peer_id},
+			projection,
 		)
 
 		# Should be unique so can only ever find one
 		if stats.count() > 0:
-			return stats[0]['statistics'][0]
+			#self.log.info(stats[0])
+			return StatisticsSet.fromDict(stats[0]['statistics'])
 		else:
-			return None
+			return StatisticsSet()
 
+	def write_stats_set(self, peer_id, statistics_set):
+		"""
+		Write a statistics set object to the database.
+
+		Args:
+			peer_id: a peer id
+			statistcs_set: a StatisticsSet object
+		Returns:
+			the result from the write operation
+		"""
+		bulk_writer = self.db.peers.initialize_ordered_bulk_op()
+
+		bulk_writer = self.bulk_write_stats_set(bulk_writer, peer_id,
+		                                        statistics_set)
+
+		result = bulk_writer.execute()
+		self.log.info("Wrote statistics set with result: {}".format(result))
+		return result
+
+	def bulk_write_stats_set(self, bulk_writer, peer_id, statistics_set):
+		"""
+		Queue writing of a StatisticsSet object to a bulk writer object.
+
+		Args:
+			bulk_writer: a bulk writer object
+			peer_id: a peer id
+			statistcs_set: a StatisticsSet object
+		Returns:
+			the modified bulk writer object
+		"""
+		#self.log.info("IN WRITE_STATS")
+
+		prefix_key = "statistics" #.format(target.get_hash())
+
+		stat_object = {}
+		#self.log.info(statistics_set)
+
+		for stat in statistics_set:
+			stat_target_hash = stat.get_target_hash()
+			#stat_type = stat.get_type()
+			#if stat_target_hash not in stat_object:
+				#stat_object[stat_target_hash] = {}
+			#stat_object[stat_target_hash][stat_type] = stat.toDict()
+
+			key = "{}.{}".format(prefix_key, stat_target_hash)
+
+			bulk_writer.find(
+				{'peer_id':peer_id}
+				).upsert(
+				).update_one(
+				{'$set':{
+					key:{
+						stat.get_type():stat.toDict(),
+						},
+					}
+				},
+			)
+		#self.log.info("EXITING WRITE_STATS")
+
+		return bulk_writer
+
+	def write_results(self, peer_id, results):
+		"""
+		Writes a list of results from a peer to the database.
+
+		Args:
+			peer_id: a peer id
+			results: a list of Result objects
+		Returns:
+			the result of the write operation
+		"""
+		bulk_writer = self.db.peers.initialize_ordered_bulk_op()
+
+		bulk_writer = self.bulk_write_results(bulk_writer, peer_id, results)
+
+		result = bulk_writer.execute()
+		self.log.info("Wrote a list of results objects with result: {}".format(result))
+		return result
+
+	def bulk_write_results(self, bulk_writer, peer_id, results):
+		"""
+		Queue writing of a list of Result objects to a bulk writer object.
+
+		Args:
+			bulk_writer: a bulk writer object
+			peer_id: a peer id
+			results: a list of Result objects
+		Returns:
+			the modified bulk writer object
+		"""
+		for result in results:
+			bulk_writer.find(
+				{'peer_id':peer_id}
+				).upsert(
+				).update(
+				{'$push': {'results':result.toDict()}}
+			)
+		return bulk_writer
+
+	#############
+	# DEPRECATED#
+	#############
 	def write_ping_results(self, peer_id, target_id, results):
 
 		from cheesepilib.server.processing.utils import StatObject, median
@@ -174,9 +329,9 @@ class MongoDAO(DAO):
 			average_median_delay = StatObject(0,0)
 			average_packet_loss = StatObject(0,0)
 		else:
-			mean_delay = StatObject.fromJson(stats['ping']['mean_delay'])
-			average_median_delay = StatObject.fromJson(stats['ping']['average_median_delay'])
-			average_packet_loss = StatObject.fromJson(stats['ping']['average_packet_loss'])
+			mean_delay = StatObject.fromDict(stats['ping']['mean_delay'])
+			average_median_delay = StatObject.fromDict(stats['ping']['average_median_delay'])
+			average_packet_loss = StatObject.fromDict(stats['ping']['average_packet_loss'])
 
 
 		# Bulk write operation object
@@ -196,11 +351,7 @@ class MongoDAO(DAO):
 			min_rtt = min(min_rtt, result['value']['min_rtt'])
 			avg_rtt = result['value']['avg_rtt']
 
-			# TODO this is done because the sequence is stored as a string
-			# representation of a list, should be changed in the future so that
-			# it's a list from the start
-			import ast
-			delay_sequence = ast.literal_eval(result['value']['delay_sequence'])
+			delay_sequence = result['value']['delay_sequence']
 
 			# Increment the stat counters
 			mean_delay.add_datum(avg_rtt)
@@ -229,15 +380,16 @@ class MongoDAO(DAO):
 			 '$max':{'statistics.$.ping.all_time_max_rtt':max_rtt},
 			 '$min':{'statistics.$.ping.all_time_min_rtt':min_rtt},
 			 '$set':{
-				'statistics.$.ping.mean_delay.mean':mean_delay.mean,
-				'statistics.$.ping.mean_delay.variance':mean_delay.variance,
-				'statistics.$.ping.mean_delay.std_dev':mean_delay.std_dev,
-				'statistics.$.ping.average_median_delay.mean':average_median_delay.mean,
-				'statistics.$.ping.average_median_delay.variance':average_median_delay.variance,
-				'statistics.$.ping.average_median_delay.std_dev':average_median_delay.std_dev,
-				'statistics.$.ping.average_packet_loss.mean':average_packet_loss.mean,
-				'statistics.$.ping.average_packet_loss.variance':average_packet_loss.variance,
-				'statistics.$.ping.average_packet_loss.std_dev':average_packet_loss.std_dev,
+				'statistics.$.ping.task_name':'ping',
+				'statistics.$.ping.mean_delay.mean':mean_delay._mean,
+				'statistics.$.ping.mean_delay.variance':mean_delay._variance,
+				'statistics.$.ping.mean_delay.std_dev':mean_delay._std_dev,
+				'statistics.$.ping.average_median_delay.mean':average_median_delay._mean,
+				'statistics.$.ping.average_median_delay.variance':average_median_delay._variance,
+				'statistics.$.ping.average_median_delay.std_dev':average_median_delay._std_dev,
+				'statistics.$.ping.average_packet_loss.mean':average_packet_loss._mean,
+				'statistics.$.ping.average_packet_loss.variance':average_packet_loss._variance,
+				'statistics.$.ping.average_packet_loss.std_dev':average_packet_loss._std_dev,
 				},
 			}
 		)
