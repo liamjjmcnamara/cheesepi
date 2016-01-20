@@ -51,13 +51,16 @@ class Upload(Task.Task):
 		fd.seek(0) # flush and reset file handle, so it can be read for POST
 
 		files = {'file': ('archive.tgz', fd), }
-		r = requests.post("http://"+self.spec['collector'], data=parameters, files=files)
-		logger.debug(r.text)
-		print "Posted: %s" % r.text
-		#fd.close()
-		# remember when we last successfully dumped our data
-		cp.config.set_last_dumped()
-		return r.text
+		try:
+			r = requests.post("http://"+self.spec['collector'], data=parameters, files=files)
+			logger.debug("Uploaded: "+r.text)
+			print "Uploaded: "+r.text
+			cp.config.set_last_dumped() # record that we successfully dumped
+			return r.text
+		except:
+			logger.error("Failed to upload data dump")
+		return None
+
 
 
 if __name__ == "__main__":

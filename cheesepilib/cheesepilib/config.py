@@ -46,7 +46,7 @@ config_file   = os.path.join(cheesepi_dir, "cheesepi.conf")
 version_file  = os.path.join(cheesepi_dir, "version")
 
 logfile = os.path.join(cheesepi_dir, "cheesepi.log")
-logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s;%(name)s-%(levelname)s; %(message)s")
+logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s-%(name)s:%(levelname)s; %(message)s")
 logger = logging.getLogger('CONFIG')
 
 

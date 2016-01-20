@@ -20,7 +20,6 @@ class Beacon(Task.Task):
 	def __init__(self, dao, spec):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname'] = "beacon"
-		self.spec['peer_id']  = spec['peer_id']
 		if not 'server' in spec: self.spec['server'] = cp.config.get_controller()
 
 	def run(self):
@@ -38,7 +37,7 @@ class Beacon(Task.Task):
 
 
 def main(peer_id):
-	spec = {'peer_id': int(peer_id)}
+	spec = {}
 	beacon_task = Beacon(None,spec)
 	beacon_task.run()
 
@@ -49,7 +48,7 @@ if __name__ == "__main__":
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--id', type=str, default=None,
-						help='peer id')
+		help='peer id')
 
 	args = parser.parse_args()
 
