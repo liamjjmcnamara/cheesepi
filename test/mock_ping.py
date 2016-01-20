@@ -3,78 +3,194 @@ from __future__ import unicode_literals, absolute_import, print_function
 import random
 import math
 import sys
+import json
 
+import numpy as np
 
-class PingMocker(object):
+from scipy.stats import gamma
 
-	def __init__(self, num, min_val, max_val):
+class PingResultMocker(object):
 
-		self._num = num
-		self._min_val = min_val
-		self._max_val = max_val
+	def __init__(self, shape=2, loc=10, scale=3, seed=None):
 
-		self._mean = 0
-		self._minimum = 0
-		self._maximum = 0
-		self._variance = 0
-		self._std_dev = 0
+		if seed is not None:
+			np.random.seed(seed)
 
-		self.regenerate()
+		if shape is None:
+			shape = 2
+		if loc is None:
+			loc = 10
+		if scale is None:
+			scale = 3
 
-	def __repr__(self):
-		from pprint import pformat
-		data = pformat(self._data)
-		stats = "min: {} max: {} mean: {} variance: {} std_dev: {}".format(
-			self._minimum, self._maximum, self._mean, self._variance,
-			self._std_dev)
-		return "Data:\n{}\nStats:\n{}".format(data, stats)
+		self._shape = shape
+		self._loc = loc
+		self._scale = scale
+		self._generate_dist()
 
-	def regenerate(self):
-		self._data = []
+	def _generate_dist(self):
+		self._dist = gamma(self._shape, loc=self._loc, scale=self._scale)
 
-		minimum = sys.maxint
-		maximum = 0
-		total_sum = 0
+	def sample_n(self, n):
+		return self._dist.rvs(size=n)
 
-		for n in range(0, self._num):
-			self._data.append(random.uniform(self._min_val, self._max_val))
+	def set_seed(self, seed):
+		np.random.seed(seed)
+	def set_shape(self, shape):
+		self._shape = shape
+		self._generate_dist()
+	def set_loc(self, loc):
+		self._loc = loc
+		self._generate_dist()
+	def set_scale(self, scale):
+		self._scale = scale
+		self._generate_dist()
 
-			total_sum = total_sum + self._data[n]
+	def get_mean(self):
+		return self._dist.stats(moments='m').item()
+	def get_variance(self):
+		return self._dist.stats(moments='v').item()
+	def get_std_dev(self):
+		return math.sqrt(self._dist.stats(moments='v').item())
+	def get_skew(self):
+		return self._dist.stats(moments='s').item()
+	def get_kurtosis(self):
+		return self._dist.stats(moments='k').item()
 
-			if self._data[n] < minimum:
-				minimum = self._data[n]
-			elif self._data[n] > maximum:
-				maximum = self._data[n]
+class PingResultObjectConstructor(object):
 
-		self._minimum = minimum
-		self._maximum = maximum
-		self._mean = total_sum/self._num
+	def __init__(self, peer_id):
+		self._peer_id = peer_id
+		self._results = []
 
-		square_sum = 0
-		for n in range(0, self._num):
-			delta_square = math.pow(self._data[n] - self._mean, 2)
-			square_sum = square_sum + delta_square
+	def add_result(self, data, target_id, destination_address):
+		max_rtt = 0
+		min_rtt = 0
+		stddev_rtt = 0
+		average_rtt = 0
+		packet_loss = 0
+		ping_count = 0
+		result = [
+		    self._peer_id,
+		    target_id,
+		    None,
+		    None,
+		    data,
+		    destination_address,
+		    None,
+		    None,
+		    None,
+		    None,
+		    max_rtt,
+		    min_rtt,
+		    None,
+		    packet_loss,
+		    None,
+		    None,
+		    ping_count,
+		    None,
+		    None,
+		    None,
+		    stddev_rtt,
+		    'ping',
+		    average_rtt,
+		    None,
+		    None,
+		]
 
-		self._variance = square_sum/self._num
-		self._std_dev = math.sqrt(self._variance)
+		self._results.append(result)
 
-	def _caculate_variance_and_std_dev(self):
-		pass
-
+	def construct(self):
+		columns = [
+		    "peer_id",
+		    "target_id",
+		    "time",
+		    "cycle",
+		    "delays",
+		    "destination_address",
+		    "destination_domain",
+		    "downloaded",
+		    "end_time",
+		    "landmark",
+		    "maximum_RTT",
+		    "minimum_RTT",
+		    "offset",
+		    "packet_loss",
+		    "packet_size",
+		    "period",
+		    "ping_count",
+		    "sign",
+		    "source",
+		    "start_time",
+		    "stddev_RTT",
+		    "taskname",
+		    "average_RTT",
+		    "uploaded",
+		    "version"
+		]
+		values = []
+		for result in self._results:
+			values.append(result)
+		obj = [{'series':[{'values':values,'name':'ping','columns':columns}]}]
+		return obj
 
 if __name__ == "__main__":
 	import argparse
+	import ast
+	from pprint import pformat
 
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--num', type=int, default=10,
-	                    help='number of data points')
-	parser.add_argument('--min', type=int, default=8,
-	                    help='the minimum value for any data point')
-	parser.add_argument('--max', type=int, default=12,
-	                    help='the maximum value for any data point')
+	parser.add_argument('--peerid', type=str, default='1',
+	                    help='the peer id the results belong to')
+	parser.add_argument('--samplesize', type=int, default=10,
+	                    help='number of samples for each result')
+	parser.add_argument('--target', type=str, action='append',
+	        help='the targets on the form: "{\'id\':id,\'ip\':ip}" with optional arguments \'shape\', \'loc\' and \'scale\' to modify the distribution')
+	parser.add_argument('--seed', type=int, default=None,
+	                    help='a random number seed')
 
 	args = parser.parse_args()
 
-	pm = PingMocker(args.num, args.min, args.max)
+	seed = args.seed
+	proc = PingResultObjectConstructor(args.peerid)
+	dist_stats = {}
 
-	print(pm)
+	for t in args.target:
+		dct = ast.literal_eval(t)
+		shape = None
+		loc = None
+		scale = None
+		if 'shape' in dct:
+			shape = dct['shape']
+		if 'loc' in dct:
+			loc = dct['loc']
+		if 'scale' in dct:
+			scale = dct['scale']
+
+		prm = PingResultMocker(shape=shape, loc=loc, scale=scale, seed=seed)
+		samples = prm.sample_n(args.samplesize)
+
+		proc.add_result(list(samples), dct['id'], dct['ip'])
+
+		dist = {
+			'mean':prm.get_mean(),
+			'variance':prm.get_variance(),
+			'std_dev':math.sqrt(prm.get_variance()),
+			'skew':prm.get_skew(),
+			'kurt':prm.get_kurtosis(),
+		}
+
+		dist_stats[dct['id']] = dist
+
+		# Make sure we get different sets from every target even if the
+		# distribution is identical
+		seed = seed + 1
+
+	obj = proc.construct()
+	obj[0]['series'][0]['distribution_stats'] = dist_stats
+
+	print(json.dumps(obj, indent=4, sort_keys=True))
+
+	#import matplotlib.pyplot as plt
+	#plt.hist(samples, 100)
+	#plt.show()
