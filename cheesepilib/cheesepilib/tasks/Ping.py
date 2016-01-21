@@ -3,7 +3,6 @@ import os
 import re
 import logging
 import socket
-from subprocess import Popen, PIPE
 
 import cheesepilib as cp
 import Task
@@ -45,23 +44,18 @@ class Ping(Task.Task):
 	#ping function
 	def perform(self, landmark, ping_count, packet_size):
 		packet_size -= 8 # change packet size to payload length!
-		execute = "ping -c %s -s %s %s"%(ping_count, packet_size, landmark)
-		logging.info("Executing: "+execute)
-		logger.info(execute)
-		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
-		result.stdout.flush()
-		output = result.stdout.read()
-		result.poll() # set return code
-		print result.returncode
-		rv = None
-		if result.returncode==0:
-			rv = output
-		elif result.returncode==68:
+		command = "ping -c %s -s %s %s"%(ping_count, packet_size, landmark)
+		logging.info("Executing: "+command)
+		logger.info(command)
+		self.spec['return_code'], output = self.execute(command)
+
+		if self.spec['return_code']==0:
+			return output
+		elif self.spec['return_code']==68:
 			self.spec['error'] = "Unknown host"
-		elif result.returncode==2:
+		elif self.spec['return_code']==2:
 			self.spec['error'] = "No response"
-		self.spec['return_code'] = result.returncode
-		return rv
+		return None
 
 	#read the data from ping and reformat for database entry
 	def parse_output(self, data, landmark, start_time, end_time, packet_size, ping_count):
