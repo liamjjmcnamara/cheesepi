@@ -5,11 +5,11 @@ from cheesepilib.exceptions import UnsupportedResultType
 class Result(object):
 
 	@classmethod
-	def fromDict(cls, peer_id, dct):
+	def fromDict(cls, dct):
 		name = dct['task_name']
 
 		from .PingResult import PingResult
-		if name == 'ping': return PingResult.fromDict(peer_id, dct)
+		if name == 'ping': return PingResult.fromDict(dct)
 		else: raise UnsupportedResultType("Unknown task type '{}'.".format(name))
 
 	def toDict(self):

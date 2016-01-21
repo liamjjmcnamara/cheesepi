@@ -43,34 +43,18 @@ class StatisticsSet(object):
 	@classmethod
 	def fromDict(cls, dct):
 		from pprint import pformat
-		#target = Target.fromDict(dct['target'])
 		stats_list = []
-		#stats_set = {}
-		#cls.log.info("\n{}".format(pformat(dct)))
 		for target_uuid in dct:
 			for stat_type in dct[target_uuid]:
-				if stat_type == 'target':
-					# TODO remnant, to remove later
-					continue
-				else:
-					#target = Target.fromDict(dct[target_uuid][stat_type]['target'])
-					#stats_set[(target,stat_type)] = Statistics.fromDict(
-							#dct[target_uuid][stat_type])
-					#cls.log.info(target_uuid)
-					#cls.log.info(stat_type)
-					stats_list.append(Statistics.fromDict(dct[target_uuid][stat_type]))
-		#cls.log.info(stats_list)
+				stats_list.append(Statistics.fromDict(dct[target_uuid][stat_type]))
 		return cls.fromList(stats_list)
 
 	@classmethod
 	def fromList(cls, lst):
-		#cls.log.info(lst)
-
 		ss = StatisticsSet()
 
 		for statistic in lst:
 			assert isinstance(statistic, Statistics)
-			#cls.log.info(statistic)
 			target_stat = TargetStatistic(target=statistic.get_target().get_uuid(),
 			                              stat_type=statistic.get_type())
 
@@ -78,7 +62,7 @@ class StatisticsSet(object):
 
 		return ss
 
-	def __init__(self): #target, statistics_set):
+	def __init__(self):
 		"""
 		Takes a target id and a list of statistics objects
 		"""
@@ -92,8 +76,6 @@ class StatisticsSet(object):
 
 	def toDict(self):
 		dct = {}
-		#print(self._statistics_set)
-		#self.log.info(self._statistics_set)
 		for target_stat, stat in self._statistics_set.iteritems():
 
 			key = target_stat.target

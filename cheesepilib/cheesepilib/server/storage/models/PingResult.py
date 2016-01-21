@@ -6,10 +6,10 @@ from .target import Target
 class PingResult(Result):
 
 	@classmethod
-	def fromDict(cls, peer_id, dct):
+	def fromDict(cls, dct):
 		assert dct['task_name'] == 'ping'
 
-		p = PingResult(peer_id)
+		p = PingResult()
 		p._start_time = dct['start_time']
 		p._end_time = dct['end_time']
 		p._target = Target.fromDict(dct['target'])
@@ -30,9 +30,7 @@ class PingResult(Result):
 
 		return p
 
-	def __init__(self, peer_id):
-		self._peer_id = peer_id
-
+	def __init__(self):
 		self._start_time = 0
 		self._end_time = 0
 		self._target = None

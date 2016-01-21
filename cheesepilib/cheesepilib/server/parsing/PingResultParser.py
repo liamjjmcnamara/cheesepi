@@ -5,6 +5,7 @@ import logging
 from .ResultParser import ResultParser
 
 from cheesepilib.server.storage.mongo import MongoDAO
+from cheesepilib.server.storage.models.result import Result
 
 class PingResultParser(ResultParser):
 	log = logging.getLogger("cheesepi.server.parsing.PingResultParser")
@@ -30,16 +31,15 @@ class PingResultParser(ResultParser):
 		return an output that can be directly inserted into the database.
 		"""
 		inp = self._input_obj
-		results = []
 		result_objects = []
 
-		# TODO WHAT ABOUT PEER_ID????
-		from pprint import pformat
 		columns = inp[0]['series'][0]['columns']
+		#from pprint import pformat
 		#self.log.info("\n{}".format(pformat(columns)))
 
 		entries = [entry for entry in inp[0]['series'][0]['values']]
 		for entry in entries:
+			# TODO THIS IS NOT IMPLEMENTED ON CLIENT SIDE, MIGHT CHANGE
 			peer_id = self._peer_id = entry[columns.index('peer_id')]
 			if self._peer_id is None:
 				self._peer_id = peer_id
@@ -48,7 +48,7 @@ class PingResultParser(ResultParser):
 					"Found inconsistent peer_id: {}, expected: {}".format(
 						peer_id, self._peer_id)
 				)
-			# TODO this is done because the sequence is stored as a string
+			# NOTE this is done because the sequence is stored as a string
 			# representation of a list, should be changed in the future so that
 			# it's a list from the start
 			import ast
@@ -88,55 +88,16 @@ class PingResultParser(ResultParser):
 				},
 			}
 
-			# TODO
-			from cheesepilib.server.storage.models.result import Result
-			from pprint import pformat
-			# TODO first argument should be peer_id
-			r = Result.fromDict(1, db_entry)
+			r = Result.fromDict(db_entry)
 			result_objects.append(r)
+			#from pprint import pformat
 			#self.log.info(pformat(r.toDict()))
-			# TODO
-
-			results.append(db_entry)
-
-		# TODO
-		#from cheesepilib.server.storage.models.statistics import StatisticsSet
-		#from cheesepilib.server.storage.models.target import LandmarkTarget
-		#from cheesepilib.server.storage.models.PingStatistics import PingStatistics
-		#dao = MongoDAO('localhost', 27017)
-		#target = LandmarkTarget("127.0.0.1", 80, "sics.se")
-		#stats_set = dao.get_stats_set(1, target)
-		#if stats_set is None:
-			#stats_set = StatisticsSet([PingStatistics(target)])
-		#self.log.info("PRINTING STATISTICS SET MODEL")
-		#self.log.info(pformat(stats_set.toDict()))
-		#stats_set.absorb_results(result_objects)
-		#self.log.info("RESULTS ABSORBED, PRINTING AGAIN")
-		#self.log.info(pformat(stats_set.toDict()))
-		#tmp = dao.write_stats_set(1, stats_set)
-		# TODO
 
 		self._result_objects = result_objects
 
-		self._result_set = results
 		self._parsed = True
 
 		return result_objects
 
-	def get_result_set(self):
-		return self._result_set
-
 	def get_peer_id(self):
 		return self._peer_id
-
-	def write_to_db(self):
-		if len(self._result_set) == 0:
-			raise Exception("No results parsed.")
-
-		# TODO This should be configured via config file
-		dao = MongoDAO('localhost', 27017)
-
-		#status = dao.write_ping_results(1, "sics.se", self._result_set)
-		status = dao.write_results(1, self._result_objects)
-		self.log.info("Database write returned {}".format(status))
-
