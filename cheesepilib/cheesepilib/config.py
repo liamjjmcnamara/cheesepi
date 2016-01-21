@@ -90,10 +90,11 @@ def create_default_config():
 	if os.path.isfile(default_config):
 		secret = generate_secret()
 		try:
-			copyfile(default_config, config_file, "_SECRET_", secret)
-		except:
+			copyfile(default_config, config_file, replace={"_SECRET_":secret})
+		except Exception as e:
 			msg = "Problem copying config file - check permissions of %s" % cheesepi_dir
 			logger.error(msg)
+			logger.exception(e)
 			exit(1)
 	else:
 		logger.error("Can not find default config file!")
@@ -237,16 +238,14 @@ def should_dump(dao=None):
 	return False
 
 
-def copyfile(from_file, to_file, occurance="", replacement=""):
+def copyfile(from_file, to_file, replace={}):
 	"""Copy a file <from_file> to <to_file> replacing all occurrences"""
-	logger.info(from_file+" "+to_file+" "+ occurance+" "+ replacement)
-	with open(from_file, "rt") as fin:
-		with open(to_file, "wt") as fout:
-			for line in fin:
-				if occurance=="":
-					fout.write(line)
-				else:
-					fout.write(line.replace(occurance, replacement))
+	logger.info(from_file+" "+to_file+" "+ str(replace))
+	with open(from_file, "rt") as fin, open(to_file, "wt") as fout:
+		for line in fin:
+			for occurence, replacement in replace.iteritems():
+				line = line.replace(occurence, replacement)
+			fout.write(line)
 
 
 def get_controller():
