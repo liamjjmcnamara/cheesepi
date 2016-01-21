@@ -25,10 +25,10 @@ class PingScheduler(Scheduler):
         for s in stats:
             #print(pformat(s.toDict()))
             delay_variance = s._delay._variance
-            target_id = s.get_target().get_id()
-            #print(target_id)
+            target = s.get_target()
+            #print(target)
             #print(delay_variance)
-            heapq.heappush(priority_sorted_targets, (-delay_variance, target_id))
+            heapq.heappush(priority_sorted_targets, (-delay_variance, target))
 
         #print(priority_sorted_targets)
 
@@ -47,10 +47,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--id', type=str, default=None)
+    parser.add_argument('--num', type=int, default=1)
 
     args = parser.parse_args()
 
     ps = PingScheduler(args.id)
 
-    schedule = ps.get_schedule()
-    print(schedule)
+    schedule = ps.get_schedule(num=args.num)
+    for target in schedule:
+        print(target.get_uuid())

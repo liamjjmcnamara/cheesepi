@@ -30,9 +30,6 @@ class Statistics(object):
 	def get_target(self):
 		raise NotImplementedError("Abstract method 'get_target' not implemented.")
 
-	def get_target_hash(self):
-		raise NotImplementedError("Abstract method 'get_target_hash' not implemented.")
-
 	def toDict(self):
 		raise NotImplementedError("Abstract method 'toDict' not implemented.")
 
@@ -50,18 +47,18 @@ class StatisticsSet(object):
 		stats_list = []
 		#stats_set = {}
 		#cls.log.info("\n{}".format(pformat(dct)))
-		for target_hash in dct:
-			for stat_type in dct[target_hash]:
+		for target_uuid in dct:
+			for stat_type in dct[target_uuid]:
 				if stat_type == 'target':
 					# TODO remnant, to remove later
 					continue
 				else:
-					#target = Target.fromDict(dct[target_hash][stat_type]['target'])
+					#target = Target.fromDict(dct[target_uuid][stat_type]['target'])
 					#stats_set[(target,stat_type)] = Statistics.fromDict(
-							#dct[target_hash][stat_type])
-					#cls.log.info(target_hash)
+							#dct[target_uuid][stat_type])
+					#cls.log.info(target_uuid)
 					#cls.log.info(stat_type)
-					stats_list.append(Statistics.fromDict(dct[target_hash][stat_type]))
+					stats_list.append(Statistics.fromDict(dct[target_uuid][stat_type]))
 		#cls.log.info(stats_list)
 		return cls.fromList(stats_list)
 
@@ -74,7 +71,7 @@ class StatisticsSet(object):
 		for statistic in lst:
 			assert isinstance(statistic, Statistics)
 			#cls.log.info(statistic)
-			target_stat = TargetStatistic(target=statistic.get_target_hash(),
+			target_stat = TargetStatistic(target=statistic.get_target().get_uuid(),
 			                              stat_type=statistic.get_type())
 
 			ss._statistics_set[target_stat] = statistic
@@ -118,9 +115,9 @@ class StatisticsSet(object):
 
 			task_name = result.get_taskname()
 			target = result.get_target()
-			target_hash = target.get_hash()
+			target_uuid = target.get_uuid()
 
-			target_stat = TargetStatistic(target=target_hash, stat_type=task_name)
+			target_stat = TargetStatistic(target=target_uuid, stat_type=task_name)
 
 			if target_stat not in self._statistics_set:
 				self.log.info("TargetStat '{}' not present in set, inserting.".format(target_stat))

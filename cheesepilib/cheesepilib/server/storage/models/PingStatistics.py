@@ -52,9 +52,6 @@ class PingStatistics(Statistics):
 	def get_target(self):
 		return self._target
 
-	def get_target_hash(self):
-		return self._target.get_hash()
-
 	def absorb_result(self, result):
 		from cheesepilib.server.processing.utils import median
 

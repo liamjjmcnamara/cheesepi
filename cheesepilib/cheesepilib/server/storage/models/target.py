@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import logging
+import uuid
 
 from cheesepilib.exceptions import UnsupportedTargetType
 
@@ -20,12 +21,8 @@ class Target(object):
 	def toDict(self):
 		raise NotImplementedError("Abstract method 'toDict' not implemented.")
 
-	def get_hash(self):
-		raise NotImplementedError("Abstract method 'get_hash' not implemented.")
-
-	# TODO deprecated???
-	def get_id(self):
-		raise NotImplementedError("Abstract method 'get_id' not implemented.")
+	def get_uuid(self):
+		raise NotImplementedError("Abstract method 'get_uuid' not implemented.")
 
 class LandmarkTarget(Target):
 
@@ -40,6 +37,7 @@ class LandmarkTarget(Target):
 		self._ip = ip
 		self._port = port
 		self._domain = domain
+		self._uuid = uuid.uuid5(uuid.NAMESPACE_DNS, domain)
 
 	def toDict(self):
 		return {
@@ -47,16 +45,11 @@ class LandmarkTarget(Target):
 			'ip':self._ip,
 			'port':self._port,
 			'domain':self._domain,
+			'uuid':str(self._uuid),
 		}
 
-	def get_id(self):
-		return self._domain
-
-	def get_hash(self):
-		import hashlib
-		hasher = hashlib.md5()
-		hasher.update(self._domain)
-		return hasher.hexdigest()
+	def get_uuid(self):
+		return str(self._uuid)
 
 
 class PeerTarget(Target):
@@ -66,24 +59,21 @@ class PeerTarget(Target):
 	@classmethod
 	def fromDict(cls, dct):
 		assert dct['type'] == 'peer'
-		return PeerTarget(dct['ip'], dct['port'], dct['peer_id'])
+		return PeerTarget(dct['ip'], dct['port'], dct['uuid'])
 
-	def __init__(self, ip, port, peer_id):
+	def __init__(self, ip, port, peer_uuid):
 		self._ip = ip
 		self._port = port
-		self._peer_id = peer_id
+		self._uuid = uuid.UUID(peer_uuid)
+		assert peer_uuid == str(self._uuid)
 
 	def toDict(self):
 		return {
 			'type':'peer',
 			'ip':self._ip,
 			'port':self._port,
-			'peer_id':self._peer_id,
+			'uuid':str(self._uuid),
 		}
 
-	def get_hash(self):
-		# peer_id should be a hash anyway
-		return self._peer_id
-
-	def get_id(self):
-		return self._peer_id
+	def get_uuid(self):
+		return str(self._uuid)

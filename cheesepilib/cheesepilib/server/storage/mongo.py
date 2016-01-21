@@ -187,7 +187,7 @@ class MongoDAO(DAO):
 		if targets is not None:
 			projection = {}
 			for target in targets:
-				key = "statistics.{}".format(target.get_hash())
+				key = "statistics.{}".format(target.get_uuid())
 				projection[key] = 1
 
 		stats = self.db.peers.find(
@@ -234,19 +234,19 @@ class MongoDAO(DAO):
 		"""
 		#self.log.info("IN WRITE_STATS")
 
-		prefix_key = "statistics" #.format(target.get_hash())
+		prefix_key = "statistics" #.format(target.get_uuid())
 
 		stat_object = {}
 		#self.log.info(statistics_set)
 
 		for stat in statistics_set:
-			stat_target_hash = stat.get_target_hash()
+			stat_target_uuid = stat.get_target().get_uuid()
 			#stat_type = stat.get_type()
-			#if stat_target_hash not in stat_object:
-				#stat_object[stat_target_hash] = {}
-			#stat_object[stat_target_hash][stat_type] = stat.toDict()
+			#if stat_target_uuid not in stat_object:
+				#stat_object[stat_target_uuid] = {}
+			#stat_object[stat_target_uuid][stat_type] = stat.toDict()
 
-			key = "{}.{}".format(prefix_key, stat_target_hash)
+			key = "{}.{}".format(prefix_key, stat_target_uuid)
 
 			bulk_writer.find(
 				{'peer_id':peer_id}

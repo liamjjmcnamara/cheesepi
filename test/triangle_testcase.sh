@@ -2,9 +2,9 @@
 
 mkdir -p triangle/peer_{1..3}
 
-P1='beef'
-P2='deaf'
-P3='feed'
+P1='54a7969d-8436-49a3-a242-937dcf7c2d36'
+P2='14db8b89-cbf7-431a-90f0-b6ccc6bc7afc'
+P3='4f719cf1-d23f-4c6c-a6d8-c52eaf77a53f'
 
 P1_IP='192.168.1.1'
 P2_IP='192.168.2.2'
@@ -43,6 +43,6 @@ rm ${P2}.tgz
 rm ${P3}.tgz
 
 echo "Stats of generated data:"
-jq "{${P1}: .[0].series[0].distribution_stats}" peer_1/ping.json
-jq "{${P2}: .[0].series[0].distribution_stats}" peer_2/ping.json
-jq "{${P3}: .[0].series[0].distribution_stats}" peer_3/ping.json
+jq "{\"${P1}\": .[0].series[0].distribution_stats}" peer_1/ping.json
+jq "{\"${P2}\": .[0].series[0].distribution_stats}" peer_2/ping.json
+jq "{\"${P3}\": .[0].series[0].distribution_stats}" peer_3/ping.json

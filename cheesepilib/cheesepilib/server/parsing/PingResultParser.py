@@ -62,7 +62,7 @@ class PingResultParser(ResultParser):
 			if landmark is None and target_id is not None:
 				target['type'] = 'peer'
 				target['ip'] = entry[columns.index('destination_address')]
-				target['peer_id'] = entry[columns.index('target_id')]
+				target['uuid'] = entry[columns.index('target_id')]
 				target['port'] = '80' # TODO not in data
 			elif landmark is not None:
 				target['type'] = 'landmark'
