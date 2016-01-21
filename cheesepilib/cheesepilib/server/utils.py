@@ -49,10 +49,10 @@ def init_logging(level=logging.INFO, stdout=True):
 
 	# Write logs to stdout
 	if stdout:
-	    out_handler = logging.StreamHandler(sys.stdout)
-	    formatter = logging.Formatter('[%(levelname)s][%(name)s]: %(message)s')
-	    out_handler.setFormatter(formatter)
-	    logging.root.addHandler(out_handler)
+		out_handler = logging.StreamHandler(sys.stdout)
+		formatter = logging.Formatter('[%(levelname)s][%(name)s]: %(message)s')
+		out_handler.setFormatter(formatter)
+		logging.root.addHandler(out_handler)
 
 
 def start_upload_server():
@@ -72,15 +72,6 @@ def start_upload_server():
 	args = parser.parse_args()
 
 	init_logging()
-	# Python Logging
-	#logging.basicConfig()
-	#logging.root.setLevel(logging.INFO)
-
-	# Write logs to stdout
-	#out_handler = logging.StreamHandler(sys.stdout)
-	#formatter = logging.Formatter('[%(levelname)s][%(name)s]: %(message)s')
-	#out_handler.setFormatter(formatter)
-	#logging.root.addHandler(out_handler)
 
 	# Make twisted logging write to pythons logging module
 	globalLogPublisher.addObserver(STDLibLogObserver(name="cheesepi.server.upload"))
