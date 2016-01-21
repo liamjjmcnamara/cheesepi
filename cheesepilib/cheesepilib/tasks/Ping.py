@@ -34,11 +34,13 @@ class Ping(Task.Task):
 		start_time = cp.utils.now()
 		op_output = self.perform(self.spec['landmark'], self.spec['ping_count'], self.spec['packet_size'])
 		end_time = cp.utils.now()
-		logger.debug(op_output)
 
-		parsed_output = self.parse_output(op_output, self.spec['landmark'],
-			start_time, end_time, self.spec['packet_size'], self.spec['ping_count'])
-		self.dao.write_op(self.spec['taskname'], parsed_output)
+		logger.debug(op_output)
+		if op_output!=None: # we succeeded
+			self.parse_output(op_output, self.spec['landmark'],
+				start_time, end_time, self.spec['packet_size'], self.spec['ping_count'])
+		self.dao.write_op(self.spec['taskname'], self.spec)
+
 
 	#ping function
 	def perform(self, landmark, ping_count, packet_size):
@@ -47,9 +49,19 @@ class Ping(Task.Task):
 		logging.info("Executing: "+execute)
 		logger.info(execute)
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
-		ret = result.stdout.read()
 		result.stdout.flush()
-		return ret
+		ret = result.stdout.read()
+		result.poll() # set return code
+		print result.returncode
+		if result.returncode==None:
+			return ret
+		elif result.returncode==68:
+			self.spec['error'] = "Unknown host"
+		elif result.returncode==2:
+			self.spec['error'] = "No response"
+		self.spec['return_code'] = result.returncode
+		print self.spec['error']
+		return None
 
 	#read the data from ping and reformat for database entry
 	def parse_output(self, data, landmark, start_time, end_time, packet_size, ping_count):
@@ -90,15 +102,13 @@ class Ping(Task.Task):
 		self.spec['delays']     = str(delays)
 		self.spec['uploaded']   = self.spec['packet_size'] * self.spec['ping_count']
 		self.spec['downloaded'] = 8 * self.spec['ping_count']
-		return self.spec
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
 	dao = cp.config.get_dao()
 
 	#parameters = {'landmark':'google.com','ping_count':10,'packet_size':64}
-	spec = {'landmark':'google.com'}
+	spec = {'landmark':'google.coml'}
 	ping_task = Ping(dao, spec)
 	ping_task.run()
-	print ping_task.spec
 
