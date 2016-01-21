@@ -3,7 +3,6 @@ import os
 import re
 import logging
 import socket
-from subprocess import Popen, PIPE
 
 import Task
 import cheesepilib as cp
@@ -38,18 +37,19 @@ class Httping(Task.Task):
 		op_output = self.perform(landmark, ping_count)
 		end_time = cp.utils.now()
 		logger.debug(op_output)
-
-		parsed_output = self.parse_output(op_output, landmark, start_time, end_time, ping_count)
-		self.dao.write_op("httping", parsed_output)
+		if op_output!=None:
+			self.parse_output(op_output, landmark, start_time, end_time, ping_count)
+		self.dao.write_op("httping", self.spec)
 
 	#ping function
 	def perform(self, landmark, ping_count):
-		execute = "httping -S -c %s %s" % (ping_count, landmark)
-		logging.info("Executing: "+execute)
-		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
-		ret = result.stdout.read()
-		result.stdout.flush()
-		return ret
+		command = "httping -S -c %s %s" % (ping_count, landmark)
+		logging.info("Executing: "+command)
+		self.spec['return_code'], output = self.execute(command)
+		#print self.spec['return_code'], output
+		if self.spec['return_code']==0:
+			return output
+		return None
 
 	# average out the breakdowns if different steps in HTTP request
 	def parse_breakdowns(self, breakdowns):
@@ -61,18 +61,17 @@ class Httping(Task.Task):
 
 	#read the data from ping and reformat for database entry
 	def parse_output(self, data, landmark, start_time, end_time, ping_count):
-		ret = {}
-		ret["landmark"]    = landmark
-		ret["start_time"]  = start_time
-		ret["end_time"]    = end_time
-		ret["ping_count"]  = int(ping_count)
+		self.spec["landmark"]    = landmark
+		self.spec["start_time"]  = start_time
+		self.spec["end_time"]    = end_time
+		self.spec["ping_count"]  = int(ping_count)
 		delays=[]
 		breakdowns=[]
 		downloaded = 0 # how many bytes delivered?
 
 		lines = data.split("\n")
 		first_line = lines.pop(0).split()
-		ret["destination_domain"]  = first_line[1]
+		self.spec["destination_domain"]  = first_line[1]
 
 		delays = [-1.0] * ping_count# initialise storage
 		for line in lines:
@@ -92,17 +91,16 @@ class Httping(Task.Task):
 
 			if "packet loss" in line:
 				loss = re.findall('[\d]+% packet loss',line)[0][:-13]
-				ret["packet_loss"] = float(loss)
+				self.spec["packet_loss"] = float(loss)
 			elif "min/avg/max" in line:
 				fields = line.split()[3].split("/")
-				ret["minimum_RTT"] = float(fields[0])
-				ret["average_RTT"] = float(fields[1])
-				ret["maximum_RTT"] = float(fields[2])
-		ret['delays']     = str(delays)
-		ret["stddev_RTT"] = cp.utils.stdev(delays)
-		ret['breakdown']  = str(self.parse_breakdowns(breakdowns))
-		ret['downloaded'] = downloaded
-		return ret
+				self.spec["minimum_RTT"] = float(fields[0])
+				self.spec["average_RTT"] = float(fields[1])
+				self.spec["maximum_RTT"] = float(fields[2])
+		self.spec['delays']     = str(delays)
+		self.spec["stddev_RTT"] = cp.utils.stdev(delays)
+		self.spec['breakdown']  = str(self.parse_breakdowns(breakdowns))
+		self.spec['downloaded'] = downloaded
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 import random
 import json
+from subprocess import Popen, PIPE
 
 import cheesepilib as cp
 
@@ -28,6 +29,13 @@ class Task:
 
 	def toJson(self):
 		return json.dumps(self.toDict())
+
+	def execute(self, program):
+		result = Popen(program, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
+		result.stdout.flush()
+		output = result.stdout.read()
+		result.poll() # set return code
+		return result.returncode, output
 
 	# this will be overridden by subclasses
 	def run(self):

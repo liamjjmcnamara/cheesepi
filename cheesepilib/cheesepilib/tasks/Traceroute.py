@@ -2,7 +2,6 @@ import time
 import os
 import platform
 import re
-from subprocess import Popen, PIPE
 
 import cheesepilib as cp
 import Task
@@ -22,7 +21,7 @@ class Traceroute(Task.Task):
 	def measure(self, landmark):
 		#Extract the ethernet MAC address of the PI
 		startTime = cp.utils.now()
-		output	  = self.getData(landmark)
+		output    = self.perform(landmark)
 		endTime   = cp.utils.now()
 		#trc, hoplist = reformat(tracerouteResult, startTime, endTime)
 		logger.debug(output)
@@ -32,14 +31,13 @@ class Traceroute(Task.Task):
 		self.insertData(self.dao, parsed['traceroute'], parsed['hoplist'])
 
 	#Execute traceroute function
-	def getData(self, target):
+	def perform(self, target):
 		#traceroute command"
-		execute = "traceroute %s"%(target)
-		#Executing the above shell command with pipe
-		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=False)
-		ret = result.stdout.read()
-		result.stdout.flush()
-		return ret
+		command = "traceroute %s"%(target)
+		self.spec['return_code'], output = self.execute(command)
+		if self.spec['return_code']==0:
+			return output
+		return None
 
 	def parse_null(self, hop_count):
 		return {'hop_count': hop_count,
