@@ -50,18 +50,18 @@ class Ping(Task.Task):
 		logger.info(execute)
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
 		result.stdout.flush()
-		ret = result.stdout.read()
+		output = result.stdout.read()
 		result.poll() # set return code
 		print result.returncode
-		if result.returncode==None:
-			return ret
+		rv = None
+		if result.returncode==0:
+			rv = output
 		elif result.returncode==68:
 			self.spec['error'] = "Unknown host"
 		elif result.returncode==2:
 			self.spec['error'] = "No response"
 		self.spec['return_code'] = result.returncode
-		print self.spec['error']
-		return None
+		return rv
 
 	#read the data from ping and reformat for database entry
 	def parse_output(self, data, landmark, start_time, end_time, packet_size, ping_count):
@@ -108,7 +108,7 @@ if __name__ == "__main__":
 	dao = cp.config.get_dao()
 
 	#parameters = {'landmark':'google.com','ping_count':10,'packet_size':64}
-	spec = {'landmark':'google.coml'}
+	spec = {'landmark':'google.com'}
 	ping_task = Ping(dao, spec)
 	ping_task.run()
 
