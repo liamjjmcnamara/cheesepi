@@ -24,7 +24,7 @@ class PingScheduler(Scheduler):
 
         for s in stats:
             #print(pformat(s.toDict()))
-            delay_variance = s._delay._variance
+            delay_variance = s.get_delay().get_variance()
             target = s.get_target()
             #print(target)
             #print(delay_variance)

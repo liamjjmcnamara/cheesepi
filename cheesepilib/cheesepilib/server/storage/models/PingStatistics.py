@@ -52,20 +52,37 @@ class PingStatistics(Statistics):
 	def get_target(self):
 		return self._target
 
+	def get_delay(self):
+		return self._delay
+	def get_average_delay(self):
+		return self._average_delay
+	def get_average_median_delay(self):
+		return self._average_median_delay
+	def get_average_packet_loss(self):
+		return self._average_packet_loss
+	def get_all_time_min_rtt(self):
+		return self._all_time_min_rtt
+	def get_all_time_max_rtt(self):
+		return self._all_time_max_rtt
+	def get_total_packet_loss(self):
+		return self._total_packet_loss
+	def get_total_probe_count(self):
+		return self._total_probe_count
+
 	def absorb_result(self, result):
 		from cheesepilib.server.processing.utils import median
 
 		assert result.get_taskname() == 'ping'
 
-		self._total_probe_count = self._total_probe_count + result._probe_count
-		self._total_packet_loss = self._total_packet_loss + result._packet_loss
-		self._all_time_min_rtt = min(self._all_time_min_rtt, result._min_rtt)
-		self._all_time_max_rtt = max(self._all_time_max_rtt, result._max_rtt)
+		self._total_probe_count = self._total_probe_count + result.get_probe_count()
+		self._total_packet_loss = self._total_packet_loss + result.get_packet_loss()
+		self._all_time_min_rtt = min(self._all_time_min_rtt, result.get_min_rtt())
+		self._all_time_max_rtt = max(self._all_time_max_rtt, result.get_max_rtt())
 
 		# If we want to calculate the median we need a sequence without lost
 		# packets
 		pure_sequence = []
-		for d in result._delay_sequence:
+		for d in result.get_delay_sequence():
 			# We need to ignore lost packets
 			if d > 0:
 				self._delay.add_datum(d)
@@ -75,7 +92,7 @@ class PingStatistics(Statistics):
 		#self.log.info("MEDIAN {}".format(sequence_median))
 		self._average_median_delay.add_datum(sequence_median)
 
-		self._average_delay.add_datum(result._avg_rtt)
-		#self.log.info("PACKET_LOSS {}".format(result._packet_loss))
-		#self.log.info("PROBE_COUNT {}".format(result._probe_count))
-		self._average_packet_loss.add_datum(float(result._packet_loss)/float(result._probe_count))
+		self._average_delay.add_datum(result.get_avg_rtt())
+		#self.log.info("PACKET_LOSS {}".format(result.get_packet_loss()))
+		#self.log.info("PROBE_COUNT {}".format(result.get_probe_count()))
+		self._average_packet_loss.add_datum(float(result.get_packet_loss())/float(result.get_probe_count()))

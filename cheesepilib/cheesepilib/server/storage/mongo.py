@@ -166,7 +166,7 @@ class MongoDAO(DAO):
 		Returns:
 			A StatisticsSet object if query is successful, None otherwise.
 		"""
-		targets = [result._target for result in results]
+		targets = [result.get_target() for result in results]
 
 		return self.get_stats_set_for_targets(peer_id, targets)
 
@@ -300,107 +300,6 @@ class MongoDAO(DAO):
 				{'$push': {'results':result.toDict()}}
 			)
 		return bulk_writer
-
-	#############
-	# DEPRECATED#
-	#############
-	def write_ping_results(self, peer_id, target_id, results):
-
-		from cheesepilib.server.processing.utils import StatObject, median
-
-		# PLACEHOLDER FOR TESTING add peer to database if peer does not exist
-		try:
-			self.find_peer(peer_id)
-		except NoSuchPeer as e:
-			self.log.info("No such peer, inserting...")
-			self.db.peers.insert({'peer_id':peer_id})
-
-		# Get previous statistics
-		stats = self.get_stats(peer_id, target_id)
-
-		from pprint import pformat
-		self.log.info("got stats object:\n{}\n".format(pformat(stats)))
-
-		if stats is None:
-			# No previous stats for this target, add an entry into the list
-			self.db.peers.update_one(
-				{'peer_id':peer_id},
-				{'$push':{
-					'statistics':{'target_id':target_id}}
-				}
-			)
-			mean_delay = StatObject(0,0)
-			average_median_delay = StatObject(0,0)
-			average_packet_loss = StatObject(0,0)
-		else:
-			mean_delay = StatObject.fromDict(stats['ping']['mean_delay'])
-			average_median_delay = StatObject.fromDict(stats['ping']['average_median_delay'])
-			average_packet_loss = StatObject.fromDict(stats['ping']['average_packet_loss'])
-
-
-		# Bulk write operation object
-		bulk_writer = self.db.peers.initialize_ordered_bulk_op()
-
-		probe_count = 0
-		packet_loss = 0
-		max_rtt = 0
-		min_rtt = 999999999
-		avg_rtt = 0
-
-		# Main loop which calculates new stats
-		for result in results:
-			probe_count = probe_count + result['value']['probe_count']
-			packet_loss = packet_loss + result['value']['packet_loss']
-			max_rtt = max(max_rtt, result['value']['max_rtt'])
-			min_rtt = min(min_rtt, result['value']['min_rtt'])
-			avg_rtt = result['value']['avg_rtt']
-
-			delay_sequence = result['value']['delay_sequence']
-
-			# Increment the stat counters
-			mean_delay.add_datum(avg_rtt)
-			average_median_delay.add_datum(median(delay_sequence))
-			average_packet_loss.add_datum(packet_loss/probe_count)
-
-			bulk_writer.find(
-				{'peer_id':peer_id}
-				).upsert(
-				).update(
-				{'$push': {'results':result}}
-			)
-
-
-		# Find the element in the statistics array for the peer where the
-		# target id matches, then update the stats accordingly
-		bulk_writer.find(
-			{'peer_id':peer_id,
-			 'statistics.target_id':target_id}
-			).upsert(
-			).update_one(
-			{'$inc':{
-				'statistics.$.ping.total_probe_count':probe_count,
-				'statistics.$.ping.total_packet_loss':packet_loss
-				},
-			 '$max':{'statistics.$.ping.all_time_max_rtt':max_rtt},
-			 '$min':{'statistics.$.ping.all_time_min_rtt':min_rtt},
-			 '$set':{
-				'statistics.$.ping.task_name':'ping',
-				'statistics.$.ping.mean_delay.mean':mean_delay._mean,
-				'statistics.$.ping.mean_delay.variance':mean_delay._variance,
-				'statistics.$.ping.mean_delay.std_dev':mean_delay._std_dev,
-				'statistics.$.ping.average_median_delay.mean':average_median_delay._mean,
-				'statistics.$.ping.average_median_delay.variance':average_median_delay._variance,
-				'statistics.$.ping.average_median_delay.std_dev':average_median_delay._std_dev,
-				'statistics.$.ping.average_packet_loss.mean':average_packet_loss._mean,
-				'statistics.$.ping.average_packet_loss.variance':average_packet_loss._variance,
-				'statistics.$.ping.average_packet_loss.std_dev':average_packet_loss._std_dev,
-				},
-			}
-		)
-
-		update_result = bulk_writer.execute()
-
-		return self._return_status(update_result['nModified']>0)
 
 	def purge_results(self, peer_id):
 		result = self.db.peers.update(

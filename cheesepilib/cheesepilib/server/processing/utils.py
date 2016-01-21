@@ -83,6 +83,15 @@ class StatObject(object):
 	def set_alpha(self, alpha):
 		self._alpha = alpha
 
+	def get_mean(self):
+	    return self._mean
+	def get_variance(self):
+	    return self._variance
+	def get_std_dev(self):
+	    return self._std_dev
+	def get_alpha(self):
+	    return self._alpha
+
 	def add_datum(self, new_datum, alpha=_DEFAULT_ALPHA):
 		"""
 		Add a new data point

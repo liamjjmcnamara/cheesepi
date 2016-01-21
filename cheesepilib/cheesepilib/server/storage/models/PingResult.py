@@ -68,3 +68,24 @@ class PingResult(Result):
 
 	def get_target(self):
 		return self._target
+
+	def get_start_time(self):
+		return self._start_time
+	def get_end_time(self):
+		return self._end_time
+	def get_delay_sequence(self):
+		return self._delay_sequence
+	def get_probe_count(self):
+		return self._probe_count
+	def get_packet_loss(self):
+		return self._packet_loss
+	def get_packet_size(self):
+		return self._packet_size
+	def get_max_rtt(self):
+		return self._max_rtt
+	def get_min_rtt(self):
+		return self._min_rtt
+	def get_avg_rtt(self):
+		return self._avg_rtt
+	def get_stddev_rtt(self):
+		return self._stddev_rtt
