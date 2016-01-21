@@ -139,6 +139,8 @@ class MongoDAO(DAO):
 
 
 
+	def get_all_stats(self, peer_id):
+		return self.get_stats_set_for_targets(peer_id, None)
 	def get_stats_set(self, peer_id, target):
 		"""
 		Returns a StatisticsSet object loaded with all the statistics for
@@ -180,11 +182,13 @@ class MongoDAO(DAO):
 			A StatisticsSet object if query is successful, None otherwise.
 		"""
 
-		projection = {}
+		projection = None
 
-		for target in targets:
-			key = "statistics.{}".format(target.get_hash())
-			projection[key] = 1
+		if targets is not None:
+			projection = {}
+			for target in targets:
+				key = "statistics.{}".format(target.get_hash())
+				projection[key] = 1
 
 		stats = self.db.peers.find(
 			{'peer_id':peer_id},

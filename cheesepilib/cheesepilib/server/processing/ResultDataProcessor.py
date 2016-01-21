@@ -81,10 +81,12 @@ class ResultDataProcessor(object):
 					#self.log.info(peer_id)
 
 					stats = dao.get_stats_set_for_results(peer_id, results)
-					self.log.info("Fetched:\n{}".format(pformat(stats.toDict())))
+					self.log.info("Fetched old stats")
+					#self.log.info("Fetched:\n{}".format(pformat(stats.toDict())))
 
 					stats.absorb_results(results)
-					self.log.info("Absorbed:\n{}".format(pformat(stats.toDict())))
+					self.log.info("Absorbed new results")
+					#self.log.info("Absorbed:\n{}".format(pformat(stats.toDict())))
 
 					bulk_writer = dao.get_bulk_writer()
 

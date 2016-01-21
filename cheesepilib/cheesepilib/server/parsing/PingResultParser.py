@@ -36,7 +36,7 @@ class PingResultParser(ResultParser):
 		# TODO WHAT ABOUT PEER_ID????
 		from pprint import pformat
 		columns = inp[0]['series'][0]['columns']
-		self.log.info("\n{}".format(pformat(columns)))
+		#self.log.info("\n{}".format(pformat(columns)))
 
 		entries = [entry for entry in inp[0]['series'][0]['values']]
 		for entry in entries:

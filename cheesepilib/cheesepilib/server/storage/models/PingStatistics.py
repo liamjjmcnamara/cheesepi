@@ -65,10 +65,20 @@ class PingStatistics(Statistics):
 		self._all_time_min_rtt = min(self._all_time_min_rtt, result._min_rtt)
 		self._all_time_max_rtt = max(self._all_time_max_rtt, result._max_rtt)
 
+		# If we want to calculate the median we need a sequence without lost
+		# packets
+		pure_sequence = []
 		for d in result._delay_sequence:
-			self._delay.add_datum(d)
+			# We need to ignore lost packets
+			if d > 0:
+				self._delay.add_datum(d)
+				pure_sequence.append(d)
+
+		sequence_median = median(pure_sequence)
+		#self.log.info("MEDIAN {}".format(sequence_median))
+		self._average_median_delay.add_datum(sequence_median)
 
 		self._average_delay.add_datum(result._avg_rtt)
-		self.log.info("MEDIAN {}".format(median(result._delay_sequence)))
-		self._average_median_delay.add_datum(median(result._delay_sequence))
-		self._average_packet_loss.add_datum(result._packet_loss/result._probe_count)
+		#self.log.info("PACKET_LOSS {}".format(result._packet_loss))
+		#self.log.info("PROBE_COUNT {}".format(result._probe_count))
+		self._average_packet_loss.add_datum(float(result._packet_loss)/float(result._probe_count))
