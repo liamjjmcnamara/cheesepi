@@ -46,7 +46,11 @@ config_file   = os.path.join(cheesepi_dir, "cheesepi.conf")
 version_file  = os.path.join(cheesepi_dir, "version")
 
 logfile = os.path.join(cheesepi_dir, "cheesepi.log")
-logging.basicConfig(filename=logfile, level=logging.ERROR, format="%(asctime)s-%(name)s:%(levelname)s; %(message)s")
+log_level = logging.ERROR
+log_stdout = False
+log_formatter = logging.Formatter("%(asctime)s-%(name)s:%(levelname)s; %(message)s")
+
+logging.basicConfig(filename=logfile, level=log_level, format=log_formatter)
 logger = logging.getLogger('CONFIG')
 
 
@@ -54,6 +58,43 @@ logger = logging.getLogger('CONFIG')
 def get_logger(source=""):
 	"""Return logger for the specific file"""
 	return logging.getLogger(source)
+
+def update_logging():
+	global logfile
+	global log_level
+	global log_stdout
+	global log_formatter
+
+	if config_defined('logfile'):
+		# TODO should allow for log files in different directories, like /var/log
+		filename = get('logfile')
+		logfile = os.path.join(cheesepi_dir, filename)
+	if config_defined('log_level'):
+		log_level = int(get('log_level'))
+	if config_defined('log_stdout'):
+		log_stdout = config_true('log_stdout')
+	if config_defined('log_format'):
+		log_formatter = logging.Formatter(get('log_format'))
+
+	# Get root logger
+	root_logger = logging.getLogger()
+	root_logger.setLevel(log_level)
+
+	# Remove old handlers
+	for handler in root_logger.handlers:
+		root_logger.removeHandler(handler)
+
+	if logfile is not None:
+		# Add logfile handler
+		file_handler = logging.FileHandler(logfile, 'a')
+		file_handler.setFormatter(log_formatter)
+		root_logger.addHandler(file_handler)
+
+	if log_stdout:
+		# Add stdout handler
+		out_handler = logging.StreamHandler(sys.stdout)
+		out_handler.setFormatter(log_formatter)
+		root_logger.addHandler(out_handler)
 
 def get_dao():
 	if config_equal('database',"mongo"):
@@ -333,6 +374,7 @@ def main():
 
 # Some accounting to happen on every import (mostly for config file making)
 config = get_config()
+update_logging()
 
 if __name__ == "__main__":
 	main()
