@@ -72,8 +72,8 @@ def get_dao():
 	logger.error("Database type: "+config['database']+"\n"+msg)
 	exit(1)
 
-def generate_secret():
-	"""Make a secret for this node, to use in signing data dumps"""
+def generate_uuid():
+	"""Generate a uuid, to use for identification and data signing"""
 	return str(uuid.uuid4())
 
 
@@ -88,9 +88,14 @@ def create_default_config():
 	default_config = os.path.join(cheesepi_dir,"cheesepi.default.conf")
 	# Can we find the default config file?
 	if os.path.isfile(default_config):
-		secret = generate_secret()
+		uuid = generate_uuid()
+		secret = generate_uuid()
+		replace = {
+			"_UUID_": uuid,
+			"_SECRET_": secret,
+		}
 		try:
-			copyfile(default_config, config_file, replace={"_SECRET_":secret})
+			copyfile(default_config, config_file, replace=replace)
 		except Exception as e:
 			msg = "Problem copying config file - check permissions of %s" % cheesepi_dir
 			logger.error(msg)
