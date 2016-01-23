@@ -9,11 +9,10 @@ echo -e "Running: $INFLUX_CMD"
 nohup sudo $INFLUX_CMD >&/dev/null &
 
 # and the webserver serving a grafana dashboard
-echo "Running: $INSTALL_DIR/client/webserver/webserver.py"
-sudo $INSTALL_DIR/webserver/webserver.py &
+DASH_CMD=$INSTALL_DIR/client/webserver/webserver.py
+echo "Running: $DASH_CMD"
+sudo $DASH_CMD &
 
-echo "Started servers..."
-
-sleep 5
+echo "Started servers."
 
 exit 0

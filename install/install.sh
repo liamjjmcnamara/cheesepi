@@ -10,7 +10,7 @@ echo $SOURCE_DIR
 
 # # Install required OS software
 echo "Updating apt-get sources..."
-echo "\nEnter root pass if prompted to enable apt-get software install."
+echo -e "\nEnter root pass if prompted to enable apt-get software install."
 # Ensure we have uptodate package definition
 #sudo apt-get update
 echo "Updated apt-get sources."
@@ -19,7 +19,7 @@ echo "Updated apt-get sources."
 set -e
 
 
-echo "\nInstalling required software..."
+echo -e "\nInstalling required software..."
 # latter two only for faster binary python modules
 #sudo apt-get install httping python-pip python-mysqldb build-essential python-dev iperf libav-tools
 # add python modules
@@ -28,10 +28,14 @@ echo "Installed required software.\n"
 
 
 echo "Installing cheesepi from '$SOURCE_DIR' to '$INSTALL_DIR'"
-mkdir -p $INSTALL_DIR
-cp -rp $SOURCE_DIR/cheesepilib $INSTALL_DIR/cheesepilib
-cp -rp $SOURCE_DIR/client $INSTALL_DIR/client
-cp -rp $SOURCE_DIR/install $INSTALL_DIR/install
+sudo mkdir -p $INSTALL_DIR
+sudo cp -rp $SOURCE_DIR/cheesepilib $INSTALL_DIR/cheesepilib
+sudo cp -rp $SOURCE_DIR/client $INSTALL_DIR/client
+sudo cp -rp $SOURCE_DIR/install $INSTALL_DIR/install
+
+# Install cheesepi python library
+echo "Install CheesePi python module in $INSTALL_DIR/cheesepilib"
+sudo pip install -e $INSTALL_DIR/cheesepilib
 
 # Discover local IP address
 # To be used in the grafana configuration (so it knows where the Influx DB is)
@@ -40,7 +44,6 @@ LOCAL_IP=`hostname -I |head -n1| tr -d '[[:space:]]'`
 
 # Copy Influx config if it doesnt exist
 INFLUX_DIR=$INSTALL_DIR/client/tools/influxdb
-echo $INFLUX_DIR
 if [ ! -f $INFLUX_DIR/config.toml ]; then
 	sudo cat $INFLUX_DIR/config.sample.toml| sed "s/INFLUX_DIR/$INFLUX_DIR/" | sudo tee $INFLUX_DIR/config.toml > /dev/null
 	echo "Copied Influx config file: $INFLUX_DIR/config.toml"
@@ -67,22 +70,20 @@ $INSTALL_DIR/install/start_servers.sh
 sleep 20
 
 
-sleep 5
 $INSTALL_DIR/install/make_influx_DBs.sh
 
 ## Inform user of dashboard website
-echo "\n\nInstalled! This script has just done the following steps:"
-echo " -Updated apt-get package lists\n -Installed required software"
-echo " -Copied config files for the Influx server and the CheesePi dashboard webserver (webserver.py)"
-echo " -Set these servers to start automatically on boot (inittab) and right now"
-#echo -e " -Set the measurement script measure.py to run every 5minutes"
-echo "\nVisit http://$LOCAL_IP:8080/dashboard to see your dashboard!\n"
+echo -e "\n\nInstalled! This script has just done the following steps:"
+echo -e " -Updated apt-get package lists\n -Installed required software"
+echo -e " -Copied config files for the Influx server and the CheesePi dashboard webserver (webserver.py)"
+echo -e " -Set these servers to start automatically on boot (inittab) and right now"
+echo -e "\nVisit http://$LOCAL_IP:8080/dashboard to see your dashboard!\n"
 
 
 sleep 5
 INFLUX_CMD=$INFLUX_DIR/influxdb
 if [ ! -f /etc/inittab ]; then
-	echo "This system does not have /etc/initab, server inittab auto-start will not be installed."
+	echo "This system does not have /etc/inittab, server inittab auto-start will not be installed."
 else
 	## Have both Influx and webserver start on boot
 	if grep --quiet influxdb /etc/inittab; then
