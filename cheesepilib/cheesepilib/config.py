@@ -42,16 +42,17 @@ import cheesepilib as cp
 
 # Globals
 cheesepi_dir  = os.path.dirname(os.path.realpath(__file__))
+home_dir      = os.environ['HOME']
 config_file   = os.path.join(cheesepi_dir, "cheesepi.conf")
 version_file  = os.path.join(cheesepi_dir, "version")
 
-logfile = os.path.join(cheesepi_dir, "cheesepi.log")
-log_level = logging.ERROR
+# Store log in user's home directory
+logfile    = os.path.join(home_dir, ".cheesepi.log")
+log_level  = logging.ERROR
 log_stdout = False
 log_formatter = logging.Formatter("%(asctime)s-%(name)s:%(levelname)s; %(message)s")
-
 logging.basicConfig(filename=logfile, level=log_level, format=log_formatter)
-logger = logging.getLogger('CONFIG')
+logger = logging.getLogger(__file__)
 
 
 
