@@ -20,50 +20,19 @@ define(['settings'], function(Settings) {
       datasources: {
         influxdb: {
           type: 'influxdb',
-          url: "http://my_influxdb_server:8086/db/cheesepi",
+          url: "http://INFLUXDB_IP:8086/db/cheesepi",
           username: 'root',
           password: 'root',
         },
         grafana: {
           type: 'influxdb',
-          url: "http://my_influxdb_server:8086/db/grafana",
+          url: "http://INFLUXDB_IP:8086/db/grafana",
           username: 'root',
           password: 'root',
           grafanaDB: true
         },
       },
 
-      // Graphite & Elasticsearch example setup
-      /*
-      datasources: {
-        graphite: {
-          type: 'graphite',
-          url: "http://my.graphite.server.com:8080",
-        },
-        elasticsearch: {
-          type: 'elasticsearch',
-          url: "http://my.elastic.server.com:9200",
-          index: 'grafana-dash',
-          grafanaDB: true,
-        }
-      },
-      */
-
-      // OpenTSDB & Elasticsearch example setup
-      /*
-      datasources: {
-        opentsdb: {
-          type: 'opentsdb',
-          url: "http://opentsdb.server:4242",
-        },
-        elasticsearch: {
-          type: 'elasticsearch',
-          url: "http://my.elastic.server.com:9200",
-          index: 'grafana-dash',
-          grafanaDB: true,
-        }
-      },
-      */
 
       /* Global configuration options
       * ========================================================

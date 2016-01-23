@@ -43,9 +43,9 @@ LOCAL_IP=`hostname -I |head -n1| tr -d '[[:space:]]'`
 # Should check this worked, and make alternate OSX version
 
 # Copy Influx config if it doesnt exist
-INFLUX_DIR=$INSTALL_DIR/client/tools/influxdb
-if [ ! -f $INFLUX_DIR/config.toml ]; then
-	sudo cat $INFLUX_DIR/config.sample.toml| sed "s/INFLUX_DIR/$INFLUX_DIR/" | sudo tee $INFLUX_DIR/config.toml > /dev/null
+INFLUXDIR=$INSTALL_DIR/client/tools/influxdb
+if [ ! -f $INFLUXDIR/config.toml ]; then
+	sudo cat $INFLUX_DIR/config.sample.toml| sed "s/INFLUX_DIR/$INFLUXDIR/" | sudo tee $INFLUXDIR/config.toml > /dev/null
 	echo "Copied Influx config file: $INFLUX_DIR/config.toml"
 else
 	echo "Warning: Influx config file '$INFLUX_DIR/config.toml' already exists, not copying."
