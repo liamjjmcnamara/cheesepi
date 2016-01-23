@@ -9,7 +9,7 @@ SOURCE_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 
 # # Install required OS software
 echo "Updating apt-get sources..."
-echo -e "\nEnter root pass if prompted to enable apt-get software install."
+echo "\nEnter root pass if prompted to enable apt-get software install."
 # Ensure we have uptodate package definition
 sudo apt-get update
 echo "Updated apt-get sources."
@@ -18,16 +18,15 @@ echo "Updated apt-get sources."
 #set -e
 
 
-echo -e "\nInstalling required software..."
+echo "\nInstalling required software..."
 # latter two only for faster binary python modules
 sudo apt-get install httping python-pip python-mysqldb build-essential python-dev iperf libav-tools
 # add python modules
 sudo pip install cherrypy influxdb pymongo future
-echo -e "Installed required software.\n"
+echo "Installed required software.\n"
 
 
 echo "Installing cheesepi from '$SOURCE_DIR' to '$INSTALL_DIR'"
-exit
 cp -rp $SOURCE_DIR $INSTALL_DIR
 
 # Discover local IP address
@@ -68,12 +67,12 @@ sleep 5
 $INSTALL_DIR/install/make_influx_DBs.sh
 
 ## Inform user of dashboard website
-echo -e "\n\nInstalled! This script has just done the following steps:"
-echo -e " -Updated apt-get package lists\n -Installed required software"
-echo -e " -Copied config files for the Influx server and the CheesePi dashboard webserver (webserver.py)"
-echo -e " -Set these servers to start automatically on boot (inittab) and right now"
+echo "\n\nInstalled! This script has just done the following steps:"
+echo " -Updated apt-get package lists\n -Installed required software"
+echo " -Copied config files for the Influx server and the CheesePi dashboard webserver (webserver.py)"
+echo " -Set these servers to start automatically on boot (inittab) and right now"
 #echo -e " -Set the measurement script measure.py to run every 5minutes"
-echo -e "\nVisit http://$LOCAL_IP:8080/dashboard to see your dashboard!\n"
+echo "\nVisit http://$LOCAL_IP:8080/dashboard to see your dashboard!\n"
 
 
 sleep 5
@@ -85,7 +84,7 @@ else
 	if grep --quiet influxdb /etc/inittab; then
 		echo "Seems Influx is already configured to start at boot."
 	else
-		echo -e "\nC1:2345:boot:$INFLUX_CMD" | sudo tee --append /etc/inittab > /dev/null
+		echo "\nC1:2345:boot:$INFLUX_CMD" | sudo tee --append /etc/inittab > /dev/null
 		echo "W1:2345:boot:$INSTALL_DIR/webserver/webserver.py" | sudo tee --append /etc/inittab > /dev/null
 		echo "Set InfluxDB and dashboard webserver to start at boot."
 	fi
