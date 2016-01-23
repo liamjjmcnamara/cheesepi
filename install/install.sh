@@ -5,29 +5,33 @@
 INSTALL_DIR=/usr/local/cheesepi
 
 # Where is the 
-SOURCE_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
+SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+echo $SOURCE_DIR
 
 # # Install required OS software
 echo "Updating apt-get sources..."
 echo "\nEnter root pass if prompted to enable apt-get software install."
 # Ensure we have uptodate package definition
-sudo apt-get update
+#sudo apt-get update
 echo "Updated apt-get sources."
 
 # Quit if any command fails...
-#set -e
+set -e
 
 
 echo "\nInstalling required software..."
 # latter two only for faster binary python modules
-sudo apt-get install httping python-pip python-mysqldb build-essential python-dev iperf libav-tools
+#sudo apt-get install httping python-pip python-mysqldb build-essential python-dev iperf libav-tools
 # add python modules
-sudo pip install cherrypy influxdb pymongo future
+#sudo pip install cherrypy influxdb pymongo future
 echo "Installed required software.\n"
 
 
 echo "Installing cheesepi from '$SOURCE_DIR' to '$INSTALL_DIR'"
-cp -rp $SOURCE_DIR $INSTALL_DIR
+mkdir -p $INSTALL_DIR
+cp -rp $SOURCE_DIR/cheesepilib $INSTALL_DIR/cheesepilib
+cp -rp $SOURCE_DIR/client $INSTALL_DIR/client
+cp -rp $SOURCE_DIR/install $INSTALL_DIR/install
 
 # Discover local IP address
 # To be used in the grafana configuration (so it knows where the Influx DB is)
@@ -35,24 +39,24 @@ LOCAL_IP=`hostname -I |head -n1| tr -d '[[:space:]]'`
 # Should check this worked, and make alternate OSX version
 
 # Copy Influx config if it doesnt exist
-$INFLUX_DIR=$INSTALL_DIR/client/tools/influxdb
+INFLUX_DIR=$INSTALL_DIR/client/tools/influxdb
 echo $INFLUX_DIR
 if [ ! -f $INFLUX_DIR/config.toml ]; then
 	sudo cat $INFLUX_DIR/config.sample.toml| sed "s/INFLUX_DIR/$INFLUX_DIR/" | sudo tee $INFLUX_DIR/config.toml > /dev/null
 	echo "Copied Influx config file: $INFLUX_DIR/config.toml"
 else
-	echo "Influx config file '$INFLUX_DIR/config.toml' already exists, not copying."
+	echo "Warning: Influx config file '$INFLUX_DIR/config.toml' already exists, not copying."
 fi
 
 
 
 ## Copy the Grafana config file, adding the local IP address
-DASHBOARD_DIR=$INSTALL_DIR/webserver/dashboard
+DASHBOARD_DIR=$INSTALL_DIR/client/webserver/dashboard
 if [ ! -f $DASHBOARD_DIR/config.js ]; then
 	sudo cat $DASHBOARD_DIR/config.sample.js| sed "s/INFLUXDB_IP/$LOCAL_IP/" | sudo tee $DASHBOARD_DIR/config.js > /dev/null
 	echo "Copied dashboard config file: config.toml"
 else
-	echo "Dashboard config file already exists, not copying."
+	echo "Warning: Dashboard config file already exists, not copying."
 fi
 
 # disable exit on error
