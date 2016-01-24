@@ -23,8 +23,6 @@ while getopts ":d:" o; do
 	esac
 done
 
-exit
-
 # Ensure we are not root
 if [ $EUID -eq 0 ]; then
 	echo "Error: do not run this script as root"

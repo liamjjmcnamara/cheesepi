@@ -189,7 +189,8 @@ def create_default_schedule(schedule_filename):
 		#	logger.error(msg)
 		#	exit(1)
 	else:
-		logger.error("Can not find default schedulefile!")
+		logger.error("Can not find default schedule file schedule.default.conf!")
+		sys.exit(1)
 
 def load_local_schedule():
 
