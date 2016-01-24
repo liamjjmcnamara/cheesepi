@@ -8,6 +8,10 @@ INSTALL_DIR=/usr/local/cheesepi
 SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 echo $SOURCE_DIR
 
+
+# Ensure we are not root
+
+
 # # Install required OS software
 echo "Updating apt-get sources..."
 echo -e "\nEnter root pass if prompted to enable apt-get software install."
@@ -24,7 +28,7 @@ echo -e "\nInstalling required software..."
 #sudo apt-get install httping python-pip python-mysqldb build-essential python-dev iperf libav-tools
 # add python modules
 #sudo pip install cherrypy influxdb pymongo future
-echo "Installed required software.\n"
+echo -e "Installed required software.\n"
 
 
 echo "Installing cheesepi from '$SOURCE_DIR' to '$INSTALL_DIR'"
@@ -43,12 +47,12 @@ LOCAL_IP=`hostname -I |head -n1| tr -d '[[:space:]]'`
 # Should check this worked, and make alternate OSX version
 
 # Copy Influx config if it doesnt exist
-INFLUXDIR=$INSTALL_DIR/client/tools/influxdb
-if [ ! -f $INFLUXDIR/config.toml ]; then
-	sudo cat $INFLUX_DIR/config.sample.toml| sed "s/INFLUX_DIR/$INFLUXDIR/" | sudo tee $INFLUXDIR/config.toml > /dev/null
-	echo "Copied Influx config file: $INFLUX_DIR/config.toml"
+DB_DIR=$INSTALL_DIR/client/tools/influxdb
+if [ ! -f $DB_DIR/config.toml ]; then
+	sudo cat $DB_DIR/config.sample.toml| sed "s#INFLUX_DIR#$DB_DIR#" | sudo tee $DB_DIR/config.toml > /dev/null
+	echo "Copied Influx config file: $DB_DIR/config.toml"
 else
-	echo "Warning: Influx config file '$INFLUX_DIR/config.toml' already exists, not copying."
+	echo "Warning: Influx config file '$DB_DIR/config.toml' already exists, not copying."
 fi
 
 
