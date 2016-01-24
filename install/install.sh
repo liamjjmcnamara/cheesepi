@@ -1,15 +1,42 @@
+#!/bin/bash
+
 # Where shall we install CheesePi?
-# This can be changed but will currently break the Influx and Grafana config files
-# following should end up being /usr/local/cheesepi
-# Though could be ~/cheesepi or somewhere else
+# This can be changed but should probably be /usr/local/cheesepi
+# Though could be ~/cheesepi or somewhere else through the -d parameter
 INSTALL_DIR=/usr/local/cheesepi
 
-# Where is the 
-SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
-echo $SOURCE_DIR
+usage() { 
+	echo "Usage: $0 [-d INSTALL_DIR]"; 
+	echo -e "\tINSTALL_DIR is the directory CheesePi will be installed (default: $INSTALL_DIR)"
+	exit 1; 
+}
 
+# Detect command line parameters
+while getopts ":d:" o; do
+	case "${o}" in
+		d)
+			INSTALL_DIR=${OPTARG}
+			;;
+		*)
+			usage
+			;;
+	esac
+done
+
+exit
 
 # Ensure we are not root
+if [ $EUID -eq 0 ]; then
+	echo "Error: do not run this script as root"
+	exit 1
+fi
+
+
+
+
+
+# Where is the cheesepi source loacated
+SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 
 
 # # Install required OS software
