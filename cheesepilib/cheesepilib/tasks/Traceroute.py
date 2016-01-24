@@ -13,6 +13,7 @@ class Traceroute(Task.Task):
 	def __init__(self, dao, spec):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname'] = "traceroute"
+                if not 'landmark'    in self.spec: self.spec['landmark']    = "www.sics.se"
 
 	def run(self):
 		logger.info("Tracerouting %s @ %f PID: %d" % (self.landmark, time.time(), os.getpid()))
@@ -158,7 +159,7 @@ if __name__ == "__main__":
 	config = cp.config.get_config()
 	dao = cp.config.get_dao()
 
-	spec = {'landmark':'google.com'}
+	spec = {'landmark':'www.sics.se'}
 	traceroute_task = Traceroute(dao, spec)
 	traceroute_task.run()
 

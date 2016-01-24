@@ -15,7 +15,7 @@ class Httping(Task.Task):
 	def __init__(self, dao, parameters):
 		Task.Task.__init__(self, dao, parameters)
 		self.spec['taskname'] = "httping"
-		if not 'landmark'    in self.spec: self.spec['landmark']    = "google.com"
+		if not 'landmark'    in self.spec: self.spec['landmark']    = "www.sics.se"
 		if not 'ping_count'  in self.spec: self.spec['ping_count']  = 10
 		try:
 			socket.gethostbyname(self.spec['landmark']) # we dont care, just populate the cache
@@ -108,7 +108,7 @@ if __name__ == "__main__":
 	dao    = cp.config.get_dao()
 	config = cp.config.get_config()
 
-	spec = {'landmark':'google.com'}
+	spec = {'landmark':'www.sics.se'}
 	httping_task = Httping(dao, spec)
 	httping_task.run()
 

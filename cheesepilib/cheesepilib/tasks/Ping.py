@@ -15,7 +15,7 @@ class Ping(Task.Task):
 	def __init__(self, dao, spec):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname']    = "ping"
-		if not 'landmark'    in self.spec: self.spec['landmark']    = "google.com"
+		if not 'landmark'    in self.spec: self.spec['landmark']    = "www.sics.se"
 		if not 'ping_count'  in self.spec: self.spec['ping_count']  = 10
 		if not 'packet_size' in self.spec: self.spec['packet_size'] = 64
 		try:
@@ -101,8 +101,7 @@ if __name__ == "__main__":
 	#general logging here? unable to connect etc
 	dao = cp.config.get_dao()
 
-	#parameters = {'landmark':'google.com','ping_count':10,'packet_size':64}
-	spec = {'landmark':'google.com'}
+	spec = {'landmark':'www.sics.se'}
 	ping_task = Ping(dao, spec)
 	ping_task.run()
 
