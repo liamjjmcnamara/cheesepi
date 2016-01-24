@@ -43,6 +43,7 @@ import cheesepilib as cp
 # Globals
 cheesepi_dir  = os.path.dirname(os.path.realpath(__file__))
 home_dir      = os.environ['HOME']
+log_dir       = home_dir
 config_file   = os.path.join(cheesepi_dir, "cheesepi.conf")
 version_file  = os.path.join(cheesepi_dir, "version")
 
@@ -69,7 +70,7 @@ def update_logging():
 	if config_defined('logfile'):
 		# TODO should allow for log files in different directories, like /var/log
 		filename = get('logfile')
-		logfile = os.path.join(cheesepi_dir, filename)
+		logfile = os.path.join(log_dir, filename)
 	if config_defined('log_level'):
 		log_level = int(get('log_level'))
 	if config_defined('log_stdout'):
