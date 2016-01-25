@@ -6,8 +6,13 @@ import cherrypy
 
 import cheesepilib as cp
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.ERROR)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.ERROR)
+
+cherrypy.log.error_log.setLevel(30)
+#logger = cherrypy.log.access_log
+#logger.removeHandler(logger.handlers[0])
+
 resultLimit = 5 # number of results per page
 serveroot = os.path.dirname(os.path.realpath(__file__))
 confpath  = os.path.join(serveroot,'cherrypy.conf')
@@ -41,12 +46,14 @@ def setup_server():
 			'log.screen': False,
 		},
 		'/dashboard': {
+			'log.screen': False,
 			'tools.staticdir.on': True,
 			'tools.staticdir.root': serveroot,
 			'tools.staticdir.dir': 'dashboard',
 			'tools.staticdir.index': 'index.html',
 		},
 		}
+	cherrypy.log.screen = False
 	cherrypy.tree.mount(root, config=config)
 	cherrypy.config.update({ 'server.socket_host':'0.0.0.0', 'server.socket_port':8080, })
 	try:
