@@ -47,5 +47,4 @@ def perform_database_dump(since=None):
 
 
 if __name__ == "__main__":
-	since = -1
-	perform_database_dump(since)
+	perform_database_dump()

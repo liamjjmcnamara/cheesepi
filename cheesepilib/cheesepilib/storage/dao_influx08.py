@@ -77,12 +77,12 @@ class DAO_influx(dao.DAO):
 			print msg
 			logging.error(msg)
 			exit(1)
-		#print "series",series[0]['points']
 
 		# maybe prune series list?
 		dumped_db = {}
-		for s in series[0]['points']:
-			series_name = s[1]
+		for s in series:
+			series_name = s['name']
+			print series_name
 			dumped_series = self.conn.query('select * from %s where time > %d ;' % (series_name,since*1000) )
 			#print dumped_series
 			dumped_db[series_name] = json.dumps(dumped_series)
