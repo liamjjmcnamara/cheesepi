@@ -78,7 +78,6 @@ class DAO_influx(dao.DAO):
 			print "Error: parsing series list"
 
 
-
 	def dump(self, since=-1):
 		try:
 			series_list = self.conn.query("list series")
