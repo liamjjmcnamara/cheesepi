@@ -33,11 +33,12 @@ from setuptools import setup, find_packages
 
 setup(
         name='cheesepilib',
-        version='0.2',
+        version='0.5',
         description='CheesePi Library',
 
         # Which versions we support
         classifiers=[
+            'License :: OSI Approved :: Apache 2.0 License',
             'Programming Language :: Python :: 2',
             'Programming Language :: Python :: 2.6',
             'Programming Language :: Python :: 2.7',

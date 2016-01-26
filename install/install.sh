@@ -58,7 +58,7 @@ echo "Installing cheesepi from '$SOURCE_DIR' to '$INSTALL_DIR'"
 sudo mkdir -p $INSTALL_DIR
 sudo cp -rp $SOURCE_DIR/cheesepilib $INSTALL_DIR/cheesepilib
 sudo cp -rp $SOURCE_DIR/install $INSTALL_DIR/install
-sudo cp -rp $SOURCE_DIR/client $INSTALL_DIR/client
+sudo cp -rp $SOURCE_DIR/bin $INSTALL_DIR/bin
 
 # Install cheesepi python library
 echo "Install CheesePi python module in $INSTALL_DIR/cheesepilib"
@@ -70,7 +70,7 @@ LOCAL_IP=`hostname -I |head -n1| tr -d '[[:space:]]'`
 # Should check this worked, and make alternate OSX version
 
 # Copy Influx config if it doesnt exist
-DB_DIR=$INSTALL_DIR/client/tools/influxdb
+DB_DIR=$INSTALL_DIR/bin/tools/influxdb
 if [ ! -f $DB_DIR/config.toml ]; then
 	sudo cat $DB_DIR/config.sample.toml| sed "s#INFLUX_DIR#$DB_DIR#" | tee $DB_DIR/config.toml > /dev/null
 	echo "Copied Influx config file: $DB_DIR/config.toml"
@@ -81,7 +81,7 @@ fi
 
 
 ## Copy the Grafana config file, adding the local IP address
-DASHBOARD_DIR=$INSTALL_DIR/client/webserver/dashboard
+DASHBOARD_DIR=$INSTALL_DIR/bin/webserver/dashboard
 if [ ! -f $DASHBOARD_DIR/config.js ]; then
 	sudo cat $DASHBOARD_DIR/config.sample.js| sed "s/INFLUXDB_IP/$LOCAL_IP/" | tee $DASHBOARD_DIR/config.js > /dev/null
 	echo "Copied dashboard config file: config.toml"

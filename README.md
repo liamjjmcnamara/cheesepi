@@ -16,3 +16,8 @@ InfluxDB) and a webserver (for the dashboard) to be run upon start up (through i
 The CheesePi python module will be installed at CHEESEPILIB=INSTALL_DIR/cheesepilib/cheesepilib/
 The CheesePi configuration file is at $CHEESEPILIB/cheesepi.conf and the measurement task
 schedule file is at $CHEESEPILIB/schedule.dat
+
+
+The speedtest module is from https://pypi.python.org/pypi/speedtest-cli/
+Which is under license: Apache License, Version 2.0
+
