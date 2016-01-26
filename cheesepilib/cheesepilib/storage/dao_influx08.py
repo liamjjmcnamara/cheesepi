@@ -112,6 +112,10 @@ class DAO_influx(dao.DAO):
 		#json_str = '[{"name":"ping", "columns":["test"], "points":["value"]}]'
 		return json_str
 
+	def slurp(self, op_type, points):
+		"""Short cut to database write, useful for bulk writes"""
+		#self.conn.write_points(op_type, points, batch_size=50)
+		pass
 
 	# Operator interactions
 	def write_op(self, op_type, dic, binary=None):

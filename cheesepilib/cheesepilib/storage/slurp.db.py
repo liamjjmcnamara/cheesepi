@@ -10,13 +10,13 @@ def slurp_file(dao, series, fd):
 	"""Read a file into the 'series' database"""
 	content = fd.read()
 	points = json.loads(content)
-	#dao.write_points(series, points)
+	dao.slurp(series, points)
 
 def slurp_database(dao, filename):
 	"""Read a tgz filename into the database"""
 	tar = tarfile.open(filename)
 	for member in tar.getmembers():
-		series_name = member.name[:-5]
+		series_name = member.name[:-5] # trim '.json'
 		print series_name
 		fd=tar.extractfile(member)
 		slurp_file(dao, series_name, fd)
@@ -24,7 +24,7 @@ def slurp_database(dao, filename):
 	tar.close()
 
 def usage():
-	print "Usage"
+	print "Usage: %s <Dump .tgz file>" % sys.argv[0]
 	sys.exit(1)
 
 if __name__ == "__main__":

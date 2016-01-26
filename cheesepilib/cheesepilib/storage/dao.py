@@ -41,8 +41,14 @@ class DAO:
 		logging.error(msg)
 		return msg
 
+	def slurp(self):
+		"""Ingest many data points at once"""
+		logging.error("Method not implemented in this DAO class")
+		pass
+
 	# Operator interactions
 	def write_op(self, op_type, dic, binary=None):
+		logging.error("Method not implemented in this DAO class")
 		pass
 
 	def read_op(self, op_type, timestamp=0, limit=100):

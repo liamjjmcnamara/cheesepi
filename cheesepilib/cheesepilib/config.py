@@ -48,11 +48,11 @@ config_file   = os.path.join(cheesepi_dir, "cheesepi.conf")
 version_file  = os.path.join(cheesepi_dir, "version")
 
 # Store log in user's home directory
-logfile    = os.path.join(home_dir, ".cheesepi.log")
+log_file    = os.path.join(log_dir, ".cheesepi.log")
 log_level  = logging.ERROR
 log_stdout = False
 log_formatter = logging.Formatter("%(asctime)s-%(name)s:%(levelname)s; %(message)s")
-logging.basicConfig(filename=logfile, level=log_level, format=log_formatter)
+logging.basicConfig(filename=log_file, level=log_level, format=log_formatter)
 logger = logging.getLogger(__file__)
 
 
@@ -62,15 +62,15 @@ def get_logger(source=""):
 	return logging.getLogger(source)
 
 def update_logging():
-	global logfile
+	global log_file
 	global log_level
 	global log_stdout
 	global log_formatter
 
-	if config_defined('logfile'):
+	if config_defined('log_file'):
 		# TODO should allow for log files in different directories, like /var/log
-		filename = get('logfile')
-		logfile = os.path.join(log_dir, filename)
+		filename = get('log_file')
+		log_file = os.path.join(log_dir, filename)
 	if config_defined('log_level'):
 		log_level = int(get('log_level'))
 	if config_defined('log_stdout'):
@@ -86,9 +86,9 @@ def update_logging():
 	for handler in root_logger.handlers:
 		root_logger.removeHandler(handler)
 
-	if logfile is not None:
-		# Add logfile handler
-		file_handler = logging.FileHandler(logfile, 'a')
+	if log_file is not None:
+		# Add log_file handler
+		file_handler = logging.FileHandler(log_file, 'a')
 		file_handler.setFormatter(log_formatter)
 		root_logger.addHandler(file_handler)
 
