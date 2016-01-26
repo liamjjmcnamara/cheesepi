@@ -79,11 +79,11 @@ class DAO_influx(dao.DAO):
 			exit(1)
 		#print "series",series[0]['points']
 
-		# maybe prune series?
+		# maybe prune series list?
 		dumped_db = {}
 		for s in series[0]['points']:
 			series_name = s[1]
-			dumped_series = self.conn.query('select * from %s where time > %d limit 1;' % (series_name,since*1000) )
+			dumped_series = self.conn.query('select * from %s where time > %d ;' % (series_name,since*1000) )
 			#print dumped_series
 			dumped_db[series_name] = json.dumps(dumped_series)
 		return dumped_db

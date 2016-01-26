@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 import time
-import sys
 import tarfile
-import tempfile
 import StringIO
 import requests
 
@@ -12,15 +10,17 @@ import cheesepilib as cp
 dump_url = "http://cheesepi.sics.se/upload.py"
 
 
-def perform_database_dump():
+def perform_database_dump(since=None):
 	dao = cp.config.get_dao()
 	# make a temp file that dies on running out of scope
 	filename = "cheesepi-%d.tgz" % int(time.time())
 	print filename
 
-	last_dumped = cp.config.get_last_dumped(dao)
-	print "Last dumped: "+str(last_dumped)
-	dumped_tables = dao.dump(last_dumped)
+	if since==None:
+		since = cp.config.get_last_dumped(dao)
+		print "Last dumped: "+str(since)
+
+	dumped_tables = dao.dump(since)
 	ethmac = cp.utils.getCurrMAC()
 	parameters = {'ethmac': ethmac}
 
@@ -47,4 +47,5 @@ def perform_database_dump():
 
 
 if __name__ == "__main__":
-	perform_database_dump()
+	since = -1
+	perform_database_dump(since)
