@@ -70,14 +70,14 @@ class DAO_influx(dao.DAO):
 	def extract_series(self, dic):
 		if len(dic)==1 and dic[0]['name']=='list_series_result':
 			# mac version
-			return [s for s in dic['points']]
+			return [s[1] for s in dic[0]['points']]
 		elif len(dic)>1 and dic[0]['points']==[]:
 			# raspberry pi version
 			return [s['name'] for s in dic]
 		else:
 			print "Error: parsing series list"
-			
-		
+
+
 
 	def dump(self, since=-1):
 		try:
