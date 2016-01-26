@@ -67,21 +67,33 @@ class DAO_influx(dao.DAO):
 			cp.config.make_databases()
 			exit(1)
 
+	def extract_series(self, dic):
+		if len(dic)==1 and dic[0]['name']=='list_series_result':
+			# mac version
+			return [s for s in dic['points']]
+		elif len(dic)>1 and dic[0]['points']==[]:
+			# raspberry pi version
+			return [s['name'] for s in dic]
+		else:
+			print "Error: parsing series list"
+			
+		
 
 	def dump(self, since=-1):
 		try:
-			series = self.conn.query("list series")
-			#series = self.conn.get_list_series()
+			series_list = self.conn.query("list series")
+			#series_list = self.conn.get_list_series()
 		except Exception as e:
 			msg = "Problem connecting to InfluxDB when listing series: "+str(e)
 			print msg
 			logging.error(msg)
 			exit(1)
-
+		print series_list
+		series = self.extract_series(series_list)
+		print series
 		# maybe prune series list?
 		dumped_db = {}
-		for s in series:
-			series_name = s['name']
+		for series_name in series:
 			print series_name
 			dumped_series = self.conn.query('select * from %s where time > %d ;' % (series_name,since*1000) )
 			#print dumped_series
