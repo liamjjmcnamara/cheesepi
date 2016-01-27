@@ -26,6 +26,7 @@ Authors: ljjm@sics.se
 Testers:
 """
 
+import sys
 import json
 import urllib2
 import uuid
@@ -41,18 +42,41 @@ logger = cp.config.get_logger(__name__)
 
 # Command line tool, installed through set.py
 def console_script():
-	parser = argparse.ArgumentParser(prog='cheesepi control program')
+	commands = ['start','stop']
+	parser = argparse.ArgumentParser(prog='cheesepi')
+	parser.add_argument('command', metavar='COMMAND', choices=commands, nargs='?', help="'start' or 'stop' one of the CheesePi components")
+	parser.add_argument('option', metavar='OPTION', nargs='?', help='Options to the command')
 
-	print sys.argv
-	i#args = parser.parse_args()
+	args = parser.parse_args()
+	if   args.option=='dispatcher': control_dispatcher(args.command)
+	elif args.option=='influxdb':   control_influxdb(args.command)
+	elif args.option=='dashboard':  control_dashboard(args.command)
+	else:
+		print "Error: unknown OPTION: %s" % args.option
+		sys.exit(1)
 
 
-def control_dispatcher():
-	pass
-def control_influxdb():
-	pass
-def control_dashboard():
-	pass
+def control_dispatcher(action):
+	print "%s the dispatcher" % action
+	if action=='start':
+		cp.dispatcher.start()
+	else:
+		print "Error: action not yet implemented!"
+
+def control_influxdb(action):
+	print "%s influxdb" % action
+	if action=='start':
+		pass
+	else:
+		print "Error: action not yet implemented!"
+
+def control_dashboard(action):
+	print "%s the dashboard" % action
+	if action=='start':
+		pass
+	else:
+		print "Error: action not yet implemented!"
+
 
 
 
