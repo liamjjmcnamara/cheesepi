@@ -31,40 +31,52 @@ a local config file (if one does not exist, and initialising logging options
 
 from setuptools import setup, find_packages
 
+def readme():
+	with open('README') as f:
+		return f.read()
+
 setup(
-        name='cheesepi',
-        version='0.5',
-        description='CheesePi Library',
-        url='http://cheesepi.sics.se',
-        author='Liam McNamara',
-        author_email='ljjm@sics.se',
+	name='cheesepi',
+	version='0.5',
+	description='CheesePi Library',
+	long_description=readme(),
+	url='http://cheesepi.sics.se',
+	#download-url= 'http://cheesepi.sics.se/files/cheesepi.tar.gz',
+	author='Liam McNamara',
+	author_email='ljjm@sics.se',
+	license= 'Apache 2.0',
+	summary= 'CheesePi Library',
+	platform= 'Raspberry Pi focussed',
+	# Which versions we support
+	classifiers=[
+		'Development Status :: 4 - Beta',
+		'License :: OSI Approved :: Apache Software License',
+		'Operating System :: POSIX',
+		'Programming Language :: Python :: 2',
+		'Programming Language :: Python :: 2.7',
+		'Topic :: Internet',
+		'Topic :: System :: Logging',
+	],
 
-        # Which versions we support
-        classifiers=[
-            'License :: OSI Approved :: Apache 2.0 License',
-            'Programming Language :: Python :: 2',
-            'Programming Language :: Python :: 2.6',
-            'Programming Language :: Python :: 2.7',
-        ],
+	# Runtime dependencies
+	install_requires=[
+		'future',
+		'txmsgpackrpc',
+		'twisted',
+		'youtube_dl',
+		'dnspython',
+		'influxdb',
+		'pymongo',
+		'uptime',
+	],
 
-        # Runtime dependencies
-        install_requires=[
-            'future',
-            'txmsgpackrpc',
-            'twisted',
-            'youtube_dl',
-            'dnspython',
-            'influxdb',
-            'pymongo',
-            'uptime',
-        ],
-
-        entry_points={
-            'console_scripts':[
-                'cheesepi = cheesepi.utils:console_script',
-                'cheesepi_config = cheesepi.config:main',
-                'cheesepi_control_server_start = cheesepi.server.utils:start_control_server',
-                'cheesepi_upload_server_start = cheesepi.server.utils:start_upload_server',
-            ]
-        }
+	entry_points={
+		'console_scripts':[
+			'cheesepi = cheesepi.utils:console_script',
+			'cheesepi_config = cheesepi.config:main',
+			'cheesepi_control_server_start = cheesepi.server.utils:start_control_server',
+			'cheesepi_upload_server_start = cheesepi.server.utils:start_upload_server',
+		]
+	},
+	include_package_data=True,
 )

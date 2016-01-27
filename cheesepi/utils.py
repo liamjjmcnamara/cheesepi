@@ -42,12 +42,17 @@ logger = cp.config.get_logger(__name__)
 
 # Command line tool, installed through set.py
 def console_script():
-	commands = ['start','stop']
+	commands = ['start','stop','status']
+
 	parser = argparse.ArgumentParser(prog='cheesepi')
 	parser.add_argument('command', metavar='COMMAND', choices=commands, nargs='?', help="'start' or 'stop' one of the CheesePi components")
 	parser.add_argument('option', metavar='OPTION', nargs='?', help='Options to the command')
-
 	args = parser.parse_args()
+
+	if args.command=="status":
+		show_status()
+		return
+
 	if   args.option=='dispatcher': control_dispatcher(args.command)
 	elif args.option=='influxdb':   control_influxdb(args.command)
 	elif args.option=='dashboard':  control_dashboard(args.command)
@@ -55,6 +60,9 @@ def console_script():
 		print "Error: unknown OPTION: %s" % args.option
 		sys.exit(1)
 
+def show_status():
+	print "Current status..."
+	print
 
 def control_dispatcher(action):
 	print "%s the dispatcher" % action
@@ -76,7 +84,6 @@ def control_dashboard(action):
 		pass
 	else:
 		print "Error: action not yet implemented!"
-
 
 
 

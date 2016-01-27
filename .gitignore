@@ -1,5 +1,9 @@
 *~
 *.pyc
+/dist/
 cheesepi.conf
 cheesepi.log
 schedule.dat
+/*.egg-info
+/*.egg
+

@@ -30,7 +30,7 @@ pool_size = 5
 
 # Task priority
 IMPORTANT  = 1
-NORMAL     = 2
+NORMAL	   = 2
 
 results = []
 def log_result(result):
@@ -117,14 +117,14 @@ def start():
 		pool.close()
 		pool.join()
 
-schedule_list = load_schedule()
-print_schedule(schedule_list)
 
 logger.info("Dispatcher PID: %d" % os.getpid())
 if __name__ == "__main__":
-    start()
+	schedule_list = load_schedule()
+	print_schedule(schedule_list)
+	start()
 
-# wait for the longest time between tasks
-max_period = 10000
-time.sleep(max_period)
+	# wait for the longest time between tasks
+	max_period = 10000
+	time.sleep(max_period)
 
