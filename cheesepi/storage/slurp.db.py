@@ -4,7 +4,7 @@ import sys
 import tarfile
 import json
 
-import cheesepilib as cp
+import cheesepi as cp
 
 def slurp_file(dao, series, fd):
 	"""Read a file into the 'series' database"""

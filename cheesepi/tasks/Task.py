@@ -2,7 +2,7 @@ import random
 import json
 from subprocess import Popen, PIPE
 
-import cheesepilib as cp
+import cheesepi as cp
 
 # To be subclassed by explicit measurement tasks
 class Task:

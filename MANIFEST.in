@@ -1,0 +1,5 @@
+recursive-include cheesepi *.py
+include setup.py
+include LICENSE
+include *.txt
+include *.rst

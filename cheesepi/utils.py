@@ -34,8 +34,8 @@ import time
 import md5
 import argparse
 
-import cheesepilib as cp
-from cheesepilib.tasks import *
+import cheesepi as cp
+from cheesepi.tasks import *
 
 logger = cp.config.get_logger(__name__)
 

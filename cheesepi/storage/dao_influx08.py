@@ -31,7 +31,7 @@ import logging
 import hashlib
 import json
 
-import cheesepilib as cp
+import cheesepi as cp
 import dao
 
 logger = cp.config.get_logger(__name__)

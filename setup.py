@@ -32,9 +32,12 @@ a local config file (if one does not exist, and initialising logging options
 from setuptools import setup, find_packages
 
 setup(
-        name='cheesepilib',
+        name='cheesepi',
         version='0.5',
         description='CheesePi Library',
+        url='http://cheesepi.sics.se',
+        author='Liam McNamara',
+        author_email='ljjm@sics.se',
 
         # Which versions we support
         classifiers=[
@@ -58,10 +61,10 @@ setup(
 
         entry_points={
             'console_scripts':[
-                'cheesepi = cheesepilib.utils:console_script',
-                'cheesepi_config = cheesepilib.config:main',
-                'cheesepi_control_server_start = cheesepilib.server.utils:start_control_server',
-                'cheesepi_upload_server_start = cheesepilib.server.utils:start_upload_server',
+                'cheesepi = cheesepi.utils:console_script',
+                'cheesepi_config = cheesepi.config:main',
+                'cheesepi_control_server_start = cheesepi.server.utils:start_control_server',
+                'cheesepi_upload_server_start = cheesepi.server.utils:start_upload_server',
             ]
         }
 )

@@ -8,7 +8,7 @@ import sched
 import multiprocessing
 import logging
 
-import cheesepilib as cp
+import cheesepi as cp
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

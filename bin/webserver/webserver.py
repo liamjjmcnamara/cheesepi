@@ -4,7 +4,6 @@ import os
 import logging
 import cherrypy
 
-import cheesepilib as cp
 
 #logger = logging.getLogger(__name__)
 #logger.setLevel(logging.ERROR)

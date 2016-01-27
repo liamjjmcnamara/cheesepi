@@ -1,6 +1,4 @@
 
-import json
-
 from Task import Task
 from Dummy import Dummy
 from Beacon import Beacon

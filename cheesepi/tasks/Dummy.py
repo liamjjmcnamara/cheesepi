@@ -1,7 +1,7 @@
 import time
 import os
 
-import cheesepilib as cp
+import cheesepi as cp
 import Task
 
 logger = cp.config.get_logger(__name__)

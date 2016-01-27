@@ -5,7 +5,7 @@ import logging
 import socket
 
 import Task
-import cheesepilib as cp
+import cheesepi as cp
 
 logger = cp.config.get_logger(__name__)
 

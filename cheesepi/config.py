@@ -37,7 +37,7 @@ import logging
 import json
 import urllib2
 
-import cheesepilib as cp
+import cheesepi as cp
 
 
 # Globals

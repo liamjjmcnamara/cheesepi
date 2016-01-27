@@ -35,7 +35,7 @@ import gridfs
 import bson
 from bson.json_util import dumps
 
-import cheesepilib as cp
+import cheesepi as cp
 import dao
 
 class DAO_mongo(dao.DAO):

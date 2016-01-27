@@ -5,7 +5,7 @@ import tarfile
 import StringIO
 import requests
 
-import cheesepilib as cp
+import cheesepi as cp
 
 dump_url = "http://cheesepi.sics.se/upload.py"
 

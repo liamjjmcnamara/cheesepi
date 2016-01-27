@@ -33,7 +33,7 @@ import json
 import traceback
 from requests.exceptions import ConnectionError
 
-import cheesepilib as cp
+import cheesepi as cp
 import dao
 
 logger = cp.config.get_logger(__name__)
