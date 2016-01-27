@@ -31,11 +31,30 @@ import urllib2
 import uuid
 import time
 import md5
+import argparse
 
 import cheesepilib as cp
 from cheesepilib.tasks import *
 
 logger = cp.config.get_logger(__name__)
+
+
+# Command line tool, installed through set.py
+def console_script():
+	parser = argparse.ArgumentParser(prog='cheesepi control program')
+
+	print sys.argv
+	i#args = parser.parse_args()
+
+
+def control_dispatcher():
+	pass
+def control_influxdb():
+	pass
+def control_dashboard():
+	pass
+
+
 
 def build_json(dao, json_str):
 	"""Build a Task object out of a JSON string spec"""
@@ -129,6 +148,7 @@ def get_temperature():
 	except:
 		pass
 	return None
+
 #
 # Simple statistics to avoid numpy
 #
