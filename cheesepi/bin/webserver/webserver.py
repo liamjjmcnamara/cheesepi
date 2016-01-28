@@ -9,15 +9,13 @@ import cherrypy
 #logger.setLevel(logging.ERROR)
 
 cherrypy.log.error_log.setLevel(30)
-#logger = cherrypy.log.access_log
-#logger.removeHandler(logger.handlers[0])
 
 resultLimit = 5 # number of results per page
 serveroot = os.path.dirname(os.path.realpath(__file__))
 confpath  = os.path.join(serveroot,'cherrypy.conf')
-print "Webserver root: "+serveroot
+#print "Webserver root: "+serveroot
 
-dao = cp.config.get_dao()
+#dao = cp.config.get_dao()
 
 class Root:
 	def index(self):
@@ -29,12 +27,9 @@ class Dynamic:
 	def index(self, **params):
 		cherrypy.response.headers["Content-Type"]  = "application/json"
 		return '{[{"value":10},{"value":15}]}'
-		return '{["value":1],["value":2]}'
-		return dao.get_op("ping")
+		#return '{["value":1],["value":2]}'
+		#return dao.get_op("ping")
 	index.exposed = True
-	#def dynamic(self):
-	#return "This is a DYNAMIC page"
-	#dynamic.exposed = True
 
 def setup_server():
 	root = Root()
@@ -60,9 +55,10 @@ def setup_server():
 	except IOError as e:
 		msg = "Error: Can't start server, port probably already in use: "+str(e)
 		print msg
-		logging.warning(msg)
+		logging.error(msg)
 
-setup_server()
+if __name__ == "__main__":
+	setup_server()
 
 
 

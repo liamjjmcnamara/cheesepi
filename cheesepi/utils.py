@@ -26,6 +26,7 @@ Authors: ljjm@sics.se
 Testers:
 """
 
+import os
 import sys
 import json
 import urllib2
@@ -33,6 +34,7 @@ import uuid
 import time
 import md5
 import argparse
+from subprocess import call
 
 import cheesepi as cp
 from cheesepi.tasks import *
@@ -40,8 +42,8 @@ from cheesepi.tasks import *
 logger = cp.config.get_logger(__name__)
 
 
-# Command line tool, installed through set.py
 def console_script():
+	"""Command line tool, installed through setup.py"""
 	commands = ['start','stop','status']
 
 	parser = argparse.ArgumentParser(prog='cheesepi')
@@ -60,28 +62,53 @@ def console_script():
 		print "Error: unknown OPTION: %s" % args.option
 		sys.exit(1)
 
+
 def show_status():
-	print "Current status..."
-	print
+	"""Just print the location of important CheesePi dirs/files"""
+	schedule_file = os.path.join(cp.config.cheesepi_dir, cp.config.get('schedule'))
+	print "Status of CheesePi install"
+	print "Install dir:\t%s" % cp.config.cheesepi_dir
+	print "Log file:\t%s"          % cp.config.log_file
+	print "Config file:\t%s"       % cp.config.config_file
+	print "Schedule file:\t%s"     % schedule_file
+
 
 def control_dispatcher(action):
+	"""Start or stop the dispatcher"""
 	print "%s the dispatcher" % action
 	if action=='start':
 		cp.dispatcher.start()
 	else:
 		print "Error: action not yet implemented!"
 
+
+def copy_influx_config():
+	influx_dir = cp.config.cheesepi_dir+"/bin/tools/influxdb/"
+	default_config = influx_dir+"config.sample.toml"
+	influx_config  = influx_dir+"config.toml"
+	cp.config.copyfile(default_config, influx_config, replace={"INFLUX_DIR":influx_dir} )
+
 def control_influxdb(action):
+	"""Start or stop InfluxDB, either the bundled or the system version"""
 	print "%s influxdb" % action
 	if action=='start':
-		pass
+		influx = cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb"
+		influx_config = cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb/config.toml"
+		# test if we have already made the local config file
+		if not os.path.isfile(influx_config):
+			copy_influx_config()
+			# start the influx server
+		print "Running: " + influx+" -config="+influx_config
+		call([influx, "-config="+influx_config])
 	else:
 		print "Error: action not yet implemented!"
 
+
 def control_dashboard(action):
+	"""Start or stop the webserver that hosts the dashboard"""
 	print "%s the dashboard" % action
 	if action=='start':
-		pass
+		cp.bin.webserver.webserver.start_server()
 	else:
 		print "Error: action not yet implemented!"
 
@@ -206,3 +233,5 @@ def stdev(data):
 	ss = sumsq(data)
 	pvar = ss/n # the population variance
 	return pvar**0.5
+
+

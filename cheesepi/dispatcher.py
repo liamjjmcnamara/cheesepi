@@ -106,6 +106,8 @@ def print_schedule(schedule_list):
 
 
 def start():
+	schedule_list = load_schedule()
+	print_schedule(schedule_list)
 	pool = multiprocessing.Pool(processes=pool_size)
 
 	# reschedule all tasks from the schedule specified in config file
@@ -117,14 +119,12 @@ def start():
 		pool.close()
 		pool.join()
 
-
-logger.info("Dispatcher PID: %d" % os.getpid())
-if __name__ == "__main__":
-	schedule_list = load_schedule()
-	print_schedule(schedule_list)
-	start()
-
 	# wait for the longest time between tasks
 	max_period = 10000
 	time.sleep(max_period)
+
+if __name__ == "__main__":
+	logger.info("Dispatcher PID: %d" % os.getpid())
+	start()
+
 
