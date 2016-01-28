@@ -44,33 +44,33 @@ logger = cp.config.get_logger(__name__)
 
 def console_script():
 	"""Command line tool, installed through setup.py"""
-	commands = ['start','stop','status']
+	commands = ['start','stop','status','reset']
+	options  = ['dispatcher','influxdb','dashboard']
 
 	parser = argparse.ArgumentParser(prog='cheesepi')
 	parser.add_argument('command', metavar='COMMAND', choices=commands, nargs='?', help="'start' or 'stop' one of the CheesePi components")
-	parser.add_argument('option', metavar='OPTION', nargs='?', help='Options to the command')
+	parser.add_argument('option',  metavar='OPTION', choices=options, nargs='?', help='Options to the command')
 	args = parser.parse_args()
 
-	if args.command=="status":
-		show_status()
-		return
-
-	if   args.option=='dispatcher': control_dispatcher(args.command)
-	elif args.option=='influxdb':   control_influxdb(args.command)
-	elif args.option=='dashboard':  control_dashboard(args.command)
-	else:
-		print "Error: unknown OPTION: %s" % args.option
-		sys.exit(1)
+	# single parameter commands
+	if   args.command=="status": show_status()
+	elif args.command=="reset":  reset_install()
+	else: # both command and option required
+		if   args.option=='dispatcher': control_dispatcher(args.command)
+		elif args.option=='influxdb':   control_influxdb(args.command)
+		elif args.option=='dashboard':  control_dashboard(args.command)
+		else:
+			print "Error: unknown OPTION: %s" % args.option
 
 
 def show_status():
 	"""Just print the location of important CheesePi dirs/files"""
 	schedule_file = os.path.join(cp.config.cheesepi_dir, cp.config.get('schedule'))
 	print "Status of CheesePi install"
-	print "Install dir:\t%s" % cp.config.cheesepi_dir
-	print "Log file:\t%s"          % cp.config.log_file
-	print "Config file:\t%s"       % cp.config.config_file
-	print "Schedule file:\t%s"     % schedule_file
+	print "Install dir:\t%s"   % cp.config.cheesepi_dir
+	print "Log file:\t%s"      % cp.config.log_file
+	print "Config file:\t%s"   % cp.config.config_file
+	print "Schedule file:\t%s" % schedule_file
 
 
 def control_dispatcher(action):
@@ -108,11 +108,13 @@ def control_dashboard(action):
 	"""Start or stop the webserver that hosts the dashboard"""
 	print "%s the dashboard" % action
 	if action=='start':
-		cp.bin.webserver.webserver.start_server()
+		cp.bin.webserver.webserver.setup_server()
 	else:
 		print "Error: action not yet implemented!"
 
-
+def reset_install():
+	"""Wipe all local changes to schedule, config"""
+	pass
 
 def build_json(dao, json_str):
 	"""Build a Task object out of a JSON string spec"""
