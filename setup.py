@@ -37,10 +37,11 @@ def readme():
 
 setup(
 	name='cheesepi',
-	version='0.6',
+	version='0.8',
 	description='CheesePi Library',
 	long_description=readme(),
 	url='http://cheesepi.sics.se',
+	packages=['cheesepi'],
 	#download-url= 'http://cheesepi.sics.se/files/cheesepi.tar.gz',
 	author='Liam McNamara',
 	author_email='ljjm@sics.se',
@@ -71,9 +72,9 @@ setup(
 	entry_points={
 		'console_scripts':[
 			'cheesepi = cheesepi.utils:console_script',
-			'cheesepi_config = cheesepi.config:main',
-			'cheesepi_control_server_start = cheesepi.server.utils:start_control_server',
-			'cheesepi_upload_server_start = cheesepi.server.utils:start_upload_server',
+			#'cheesepi_config = cheesepi.config:main',
+			#'cheesepi_control_server_start = cheesepi.server.utils:start_control_server',
+			#'cheesepi_upload_server_start = cheesepi.server.utils:start_upload_server',
 		]
 	},
 	include_package_data=True,

@@ -1,5 +1,7 @@
-recursive-include cheesepi *.py
+global-exclude *pyc
+
+recursive-include cheesepi *
+recursive-include docs
 include setup.py
 include LICENSE
-include *.txt
 include *.rst

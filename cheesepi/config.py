@@ -127,7 +127,7 @@ def create_default_config():
 	if os.path.isfile(config_file):
 		return
 
-	logging.warning("Copying default config file to a local version")
+	print "Warning: Copying default config file to a local version"
 	default_config = os.path.join(cheesepi_dir,"cheesepi.default.conf")
 	# Can we find the default config file?
 	if os.path.isfile(default_config):
@@ -140,9 +140,7 @@ def create_default_config():
 		try:
 			copyfile(default_config, config_file, replace=replace)
 		except Exception as e:
-			msg = "Problem copying config file - check permissions of %s" % cheesepi_dir
-			logger.error(msg)
-			logger.exception(e)
+			print "Error: Problem copying config file - check permissions of %s\n%s" % (cheesepi_dir,e)
 			exit(1)
 	else:
 		logger.error("Can not find default config file!")
@@ -179,7 +177,7 @@ def get_config():
 def create_default_schedule(schedule_filename):
 	"""If schedule file does not exist, try to copy from default."""
 	# is there already a local schedule file?
-	logging.warning("Copying default schedule file to a local version")
+	print "Warning: Copying default schedule file to a local version"
 	default_schedule = os.path.join(cheesepi_dir,"schedule.default.dat")
 	# Can we find the default schedule file?
 	if os.path.isfile(default_schedule):
@@ -320,7 +318,7 @@ def version():
 		fd.close()
 		version = lines[0].strip()
 	except:
-		logging.warning("No version file!")
+		print "Warning: No version file!"
 	return version
 
 
