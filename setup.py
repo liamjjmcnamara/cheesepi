@@ -32,12 +32,12 @@ a local config file (if one does not exist, and initialising logging options
 from setuptools import setup, find_packages
 
 def readme():
-	with open('README') as f:
+	with open('README.rst') as f:
 		return f.read()
 
 setup(
 	name='cheesepi',
-	version='0.5',
+	version='0.6',
 	description='CheesePi Library',
 	long_description=readme(),
 	url='http://cheesepi.sics.se',
@@ -45,8 +45,6 @@ setup(
 	author='Liam McNamara',
 	author_email='ljjm@sics.se',
 	license= 'Apache 2.0',
-	summary= 'CheesePi Library',
-	platform= 'Raspberry Pi focussed',
 	# Which versions we support
 	classifiers=[
 		'Development Status :: 4 - Beta',
