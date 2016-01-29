@@ -46,6 +46,7 @@ setup(
 	author='Liam McNamara',
 	author_email='ljjm@sics.se',
 	license= 'Apache 2.0',
+	platforms = ["RaspberryPi"],
 	# Which versions we support
 	classifiers=[
 		'Development Status :: 4 - Beta',
