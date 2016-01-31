@@ -31,3 +31,6 @@ import utils
 import storage
 import tasks
 import dispatcher
+
+# poor form
+import bin
