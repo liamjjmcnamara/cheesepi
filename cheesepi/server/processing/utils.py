@@ -36,14 +36,14 @@ def median(input_list):
 	else:
 		return float(sum(lst[(len(lst)/2)-1:(len(lst)/2)+1]))/2.0
 
-class StatObject(object):
+class DistributionModel(object):
 	"""
-	TODO maybe rename to something better
+	TODO implement incremental calculation of skewness and kurtosis
 
 	Keeps track of mean value, variance and standard deviation incrementally
 	while new data is supplied.
 	"""
-	log = logging.getLogger("cheesepi.server.processing.StatObject")
+	log = logging.getLogger("cheesepi.server.processing.DistributionModel")
 
 	_DEFAULT_ALPHA = 0.5
 
@@ -74,7 +74,7 @@ class StatObject(object):
 		self._alpha = self._DEFAULT_ALPHA
 
 	def __repr__(self):
-		return "StatObject({mean}, {variance}, {std_dev}, alpha={alpha})".format(
+		return "DistributionModel({mean}, {variance}, {std_dev}, alpha={alpha})".format(
 				mean=self._mean,
 				variance=self._variance,
 				std_dev=self._std_dev,
@@ -84,13 +84,13 @@ class StatObject(object):
 		self._alpha = alpha
 
 	def get_mean(self):
-	    return self._mean
+		return self._mean
 	def get_variance(self):
-	    return self._variance
+		return self._variance
 	def get_std_dev(self):
-	    return self._std_dev
+		return self._std_dev
 	def get_alpha(self):
-	    return self._alpha
+		return self._alpha
 
 	def add_datum(self, new_datum, alpha=_DEFAULT_ALPHA):
 		"""

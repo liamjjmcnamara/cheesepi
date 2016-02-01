@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, absolute_import
 
 from .statistics import Statistics
-from cheesepilib.server.processing.utils import StatObject
+from cheesepilib.server.processing.utils import DistributionModel
 from cheesepilib.server.storage.models.target import Target
 
 class PingStatistics(Statistics):
@@ -10,10 +10,10 @@ class PingStatistics(Statistics):
 	def fromDict(cls, dct):
 		p = PingStatistics()
 		p._target = Target.fromDict(dct['target'])
-		p._delay = StatObject.fromDict(dct['delay'])
-		p._average_delay = StatObject.fromDict(dct['average_delay'])
-		p._average_median_delay = StatObject.fromDict(dct['average_median_delay'])
-		p._average_packet_loss = StatObject.fromDict(dct['average_packet_loss'])
+		p._delay = DistributionModel.fromDict(dct['delay'])
+		p._average_delay = DistributionModel.fromDict(dct['average_delay'])
+		p._average_median_delay = DistributionModel.fromDict(dct['average_median_delay'])
+		p._average_packet_loss = DistributionModel.fromDict(dct['average_packet_loss'])
 		p._all_time_min_rtt = dct['all_time_min_rtt']
 		p._all_time_max_rtt = dct['all_time_max_rtt']
 		p._total_packet_loss = dct['total_packet_loss']
@@ -23,10 +23,10 @@ class PingStatistics(Statistics):
 
 	def __init__(self, target=None):
 		self._target = target
-		self._delay = StatObject(0,0)
-		self._average_delay = StatObject(0,0)
-		self._average_median_delay = StatObject(0,0)
-		self._average_packet_loss = StatObject(0,0)
+		self._delay = DistributionModel(0,0)
+		self._average_delay = DistributionModel(0,0)
+		self._average_median_delay = DistributionModel(0,0)
+		self._average_packet_loss = DistributionModel(0,0)
 		self._all_time_min_rtt = 999999999
 		self._all_time_max_rtt = 0
 		self._total_packet_loss = 0

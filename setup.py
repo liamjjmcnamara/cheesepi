@@ -68,6 +68,7 @@ setup(
 		'influxdb',
 		'pymongo',
 		'uptime',
+		'cherrypy',
 	],
 
 	entry_points={
