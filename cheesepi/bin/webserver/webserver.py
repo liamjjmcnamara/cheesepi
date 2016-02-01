@@ -2,6 +2,7 @@
 
 import os
 import logging
+import socket
 import cherrypy
 
 from cherrypy.lib.static import serve_file
@@ -41,7 +42,11 @@ class Dynamic:
 	@cherrypy.expose
 	def config_js(self, **params):
 		"""Serve the config file, replace the local IP"""
-		return serve_file(os.path.join(serveroot,"dashboard","config.js"))
+		with open(os.path.join(serveroot,"dashboard","config.js"), 'r') as f:
+			content = f.read()
+			ip = socket.gethostbyname(socket.gethostname())
+			return content.replace("INFLUXDB_IP",ip)
+		return "Error"
 
 	def default(self, **name):
 		path = os.path.join(serveroot,"dashboard",name)
