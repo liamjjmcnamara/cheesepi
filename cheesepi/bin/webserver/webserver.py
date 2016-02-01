@@ -4,17 +4,24 @@ import os
 import logging
 import cherrypy
 
+from cherrypy.lib.static import serve_file
+
 
 #logger = logging.getLogger(__name__)
 #logger.setLevel(logging.ERROR)
 
-cherrypy.log.error_log.setLevel(30)
+quiet=False
+if (quiet):
+	cherrypy.log.error_log.setLevel(30)
 
 resultLimit = 5 # number of results per page
 serveroot = os.path.dirname(os.path.realpath(__file__))
 confpath  = os.path.join(serveroot,'cherrypy.conf')
 #print "Webserver root: "+serveroot
 
+print serveroot
+#serveroot = os.path.join(serveroot,"dashboard")
+#print serveroot
 #dao = cp.config.get_dao()
 
 class Root:
@@ -25,25 +32,60 @@ class Root:
 
 class Dynamic:
 	def index(self, **params):
-		cherrypy.response.headers["Content-Type"]  = "application/json"
-		return '{[{"value":10},{"value":15}]}'
+		return serve_file(os.path.join(serveroot,"dashboard","index.html"))
+		#cherrypy.response.headers["Content-Type"]  = "application/json"
+		#return '{[{"value":10},{"value":15}]}'
 		#return '{["value":1],["value":2]}'
 		#return dao.get_op("ping")
+
+	@cherrypy.expose
+	def config_js(self, **params):
+		"""Serve the config file, replace the local IP"""
+		return serve_file(os.path.join(serveroot,"dashboard","config.js"))
+
+	def default(self, **name):
+		path = os.path.join(serveroot,"dashboard",name)
+		print path
+		return serve_file(path)
+	default.exposed = True
 	index.exposed = True
+	config_js.exposed = True
 
 def setup_server():
 	root = Root()
-	root.data = Dynamic()
+	root.dashboard = Dynamic()
 	config = {
 		'global': {
 			'environment': 'embedded',
-			'log.screen': False,
 		},
-		'/dashboard': {
-			'log.screen': False,
+		'/dashboard/css': {
 			'tools.staticdir.on': True,
 			'tools.staticdir.root': serveroot,
-			'tools.staticdir.dir': 'dashboard',
+			'tools.staticdir.dir': 'dashboard/css',
+			'tools.staticdir.index': 'index.html',
+		},
+		'/dashboard/app': {
+			'tools.staticdir.on': True,
+			'tools.staticdir.root': serveroot,
+			'tools.staticdir.dir': 'dashboard/app',
+			'tools.staticdir.index': 'index.html',
+		},
+		'/dashboard/img': {
+			'tools.staticdir.on': True,
+			'tools.staticdir.root': serveroot,
+			'tools.staticdir.dir': 'dashboard/img',
+			'tools.staticdir.index': 'index.html',
+		},
+		'/dashboard/font': {
+			'tools.staticdir.on': True,
+			'tools.staticdir.root': serveroot,
+			'tools.staticdir.dir': 'dashboard/font',
+			'tools.staticdir.index': 'index.html',
+		},
+		'/dashboard/plugins': {
+			'tools.staticdir.on': True,
+			'tools.staticdir.root': serveroot,
+			'tools.staticdir.dir': 'dashboard/plugins',
 			'tools.staticdir.index': 'index.html',
 		},
 		}

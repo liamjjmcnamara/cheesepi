@@ -106,6 +106,7 @@ def print_schedule(schedule_list):
 
 
 def start():
+	global pool
 	schedule_list = load_schedule()
 	print_schedule(schedule_list)
 	pool = multiprocessing.Pool(processes=pool_size)

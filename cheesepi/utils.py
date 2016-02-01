@@ -66,7 +66,7 @@ def console_script():
 def show_status():
 	"""Just print the location of important CheesePi dirs/files"""
 	schedule_file = os.path.join(cp.config.cheesepi_dir, cp.config.get('schedule'))
-	print "Status of CheesePi install"
+	print "Status of CheesePi install:"
 	print "Install dir:\t%s"   % cp.config.cheesepi_dir
 	print "Log file:\t%s"      % cp.config.log_file
 	print "Config file:\t%s"   % cp.config.config_file
@@ -75,8 +75,8 @@ def show_status():
 
 def control_dispatcher(action):
 	"""Start or stop the dispatcher"""
-	print "%s the dispatcher" % action
 	if action=='start':
+		print "Starting the dispatcher..."
 		cp.dispatcher.start()
 	else:
 		print "Error: action not yet implemented!"
@@ -90,8 +90,8 @@ def copy_influx_config():
 
 def control_influxdb(action):
 	"""Start or stop InfluxDB, either the bundled or the system version"""
-	print "%s influxdb" % action
 	if action=='start':
+		print "Starting InfluxDB..."
 		influx = cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb"
 		influx_config = cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb/config.toml"
 		# test if we have already made the local config file
@@ -106,14 +106,15 @@ def control_influxdb(action):
 
 def control_dashboard(action):
 	"""Start or stop the webserver that hosts the dashboard"""
-	print "%s the dashboard" % action
 	if action=='start':
+		print "Starting the dashboard..."
 		cp.bin.webserver.webserver.setup_server()
 	else:
 		print "Error: action not yet implemented!"
 
 def reset_install():
 	"""Wipe all local changes to schedule, config"""
+	print "Error: reset not implemented!"
 	pass
 
 def build_json(dao, json_str):
