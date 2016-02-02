@@ -2,7 +2,7 @@ from __future__ import unicode_literals, absolute_import, print_function
 
 import json
 
-from cheesepilib.exceptions import UnsupportedResultType
+from cheesepi.exceptions import UnsupportedResultType
 
 class ResultParser(object):
 

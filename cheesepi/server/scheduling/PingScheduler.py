@@ -2,7 +2,7 @@ from __future__ import unicode_literals, absolute_import, print_function
 
 import heapq
 
-from cheesepilib.server.storage.mongo import MongoDAO
+from cheesepi.server.storage.mongo import MongoDAO
 from .Scheduler import Scheduler
 
 class PingScheduler(Scheduler):
@@ -41,7 +41,7 @@ class PingScheduler(Scheduler):
 
 if __name__ == "__main__":
 	import argparse
-	import cheesepilib.server.utils as utils
+	import cheesepi.server.utils as utils
 
 	utils.init_logging()
 

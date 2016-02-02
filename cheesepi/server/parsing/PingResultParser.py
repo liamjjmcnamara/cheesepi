@@ -4,8 +4,8 @@ import logging
 
 from .ResultParser import ResultParser
 
-from cheesepilib.server.storage.mongo import MongoDAO
-from cheesepilib.server.storage.models.result import Result
+from cheesepi.server.storage.mongo import MongoDAO
+from cheesepi.server.storage.models.result import Result
 
 class PingResultParser(ResultParser):
 	log = logging.getLogger("cheesepi.server.parsing.PingResultParser")

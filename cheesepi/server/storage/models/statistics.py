@@ -3,7 +3,7 @@ from __future__ import unicode_literals, absolute_import
 import logging
 from collections import namedtuple
 
-from cheesepilib.server.storage.models.target import Target
+from cheesepi.server.storage.models.target import Target
 
 TargetStatistic = namedtuple("TargetStatistic", ["target", "stat_type"])
 
