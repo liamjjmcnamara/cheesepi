@@ -37,7 +37,7 @@ def readme():
 
 setup(
 	name='cheesepi',
-	version='0.9.10',
+	version='0.9.12',
 	description='CheesePi Library',
 	long_description=readme(),
 	url='http://cheesepi.sics.se',
