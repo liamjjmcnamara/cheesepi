@@ -1,5 +1,5 @@
 recursive-include cheesepi *
-recursive-include docs
+recursive-include docs *
 include setup.py
 include LICENSE
 include *.rst

@@ -34,6 +34,7 @@ import uuid
 import time
 import md5
 import argparse
+import platform
 from subprocess import call
 
 import cheesepi as cp
@@ -82,22 +83,32 @@ def control_dispatcher(action):
 		print "Error: action not yet implemented!"
 
 
-def copy_influx_config():
-	influx_dir = cp.config.cheesepi_dir+"/bin/tools/influxdb/"
-	default_config = influx_dir+"config.sample.toml"
-	influx_config  = influx_dir+"config.toml"
+def copy_influx_config(influx_config):
+	"""Copy the default influx config to a local copt (probably in $HOME)"""
+	print "Warning: making local config: %s" % influx_config
+	storage_dir = "/var/lib/influxdb"
+	if not os.path.exists(storage_dir):
+		print "Warning: Default InfluxDB storage dir %s does not exist!" % storage_dir
+	influx_dir = cp.config.cheesepi_dir+"/bin/tools/influxdb"
+	default_config  = os.path.join(influx_dir,"config.toml")
+	print "Warning: copying from default config: %s" % default_config
 	cp.config.copyfile(default_config, influx_config, replace={"INFLUX_DIR":influx_dir} )
 
 def control_influxdb(action):
 	"""Start or stop InfluxDB, either the bundled or the system version"""
 	if action=='start':
 		print "Starting InfluxDB..."
-		influx = cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb"
-		influx_config = cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb/config.toml"
+		home_dir = os.path.expanduser("~")
+		influx_config = os.path.join(home_dir,".influxconfig.toml")
 		# test if we have already made the local config file
 		if not os.path.isfile(influx_config):
-			copy_influx_config()
-			# start the influx server
+			copy_influx_config(influx_config)
+
+		if cp.utils.isARM(): # use module binary
+			influx = cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb"
+		else: # use system binary
+			influx="influxdb"
+		# start the influx server
 		print "Running: " + influx+" -config="+influx_config
 		call([influx, "-config="+influx_config])
 	else:
