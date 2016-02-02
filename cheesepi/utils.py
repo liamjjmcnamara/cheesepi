@@ -107,17 +107,14 @@ def control_influxdb(action):
 		# test if we have already made the local config file
 		if not os.path.isfile(influx_config):
 			copy_influx_config(influx_config)
-
-		if cp.utils.isARM(): # use module binary
-			influx = cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb"
-		else: # use system binary
-			influx="influxdb"
+		influx="influxdb"
 		# start the influx server
-		print "Running: " + influx+" -config="+influx_config
+		print "Running: "+influx+" -config="+influx_config
 		try:
 			call([influx, "-config="+influx_config])
 		except Exception as e:
 			msg = "Problem executing influxdb command %s -config=%s: %s" % (influx,influx_config,e)
+			msg += "\nCheck PATH inclusion of system and python 'bin' directories"
 			print msg
 			logger.error(msg)
 	else:
