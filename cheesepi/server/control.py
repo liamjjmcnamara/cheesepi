@@ -8,6 +8,8 @@ from txmsgpackrpc.factory import MsgpackServerFactory
 from twisted.logger import Logger
 from twisted.internet import defer
 
+from cheesepi.exceptions import NoSuchPeer
+
 class CheeseRPCServerFactory(MsgpackServerFactory):
     """
     Overrides MsgpackServerFactory
@@ -116,6 +118,33 @@ class CheeseRPCServer(MsgpackRPCServer):
             self.log.info("got tasks {tasks}", tasks=task_str)
             defer.returnValue(self._response(True, task_str))
         except NoSuchPeer as e:
+            defer.returnValue(self._response(False, "nosuchpeer"))
+        except Exception as e:
+            self._error(e)
+            defer.returnValue(self._response(False, "error"))
+
+    @defer.inlineCallbacks
+    def remote_get_schedule(self, data):
+        try:
+            # TODO skeleton code right now...
+            self.log.info("Someone trying to get schedule for {}".format(data['uuid']))
+
+            from cheesepi.server.scheduling.PingScheduler import PingScheduler
+            ps = PingScheduler(data['uuid'])
+
+            schedule = yield ps.get_schedule(data['num'])
+            self.log.info("got schedule: {}".format(schedule))
+
+            result = []
+            for target in schedule:
+                result.append(target.toDict())
+
+            from pprint import pformat
+            self.log.info("returning:\n{result}", result=pformat(result))
+
+            defer.returnValue(self._response(True, result))
+        except NoSuchPeer as e:
+            self._error(e)
             defer.returnValue(self._response(False, "nosuchpeer"))
         except Exception as e:
             self._error(e)
