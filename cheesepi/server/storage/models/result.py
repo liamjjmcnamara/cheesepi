@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, absolute_import
 
-from cheesepilib.exceptions import UnsupportedResultType
+from cheesepi.exceptions import UnsupportedResultType
 
 class Result(object):
 

@@ -4,8 +4,8 @@ import os
 import shutil
 import logging
 
-from cheesepilib.server.parsing.ResultParser import ResultParser
-from cheesepilib.exceptions import UnsupportedResultType
+from cheesepi.server.parsing.ResultParser import ResultParser
+from cheesepi.exceptions import UnsupportedResultType
 from .utils import untar, md5_filehash
 
 class ResultDataProcessor(object):
@@ -64,7 +64,7 @@ class ResultDataProcessor(object):
 
 		self.log.info("Processing files in {}".format(self._extract_path))
 
-		from cheesepilib.server.storage.mongo import MongoDAO
+		from cheesepi.server.storage.mongo import MongoDAO
 		from pprint import pformat
 
 		dao = MongoDAO('localhost', 27017)

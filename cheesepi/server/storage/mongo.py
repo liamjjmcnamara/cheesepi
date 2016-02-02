@@ -5,9 +5,9 @@ import pymongo
 import math
 
 from .dao import DAO
-from cheesepilib.exceptions import ServerDaoError, NoSuchPeer
+from cheesepi.exceptions import ServerDaoError, NoSuchPeer
 
-from cheesepilib.server.storage.models.statistics import StatisticsSet
+from cheesepi.server.storage.models.statistics import StatisticsSet
 
 # What is the threshold in seconds to be considered 'active'
 ACTIVE_THRESHOLD = 3600

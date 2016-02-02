@@ -3,7 +3,7 @@ from __future__ import unicode_literals, absolute_import
 import logging
 import uuid
 
-from cheesepilib.exceptions import UnsupportedTargetType
+from cheesepi.exceptions import UnsupportedTargetType
 
 class Target(object):
 

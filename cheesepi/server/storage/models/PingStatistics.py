@@ -1,8 +1,8 @@
 from __future__ import unicode_literals, absolute_import
 
 from .statistics import Statistics
-from cheesepilib.server.processing.utils import DistributionModel
-from cheesepilib.server.storage.models.target import Target
+from cheesepi.server.processing.utils import DistributionModel
+from cheesepi.server.storage.models.target import Target
 
 class PingStatistics(Statistics):
 
@@ -70,7 +70,7 @@ class PingStatistics(Statistics):
 		return self._total_probe_count
 
 	def absorb_result(self, result):
-		from cheesepilib.server.processing.utils import median
+		from cheesepi.server.processing.utils import median
 
 		assert result.get_taskname() == 'ping'
 

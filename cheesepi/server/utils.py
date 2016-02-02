@@ -21,9 +21,9 @@ def start_control_server():
 	from twisted.internet import reactor
 	from twisted.logger import Logger, globalLogPublisher
 
-	from cheesepilib.server.control import (CheeseRPCServerFactory,
-	                                        CheeseRPCServer)
-	from cheesepilib.server.storage.mongo import MongoDAO
+	from cheesepi.server.control import (CheeseRPCServerFactory,
+	                                     CheeseRPCServer)
+	from cheesepi.server.storage.mongo import MongoDAO
 
 	# Argument parsing
 	parser = argparse.ArgumentParser()
@@ -63,7 +63,7 @@ def start_upload_server():
 	from twisted.web.server import Site
 	from twisted.web.resource import Resource
 
-	from cheesepilib.server.upload import UploadHandler
+	from cheesepi.server.upload import UploadHandler
 
 	# Argument parsing
 	parser = argparse.ArgumentParser()
