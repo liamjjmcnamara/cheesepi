@@ -96,6 +96,10 @@ def copy_influx_config(influx_config):
 
 def control_influxdb(action):
 	"""Start or stop InfluxDB, either the bundled or the system version"""
+	storage_dir = "/var/lib/influxdb"
+	if not os.path.exists(storage_dir):
+		print "Warning: Default InfluxDB storage dir %s does not exist!" % storage_dir
+
 	if action=='start':
 		print "Starting InfluxDB..."
 		home_dir = os.path.expanduser("~")
@@ -110,7 +114,12 @@ def control_influxdb(action):
 			influx="influxdb"
 		# start the influx server
 		print "Running: " + influx+" -config="+influx_config
-		call([influx, "-config="+influx_config])
+		try:
+			call([influx, "-config="+influx_config])
+		except Exception as e:
+			msg = "Problem executing influxdb command %s -config=%s: %s" % (influx,influx_config,e)
+			print msg
+			logger.error(msg)
 	else:
 		print "Error: action not yet implemented!"
 
@@ -164,6 +173,12 @@ def build_task(dao, spec):
 		return Wifi(dao, spec)
 	elif spec['taskname']=='dummy':
 		return Dummy(dao, spec)
+	elif spec['taskname']=='upload':
+		return Upload(dao, spec)
+	elif spec['taskname']=='upgradecode':
+		return Upgradecode(dao, spec)
+	elif spec['taskname']=='updatetasks':
+		return Updatetasks(dao, spec)
 	else:
 		raise Exception('Task name not specified! '+str(spec))
 

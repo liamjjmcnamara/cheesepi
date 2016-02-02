@@ -29,15 +29,23 @@ Description: Handles all configuration file duties, including initialising
 a local config file (if one does not exist, and initialising logging options
 """
 
-from setuptools import setup, find_packages
+from subprocess import call
+#from setuptools import setup, find_packages
+from distutils.core import setup
+from distutils.command.install import install
 
 def readme():
 	with open('README.rst') as f:
 		return f.read()
 
+class post_install(install):
+	def run(self):
+		install.run(self)
+		call(['python', 'scriptname.py'], cwd=self.install_lib + 'packagename')
+
 setup(
 	name='cheesepi',
-	version='0.9.2',
+	version='0.9.4',
 	description='CheesePi Library',
 	long_description=readme(),
 	url='http://cheesepi.sics.se',
@@ -70,6 +78,7 @@ setup(
 		'uptime',
 		'cherrypy',
 	],
+	cmdclass={'install': post_install},
 
 	entry_points={
 		'console_scripts':[

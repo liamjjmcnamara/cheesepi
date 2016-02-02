@@ -20,7 +20,6 @@ serveroot = os.path.dirname(os.path.realpath(__file__))
 confpath  = os.path.join(serveroot,'cherrypy.conf')
 #print "Webserver root: "+serveroot
 
-print serveroot
 #serveroot = os.path.join(serveroot,"dashboard")
 #print serveroot
 #dao = cp.config.get_dao()

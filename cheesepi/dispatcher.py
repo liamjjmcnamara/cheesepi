@@ -97,6 +97,8 @@ def load_schedule():
 	if tasks==None:
 		# just use local
 		tasks = cp.config.load_local_schedule()
+	if cp.config.get("auto_update"):
+		tasks.append(cp.tasks.Upgradecode())
 	return tasks
 
 def print_schedule(schedule_list):

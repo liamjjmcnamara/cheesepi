@@ -6,10 +6,10 @@ from builtins import str
 from txmsgpackrpc.client import connect
 from twisted.internet import defer
 
-import cheesepi
+import cheesepi as cp
 import Task
 
-logger = cheesepi.utils.get_logger(__name__)
+logger = cp.config.get_logger(__name__)
 
 SERVER_PORT = 18080
 
@@ -21,7 +21,7 @@ class Updatetasks(Task.Task):
 	def __init__(self, dao, spec):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname'] = "updatetasks"
-		if not 'server' in spec: self.spec['server'] = cheesepi.config.get_controller()
+		if not 'server' in spec: self.spec['server'] = cp.config.get_controller()
 
 	def run(self):
 		logger.info("Getting tasks for ID:%d from %s @ %f, PID: %d" % (self.spec['peer_id'], self.spec['server'], time(), os.getpid()))
