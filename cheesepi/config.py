@@ -192,7 +192,6 @@ def create_default_schedule(schedule_filename):
 		sys.exit(1)
 
 def load_local_schedule():
-
 	schedule_filename = os.path.join(cheesepi_dir, config['schedule'])
 	if not os.path.isfile(schedule_filename):
 		create_default_schedule(schedule_filename)

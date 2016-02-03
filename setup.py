@@ -37,7 +37,7 @@ def readme():
 
 setup(
 	name='cheesepi',
-	version='0.9.12',
+	version='0.9.15',
 	description='CheesePi Library',
 	long_description=readme(),
 	url='http://cheesepi.sics.se',
@@ -60,6 +60,7 @@ setup(
 
 	# Runtime dependencies
 	install_requires=[
+		'setuptools',
 		'future',
 		'txmsgpackrpc',
 		'twisted',
