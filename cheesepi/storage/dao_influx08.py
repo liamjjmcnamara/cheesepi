@@ -68,7 +68,7 @@ class DAO_influx(dao.DAO):
 			exit(1)
 
 	def make_database(self, name):
-		self.create_database(name)
+		self.conn.create_database(name)
 
 	def extract_series(self, dic):
 		if len(dic)==1 and dic[0]['name']=='list_series_result':

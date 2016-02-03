@@ -68,7 +68,7 @@ class DAO_influx(dao.DAO):
 			exit(1)
 
 	def make_database(self, name):
-		self.create_database(name,True)
+		self.conn.create_database(name,True)
 
 	def dump(self, since=-1):
 		try:
