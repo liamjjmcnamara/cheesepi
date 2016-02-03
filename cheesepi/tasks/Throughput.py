@@ -2,14 +2,13 @@
 
 import time
 import os
+import speedtest_cli
 
 import cheesepi as cp
 import Task
 
 logger = cp.config.get_logger(__name__)
 
-# https://github.com/sivel/speedtest-cli
-import speedtest
 
 class Throughput(Task.Task):
 
@@ -29,7 +28,7 @@ class Throughput(Task.Task):
 		try:
 			op_output = speedtest.speedtest()
 		except:
-			logger.error("speedtest.py failed to run...")
+			logger.error("speedtest_cli failed...")
 			return
 		self.spec['end_time']= cp.utils.now()
 		logger.debug(op_output)

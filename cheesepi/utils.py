@@ -134,6 +134,13 @@ def reset_install():
 	print "Error: reset not implemented!"
 	pass
 
+def make_series():
+	"""Ensure that database contains series grafana and cheesepi"""
+	dao = cp.config.get_dao()
+	# TODO: dont make if already exists
+	dao.make_database("cheesepi")
+	dao.make_database("grafana")
+
 def build_json(dao, json_str):
 	"""Build a Task object out of a JSON string spec"""
 	spec = json.loads(json_str)

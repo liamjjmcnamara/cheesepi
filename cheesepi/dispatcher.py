@@ -114,7 +114,7 @@ def start():
 	schedule_list = load_schedule()
 	print_schedule(schedule_list)
 	pool = multiprocessing.Pool(processes=pool_size)
-
+	cp.utils.make_series()
 	# reschedule all tasks from the schedule specified in config file
 	for t in schedule_list:
 		schedule_task(t)

@@ -1,5 +1,5 @@
 
-Introduction to the source code for the CheesePi measurement platform
+Introduction to the internals of the CheesePi measurement platform.
 
 Install
 -----------------
@@ -78,5 +78,6 @@ Included modules
 -----------------
 
 The speedtest module is from https://pypi.python.org/pypi/speedtest-cli/
-Which is under license: Apache License, Version 2.0
+Which is under license: Apache License, Version 2.0.
+
 

@@ -37,12 +37,11 @@ def readme():
 
 setup(
 	name='cheesepi',
-	version='0.9.15',
+	version='0.9.16',
 	description='CheesePi Library',
 	long_description=readme(),
 	url='http://cheesepi.sics.se',
 	packages=['cheesepi'],
-	#download-url= 'http://cheesepi.sics.se/files/cheesepi.tar.gz',
 	author='Liam McNamara',
 	author_email='ljjm@sics.se',
 	license= 'Apache 2.0',
@@ -70,6 +69,7 @@ setup(
 		'pymongo',
 		'uptime',
 		'cherrypy',
+		'speedtest-cli',
 	],
 
 	scripts=['cheesepi/bin/tools/influxdb/influxdb'],
