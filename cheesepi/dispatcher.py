@@ -97,8 +97,9 @@ def load_schedule():
 	if tasks==None:
 		# just use local
 		tasks = cp.config.load_local_schedule()
-	if cp.config.get("auto_update"):
-		task_str = {'taskname':'upgradecode', 'period':900, 'offset':65}
+	if cp.config.get("auto_upgrade"):
+		upgrade_period = 43200 # 24hrs
+		task_str = {'taskname':'upgradecode', 'period':upgrade_period, 'offset':'rand'}
 		tasks.append(task_str)
 	return tasks
 
