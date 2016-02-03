@@ -26,12 +26,28 @@ Start the storage server:
 ~~~~~~~~~~~~~~~~~~~~~~
 ``$ cheesepi start influxdb``
 
+This will try to run the ARM version of influxdb from the CheesePi
+distribution. Alternatively, you can run the system version via its normal
+command.
+
+
 Start measuring
 ~~~~~~~~~~~~~~~~~~~~~~
+
+To start the measurement tasks being dipsatched run the following the command:
+
 ``$ cheesepi start dispatcher``
+
+The tasks specified in the schedule (described below), will be executing
+according to their timing information. The InfluxDB needs to be running in
+order to store the task results.
+
 
 Start the dashboard webserver
 ~~~~~~~~~~~~~~~~~~~~~~
+
+To start the host's webserver running the dashboard use the following command:
+
 ``$ cheesepi start dashboard``
 
 This command starts a webserver on the localhost that will display the
@@ -74,10 +90,15 @@ be commented out with a *#*.
 
 
 
-Included modules
+BUGS and problems
 -----------------
 
-The speedtest module is from https://pypi.python.org/pypi/speedtest-cli/
-Which is under license: Apache License, Version 2.0.
 
+* If your install fails fails with --single-version-externally-managed* it may
+  be caused by problems with python version 2.7.11 To solve try the following:
+
+``sudo conda install python=2.7.10``
+
+
+* If you find other issues, please email cheesepi@sics.se
 
