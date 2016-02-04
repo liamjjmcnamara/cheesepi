@@ -224,8 +224,8 @@ def resolve_if(interface):
 	"""Get the IP address of an interface"""
 	addr_type = 2 # 2=AF_INET, 30=AF_INET6
 	try:
-		addr = netifaces.ifaddresses('en0')[addr_type][0]['addr']
-	except ValueError as e:
+		addr = netifaces.ifaddresses(interface)[addr_type][0]['addr']
+	except Exception as e:
 		# failed to resolve
 		return None
 	return addr

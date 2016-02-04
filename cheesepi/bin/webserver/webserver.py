@@ -7,6 +7,7 @@ import cherrypy
 
 from cherrypy.lib.static import serve_file
 
+import cheesepi as cp
 
 #logger = logging.getLogger(__name__)
 #logger.setLevel(logging.ERROR)
