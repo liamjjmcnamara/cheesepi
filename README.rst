@@ -2,7 +2,7 @@
 Introduction to the internals of the CheesePi measurement platform.
 
 Install
------------------
+-------
 
 To obtain the CheesePi dsitribution, simply install the python module:
 
@@ -23,7 +23,7 @@ results in the influxdb. To view the results, the dashboard can optionally be
 started.
 
 Start the storage server:
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 ``$ cheesepi start influxdb``
 
 This will try to run the ARM version of influxdb from the CheesePi
@@ -32,7 +32,7 @@ command.
 
 
 Start measuring
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 To start the measurement tasks being dipsatched run the following the command:
 
@@ -44,7 +44,7 @@ order to store the task results.
 
 
 Start the dashboard webserver
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To start the host's webserver running the dashboard use the following command:
 
@@ -56,7 +56,7 @@ collected data. Browse to http://localhost:8080 to view this dashboard.
 
 
 Customising behaviour
------------------
+---------------------
 There are two main files for customising the behaviour of CheesePi, a main
 configuration file and a schedule of tasks to execute. The main configuration
 file *cheesepi.conf* controls the level of logging, whether to auto-upgrade the
@@ -71,7 +71,7 @@ installation and not be overwritten by software upgrades. If you delete your
 local copy, a new default copy will be generated.
 
 Configuration
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
 The configuration file format is rather simple, key value pairs of strings are
 set with the format:
 
@@ -81,7 +81,7 @@ Lines can be commmented out with a *#*.
 
 
 Schedule
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
 
 The schedule file format is of one JSON sting (http://www.w3schools.com/json/)
 per line. Each JSON object represents a *measurement task*, the only required 

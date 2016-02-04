@@ -37,7 +37,7 @@ def readme():
 
 setup(
 	name='cheesepi',
-	version='0.9.18',
+	version='0.9.22',
 	description='CheesePi Library',
 	long_description=readme(),
 	url='http://cheesepi.sics.se',
@@ -70,6 +70,7 @@ setup(
 		'uptime',
 		'cherrypy',
 		'speedtest-cli',
+		'netifaces',
 	],
 
 	scripts=['cheesepi/bin/tools/influxdb/influxdb'],

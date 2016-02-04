@@ -35,6 +35,7 @@ import time
 import md5
 import argparse
 import platform
+import netifaces
 from subprocess import call
 
 import cheesepi as cp
@@ -152,7 +153,6 @@ def build_task(dao, spec):
 		return None
 
 	spec['taskname'] = spec['taskname'].lower()
-
 	if spec['taskname']=='ping':
 		return Ping(dao, spec)
 	elif spec['taskname']=='httping':
@@ -220,8 +220,30 @@ def getCurrMAC():
 	return ret
 
 
-#get our source address
+def resolve_if(interface):
+	"""Get the IP address of an interface"""
+	addr_type = 2 # 2=AF_INET, 30=AF_INET6
+	try:
+		addr = netifaces.ifaddresses('en0')[addr_type][0]['addr']
+	except ValueError as e:
+		# failed to resolve
+		return None
+	return addr
+
+def get_IP():
+	"""Try to get this host's active address"""
+	interfaces = ["eth0","en0","wlan0"]
+	# apppend all interfaces on this host
+	#interfaces.append(netifaces.interfaces())
+	for interface in interfaces:
+		ip = resolve_if(interface)
+		if ip!=None: # we have a valid IP
+			return ip
+	# unknown IP
+	return "127.0.0.1"
+
 def get_SA():
+	"""get our percieved remote source address"""
 	try:
 		ret = urllib2.urlopen('http://ip.42.pl/raw').read()
 	except Exception as e: # We may be offline
