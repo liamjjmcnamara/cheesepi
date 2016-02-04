@@ -29,17 +29,22 @@ Description: Handles all configuration file duties, including initialising
 a local config file (if one does not exist, and initialising logging options
 """
 
+import os
 from setuptools import setup
 
 def readme():
 	with open('README.rst') as f:
 		return f.read()
 
+def version():
+	with open(os.path.join('cheesepi','VERSION')) as f:
+		return f.read().strip()
+
 setup(
 	name='cheesepi',
-	version='0.9.25',
 	description='CheesePi Library',
 	long_description=readme(),
+	version=version(),
 	url='http://cheesepi.sics.se',
 	packages=['cheesepi'],
 	author='Liam McNamara',
