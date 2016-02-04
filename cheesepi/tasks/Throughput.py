@@ -2,7 +2,10 @@
 
 import time
 import os
-import speedtest_cli
+
+# slightly modified to return collected data
+# https://pypi.python.org/pypi/speedtest-cli/
+import speedtest
 
 import cheesepi as cp
 import Task
@@ -24,11 +27,13 @@ class Throughput(Task.Task):
 
 	# measure and record funtion
 	def measure(self):
+		op_output=""
 		self.spec['start_time'] = cp.utils.now()
 		try:
 			op_output = speedtest.speedtest()
-		except:
-			logger.error("speedtest_cli failed...")
+			print op_output
+		except Exception as e:
+			logger.error("speedtest_cli failed: %s" % e)
 			return
 		self.spec['end_time']= cp.utils.now()
 		logger.debug(op_output)
