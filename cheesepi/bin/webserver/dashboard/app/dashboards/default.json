@@ -23,7 +23,7 @@
           "type": "text",
           "id": 8,
           "mode": "html",
-          "content": "<img style=\"display: block; margin-left: auto; margin-right: auto\" src=\"./cheesepi.png\" />\n",
+          "content": "<img style=\"display: block; margin-left: auto; margin-right: auto\" src=\"./img/cheesepi.png\" />\n",
           "style": {},
           "links": [
             {
