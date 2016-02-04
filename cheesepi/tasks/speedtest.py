@@ -600,7 +600,13 @@ def speedtest():
     parser.add_argument('--version', action='store_true',
                         help='Show the version number and exit')
 
-    options = parser.parse_args()
+    # ljmm@sics.se hack:
+    parseARGV=False
+    if parseARGV:
+        options = parser.parse_args()
+    else:
+        options = parser.parse_args([])
+
     if isinstance(options, tuple):
         args = options[0]
     else:

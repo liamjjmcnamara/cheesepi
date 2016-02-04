@@ -76,6 +76,7 @@ setup(
 		'cherrypy',
 		'speedtest-cli',
 		'netifaces',
+		'argparse',
 	],
 
 	scripts=['cheesepi/bin/tools/influxdb/influxdb'],

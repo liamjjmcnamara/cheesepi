@@ -4,6 +4,7 @@ import time
 import os
 
 # slightly modified to return collected data
+# It also requires a newer argparse, 1.4 works
 # https://pypi.python.org/pypi/speedtest-cli/
 import speedtest
 
