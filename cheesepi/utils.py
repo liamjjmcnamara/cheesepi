@@ -34,6 +34,7 @@ import uuid
 import time
 import md5
 import argparse
+import multiprocessing
 import platform
 import netifaces
 from subprocess import call
@@ -46,8 +47,8 @@ logger = cp.config.get_logger(__name__)
 
 def console_script():
 	"""Command line tool, installed through setup.py"""
-	commands = ['start','stop','status','reset']
-	options  = ['dispatcher','influxdb','dashboard']
+	commands = ['start','stop','status','reset','upgrade']
+	options  = ['dispatcher','influxdb','dashboard','all']
 
 	parser = argparse.ArgumentParser(prog='cheesepi')
 	parser.add_argument('command', metavar='COMMAND', choices=commands, nargs='?', help="'start' or 'stop' one of the CheesePi components")
@@ -55,12 +56,14 @@ def console_script():
 	args = parser.parse_args()
 
 	# single parameter commands
-	if   args.command=="status": show_status()
-	elif args.command=="reset":  reset_install()
+	if   args.command=="status":  show_status()
+	elif args.command=="reset":   reset_install()
+	elif args.command=="upgrade": upgrade_install()
 	else: # both command and option required
 		if   args.option=='dispatcher': control_dispatcher(args.command)
 		elif args.option=='influxdb':   control_influxdb(args.command)
 		elif args.option=='dashboard':  control_dashboard(args.command)
+		elif args.option=='all':        control_all(args.command)
 		else:
 			print "Error: unknown OPTION: %s" % args.option
 
@@ -68,12 +71,11 @@ def console_script():
 def show_status():
 	"""Just print the location of important CheesePi dirs/files"""
 	schedule_file = os.path.join(cp.config.cheesepi_dir, cp.config.get('schedule'))
-	print "Status of CheesePi install:"
+	print "Status of CheesePi install (version %s):" % cp.config.version()
 	print "Install dir:\t%s"   % cp.config.cheesepi_dir
 	print "Log file:\t%s"      % cp.config.log_file
 	print "Config file:\t%s"   % cp.config.config_file
 	print "Schedule file:\t%s" % schedule_file
-
 
 def control_dispatcher(action):
 	"""Start or stop the dispatcher"""
@@ -82,7 +84,6 @@ def control_dispatcher(action):
 		cp.dispatcher.start()
 	else:
 		print "Error: action not yet implemented!"
-
 
 def copy_influx_config(influx_config):
 	"""Copy the default influx config to a local copt (probably in $HOME)"""
@@ -121,7 +122,6 @@ def control_influxdb(action):
 	else:
 		print "Error: action not yet implemented!"
 
-
 def control_dashboard(action):
 	"""Start or stop the webserver that hosts the dashboard"""
 	if action=='start':
@@ -130,10 +130,28 @@ def control_dashboard(action):
 	else:
 		print "Error: action not yet implemented!"
 
+def control_all(action):
+	pool = multiprocessing.Pool(processes=3)
+	pool.apply_async(control_influxdb,  [action])
+	pool.apply_async(control_dispatcher,[action])
+	pool.apply_async(control_dashboard, [action])
+	pool.close()
+	pool.join()
+
 def reset_install():
 	"""Wipe all local changes to schedule, config"""
-	print "Error: reset not implemented!"
-	pass
+	home_dir = os.path.expanduser("~")
+	influx_config = os.path.join(home_dir,".influxconfig.toml")
+	copy_influx_config(influx_config)
+	cp.config.create_default_config(True)
+
+def upgrade_install():
+	"""Try and pull new version of the code from PyPi"""
+	upgrade_task = cp.tasks.Upgradecode()
+	upgrade_task.run()
+
+
+
 
 def make_series():
 	"""Ensure that database contains series grafana and cheesepi"""
