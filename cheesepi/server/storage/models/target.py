@@ -31,11 +31,11 @@ class LandmarkTarget(Target):
 	@classmethod
 	def fromDict(cls, dct):
 		assert dct['type'] == 'landmark'
-		return LandmarkTarget(dct['ip'], dct['port'], dct['domain'])
+		return LandmarkTarget(dct['ip'], dct['domain'])
 
-	def __init__(self, ip, port, domain):
+	def __init__(self, ip, domain):
 		self._ip = ip
-		self._port = port
+		#self._port = port
 		self._domain = domain
 		self._uuid = uuid.uuid5(uuid.NAMESPACE_DNS, domain)
 
@@ -43,7 +43,6 @@ class LandmarkTarget(Target):
 		return {
 			'type':'landmark',
 			'ip':self._ip,
-			'port':self._port,
 			'domain':self._domain,
 			'uuid':str(self._uuid),
 		}
@@ -59,11 +58,11 @@ class PeerTarget(Target):
 	@classmethod
 	def fromDict(cls, dct):
 		assert dct['type'] == 'peer'
-		return PeerTarget(dct['ip'], dct['port'], dct['uuid'])
+		return PeerTarget(dct['ip'], dct['uuid'])
 
-	def __init__(self, ip, port, peer_uuid):
+	def __init__(self, ip, peer_uuid):
 		self._ip = ip
-		self._port = port
+		#self._port = port
 		self._uuid = uuid.UUID(peer_uuid)
 		assert peer_uuid == str(self._uuid)
 
@@ -71,7 +70,6 @@ class PeerTarget(Target):
 		return {
 			'type':'peer',
 			'ip':self._ip,
-			'port':self._port,
 			'uuid':str(self._uuid),
 		}
 

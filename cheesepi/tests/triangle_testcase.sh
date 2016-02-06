@@ -34,9 +34,9 @@ P1_HASH=$(md5sum ${P1}.tgz | cut -d ' ' -f 1)
 P2_HASH=$(md5sum ${P2}.tgz | cut -d ' ' -f 1)
 P3_HASH=$(md5sum ${P3}.tgz | cut -d ' ' -f 1)
 
-curl --form "fileupload=@${P1}.tgz" --form "filename=${P1}.tgz" --form "md5_hash=${P1_HASH}" localhost:18090/upload
-curl --form "fileupload=@${P2}.tgz" --form "filename=${P2}.tgz" --form "md5_hash=${P2_HASH}" localhost:18090/upload
-curl --form "fileupload=@${P3}.tgz" --form "filename=${P3}.tgz" --form "md5_hash=${P3_HASH}" localhost:18090/upload
+curl --form "file=@${P1}.tgz" --form "filename=${P1}.tgz" --form "md5_hash=${P1_HASH}" localhost:18090/upload
+curl --form "file=@${P2}.tgz" --form "filename=${P2}.tgz" --form "md5_hash=${P2_HASH}" localhost:18090/upload
+curl --form "file=@${P3}.tgz" --form "filename=${P3}.tgz" --form "md5_hash=${P3_HASH}" localhost:18090/upload
 
 rm ${P1}.tgz
 rm ${P2}.tgz

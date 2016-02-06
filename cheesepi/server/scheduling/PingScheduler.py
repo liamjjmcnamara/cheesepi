@@ -1,24 +1,45 @@
 from __future__ import unicode_literals, absolute_import, print_function
 
+import logging
 import heapq
+import random
 
 from cheesepi.server.storage.mongo import MongoDAO
 from .Scheduler import Scheduler
 
+BLIND_SCHEDULE_RATIO=float(1)/float(3)
+
 class PingScheduler(Scheduler):
 
-	def __init__(self, peer_id):
+	log = logging.getLogger("cheesepi.server.scheduling.PingScheduler")
+
+	def __init__(self, uuid):
 		self.dao = MongoDAO('localhost', 27017)
-		self._peer_id = peer_id
+		self._uuid = uuid
 
 	def get_schedule(self, num=1):
-		schedule = []
-
-		stats = self.dao.get_all_stats(self._peer_id)
-
 		from pprint import pformat
 
-		#print(pformat(stats.toDict()))
+		#self.log.info("Generating schedule with blind ratio = {}".format(
+			#BLIND_SCHEDULE_RATIO))
+
+		# num is 1, we randomize if it will be random or not to achieve full coverage
+		if num == 1:
+			x = random.uniform(0.0, 1.0)
+			if x <= BLIND_SCHEDULE_RATIO:
+				non_blind_num = 0
+			else:
+				non_blind_num = 1
+		else:
+			non_blind_num = int(num - (num*BLIND_SCHEDULE_RATIO))
+
+		blind_num = num - non_blind_num
+
+		#self.log.info("Non blinds = {}".format(non_blind_num))
+
+		schedule = []
+		stats = self.dao.get_all_stats(self._uuid)
+		#self.log.info(pformat(stats.toDict()))
 
 		priority_sorted_targets = []
 
@@ -32,9 +53,18 @@ class PingScheduler(Scheduler):
 
 		#print(priority_sorted_targets)
 
-		for i in range(0, min(num,len(priority_sorted_targets))):
+		for i in range(0, min(non_blind_num,len(priority_sorted_targets))):
 			target = heapq.heappop(priority_sorted_targets)
 			schedule.append(target[1])
+
+		if len(schedule) < non_blind_num:
+			# schedule length needs to be filled with more blinds
+			blind_num = blind_num + (non_blind_num - len(schedule))
+
+		for i in range(0, blind_num):
+			#self.log.info("Adding blind to schedule")
+			entity = self.dao.get_random_entity(ignore_uuid=self._uuid)
+			schedule.append(entity)
 
 		return schedule
 

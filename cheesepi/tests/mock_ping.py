@@ -9,7 +9,7 @@ import numpy as np
 
 from scipy.stats import gamma
 
-class PingResultMocker(object):
+class GammaDist(object):
 
 	def __init__(self, shape=2, loc=10, scale=3, lossrate=0, seed=None):
 
@@ -26,19 +26,42 @@ class PingResultMocker(object):
 		self._shape = shape
 		self._loc = loc
 		self._scale = scale
+		self._lossrate = lossrate
 		self._generate_dist()
+
+	@classmethod
+	def fromDict(cls, dct):
+		if 'shape' in dct: shape = dct['shape']
+		else: shape = 2
+		if 'loc' in dct: loc = dct['loc']
+		else: loc = 10
+		if 'scale' in dct: scale = dct['scale']
+		else: scale = 3
+		if 'lossrate' in dct: lossrate = dct['lossrate']
+		else: lossrate = 0
+		if 'seed' in dct: seed = dct['seed']
+		else: seed = None
+
+		return GammaDist(shape=shape, loc=loc, scale=scale, lossrate=lossrate,
+				seed=seed)
+
+	def __repr__(self):
+		return "GammaDist({}, {}, {}, {}) mvsk=({}, {}, {}, {})".format(
+				self._shape, self._loc, self._scale, self._lossrate,
+				self.get_mean(), self.get_variance(), self.get_skew(),
+				self.get_kurtosis())
 
 	def _generate_dist(self):
 		self._dist = gamma(self._shape, loc=self._loc, scale=self._scale)
 
 	def sample_n(self, n):
 		samples = self._dist.rvs(size=n)
-		if lossrate != 0:
+		if self._lossrate != 0:
 			for i in range(0, len(samples)):
-				if random.uniform(0,1) < lossrate:
+				if random.uniform(0,1) < self._lossrate:
 					samples[i] = -1
 
-		return samples
+		return list(samples)
 
 
 	def set_seed(self, seed):
@@ -63,8 +86,74 @@ class PingResultMocker(object):
 		return self._dist.stats(moments='s').item()
 	def get_kurtosis(self):
 		return self._dist.stats(moments='k').item()
+	def get_dist(self):
+		return self._dist
 
-class PingResultObjectConstructor(object):
+class PeerMocker(object):
+
+	def __init__(self, uuid, links):
+		self._uuid = uuid
+		self._links = links
+
+	@classmethod
+	def fromDict(cls, dct):
+		links = {}
+		uuid = dct['uuid']
+
+		for link in dct['links']:
+			if 'dist' in link:
+				dist = GammaDist.fromDict(link['dist'])
+			else:
+				dist = GammaDist()
+			#print(dist)
+			lm = LinkMocker(uuid, link['uuid'], dist)
+			links[link['uuid']] = lm
+
+		return PeerMocker(uuid, links)
+
+	def __repr__(self):
+		link_str = ""
+		for link in self._links.itervalues():
+			string = str(link)
+			for line in string.split('\n'):
+				link_str = link_str + "\t" + line + "\n"
+		return "PeerMocker({})\n{}".format(self._uuid, link_str)
+
+	def get_uuid(self):
+		return self._uuid
+	def get_ip(self):
+		return self._ip
+	def get_link(self, uuid):
+		if uuid in self._links:
+			return self._links[uuid]
+		else: return None
+
+
+	def sample_link(self, target_uuid, num=10):
+		if target_uuid in self._links:
+			return self._links[target_uuid].sample_dist(num)
+		else:
+			raise Exception("Peer {} has no link to {}".format(self._uuid,
+				target_uuid))
+
+class LinkMocker(object):
+
+	def __init__(self, source_uuid, target_uuid, dist=GammaDist()):
+		self._source_uuid = source_uuid
+		self._target_uuid = target_uuid
+		self._dist = dist
+
+	def __repr__(self):
+		return "LinkMocker({} -> {})\n\t{}".format(self._source_uuid,
+				self._target_uuid, str(self._dist))
+
+	def get_dist(self):
+		return self._dist.get_dist()
+
+	def sample_dist(self, num=10):
+		return self._dist.sample_n(num)
+
+class PingUploadConstructor(object):
 
 	def __init__(self, peer_id):
 		self._peer_id = peer_id
@@ -98,10 +187,15 @@ class PingResultObjectConstructor(object):
 		# NOTE We need to account for lost packets when calculating things
 		success_count = ping_count - packet_loss
 
-		variance = square_sum/success_count
+		if success_count > 0:
+			variance = square_sum/success_count
 
-		stddev_rtt = math.sqrt(variance)
-		average_rtt = total_sum/success_count
+			stddev_rtt = math.sqrt(variance)
+			average_rtt = total_sum/success_count
+		else:
+			variance = 0
+			stddev_rtt = 0
+			average_rtt = 0
 
 
 		result = [
@@ -186,7 +280,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	seed = args.seed
-	proc = PingResultObjectConstructor(args.peerid)
+	proc = PingUploadConstructor(args.peerid)
 	dist_stats = {}
 
 	for t in args.target:
@@ -204,7 +298,7 @@ if __name__ == "__main__":
 		if 'lossrate' in dct:
 			lossrate = dct['lossrate']
 
-		prm = PingResultMocker(shape=shape, loc=loc, scale=scale,
+		prm = GammaDist(shape=shape, loc=loc, scale=scale,
 		                       lossrate=lossrate, seed=seed)
 		samples = prm.sample_n(args.samplesize)
 

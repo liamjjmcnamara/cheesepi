@@ -25,7 +25,18 @@ def call_get_schedule(uuid, num):
 @defer.inlineCallbacks
 def main(uuid, num):
 
+	from cheesepi.server.storage.models.target import Target
+
 	result = yield call_get_schedule(uuid, num)
+
+	schedule = []
+	if result['status'] == 'success':
+		for s in result['result']:
+			schedule.append(Target.fromDict(s))
+	else:
+		print("Fail.. :(")
+
+	print(schedule)
 
 	print(pformat(result))
 

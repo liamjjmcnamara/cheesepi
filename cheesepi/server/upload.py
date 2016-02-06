@@ -2,6 +2,7 @@ from __future__ import unicode_literals, absolute_import, print_function
 
 import os
 import hashlib
+import random
 
 from twisted.web import server
 from twisted.web.resource import Resource
@@ -17,14 +18,15 @@ class UploadHandler(Resource):
 
 	def render_POST(self, request):
 
+		prefix = str(random.randint(1000,9999))
 		filename = os.path.join(UPLOAD_PATH,
-		                        request.args['filename'][0])
+			prefix + "_" + request.args['filename'][0])
 
 		# Check the hash
 		md5_hash = request.args['md5_hash'][0]
 
 		m = hashlib.md5()
-		m.update(request.args['fileupload'][0])
+		m.update(request.args['file'][0])
 		upload_hash = m.hexdigest()
 		if md5_hash != upload_hash:
 			print("HASH DOES NOT MATCH")
@@ -32,7 +34,7 @@ class UploadHandler(Resource):
 
 		# Write the file
 		with open(filename, 'wb') as fd:
-				fd.write(request.args['fileupload'][0])
+				fd.write(request.args['file'][0])
 
 		upload_size = os.stat(filename).st_size
 

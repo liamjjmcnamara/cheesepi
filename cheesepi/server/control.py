@@ -75,16 +75,19 @@ class CheeseRPCServer(MsgpackRPCServer):
             defer.returnValue(self._response(False, "error"))
 
     @defer.inlineCallbacks
-    def remote_register(self, host, peer_id):
+    def remote_register(self, host, peer_uuid):
         """
         This remote method gets special handling in getRemoteMethod() in the
         CheeseRPCServerFactory class and thus receives the ip of the connecting
         peer
         """
+        from cheesepi.server.storage.models.target import PeerTarget
         try:
-            self.log.info("peer with id {peer_id} registering from host {host}",
-                          peer_id=peer_id, host=host)
-            result = yield self.dao.register_peer(peer_id, host)
+            self.log.info("peer with uuid {peer_uuid} registering from host {host}",
+                          peer_uuid=peer_uuid, host=host)
+            entity = PeerTarget(host, peer_uuid)
+            #result = yield self.dao.register_entity(peer_uuid, host, 'peer')
+            result = yield self.dao.register_peer_entity(entity)
             #self.log.info("register with result: {result}",result=result)
             defer.returnValue(self._response(True, result))
         except Exception as e:
@@ -133,14 +136,14 @@ class CheeseRPCServer(MsgpackRPCServer):
             ps = PingScheduler(data['uuid'])
 
             schedule = yield ps.get_schedule(data['num'])
-            self.log.info("got schedule: {}".format(schedule))
+            #self.log.info("got schedule: {schedule}", schedule=schedule)
 
             result = []
             for target in schedule:
                 result.append(target.toDict())
 
-            from pprint import pformat
-            self.log.info("returning:\n{result}", result=pformat(result))
+            #from pprint import pformat
+            #self.log.info("returning:\n{result}", result=pformat(result))
 
             defer.returnValue(self._response(True, result))
         except NoSuchPeer as e:
