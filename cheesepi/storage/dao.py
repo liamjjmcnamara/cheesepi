@@ -36,6 +36,9 @@ class DAO:
 	def close(self):
 		pass
 
+	def make_database(self, name):
+		pass
+
 	def dump(self, since=None):
 		msg ="Method not implemented in DAO class"
 		logging.error(msg)

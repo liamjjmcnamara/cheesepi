@@ -34,6 +34,9 @@ import uuid
 import time
 import md5
 import argparse
+import multiprocessing
+import platform
+import netifaces
 from subprocess import call
 
 import cheesepi as cp
@@ -44,8 +47,8 @@ logger = cp.config.get_logger(__name__)
 
 def console_script():
 	"""Command line tool, installed through setup.py"""
-	commands = ['start','stop','status','reset']
-	options  = ['dispatcher','influxdb','dashboard']
+	commands = ['start','stop','status','reset','upgrade']
+	options  = ['dispatcher','influxdb','dashboard','all']
 
 	parser = argparse.ArgumentParser(prog='cheesepi')
 	parser.add_argument('command', metavar='COMMAND', choices=commands, nargs='?', help="'start' or 'stop' one of the CheesePi components")
@@ -53,12 +56,14 @@ def console_script():
 	args = parser.parse_args()
 
 	# single parameter commands
-	if   args.command=="status": show_status()
-	elif args.command=="reset":  reset_install()
+	if   args.command=="status":  show_status()
+	elif args.command=="reset":   reset_install()
+	elif args.command=="upgrade": upgrade_install()
 	else: # both command and option required
 		if   args.option=='dispatcher': control_dispatcher(args.command)
 		elif args.option=='influxdb':   control_influxdb(args.command)
 		elif args.option=='dashboard':  control_dashboard(args.command)
+		elif args.option=='all':        control_all(args.command)
 		else:
 			print "Error: unknown OPTION: %s" % args.option
 
@@ -66,12 +71,11 @@ def console_script():
 def show_status():
 	"""Just print the location of important CheesePi dirs/files"""
 	schedule_file = os.path.join(cp.config.cheesepi_dir, cp.config.get('schedule'))
-	print "Status of CheesePi install:"
+	print "Status of CheesePi install (version %s):" % cp.config.version()
 	print "Install dir:\t%s"   % cp.config.cheesepi_dir
 	print "Log file:\t%s"      % cp.config.log_file
 	print "Config file:\t%s"   % cp.config.config_file
 	print "Schedule file:\t%s" % schedule_file
-
 
 def control_dispatcher(action):
 	"""Start or stop the dispatcher"""
@@ -81,28 +85,42 @@ def control_dispatcher(action):
 	else:
 		print "Error: action not yet implemented!"
 
-
-def copy_influx_config():
-	influx_dir = cp.config.cheesepi_dir+"/bin/tools/influxdb/"
-	default_config = influx_dir+"config.sample.toml"
-	influx_config  = influx_dir+"config.toml"
+def copy_influx_config(influx_config):
+	"""Copy the default influx config to a local copt (probably in $HOME)"""
+	print "Warning: making local config: %s" % influx_config
+	storage_dir = "/var/lib/influxdb"
+	if not os.path.exists(storage_dir):
+		print "Warning: Default InfluxDB storage dir %s does not exist!" % storage_dir
+	influx_dir = cp.config.cheesepi_dir+"/bin/tools/influxdb"
+	default_config  = os.path.join(influx_dir,"config.toml")
+	print "Warning: copying from default config: %s" % default_config
 	cp.config.copyfile(default_config, influx_config, replace={"INFLUX_DIR":influx_dir} )
 
 def control_influxdb(action):
 	"""Start or stop InfluxDB, either the bundled or the system version"""
+	storage_dir = "/var/lib/influxdb"
+	if not os.path.exists(storage_dir):
+		print "Warning: Default InfluxDB storage dir %s does not exist!" % storage_dir
+
 	if action=='start':
 		print "Starting InfluxDB..."
-		influx = cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb"
-		influx_config = cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb/config.toml"
+		home_dir = os.path.expanduser("~")
+		influx_config = os.path.join(home_dir,".influxconfig.toml")
 		# test if we have already made the local config file
 		if not os.path.isfile(influx_config):
-			copy_influx_config()
-			# start the influx server
-		print "Running: " + influx+" -config="+influx_config
-		call([influx, "-config="+influx_config])
+			copy_influx_config(influx_config)
+		influx="influxdb"
+		# start the influx server
+		print "Running: "+influx+" -config="+influx_config
+		try:
+			call([influx, "-config="+influx_config])
+		except Exception as e:
+			msg = "Problem executing influxdb command %s -config=%s: %s" % (influx,influx_config,e)
+			msg += "\nCheck PATH inclusion of system and python 'bin' directories"
+			print msg
+			logger.error(msg)
 	else:
 		print "Error: action not yet implemented!"
-
 
 def control_dashboard(action):
 	"""Start or stop the webserver that hosts the dashboard"""
@@ -112,10 +130,35 @@ def control_dashboard(action):
 	else:
 		print "Error: action not yet implemented!"
 
+def control_all(action):
+	pool = multiprocessing.Pool(processes=3)
+	pool.apply_async(control_influxdb,  [action])
+	pool.apply_async(control_dispatcher,[action])
+	pool.apply_async(control_dashboard, [action])
+	pool.close()
+	pool.join()
+
 def reset_install():
 	"""Wipe all local changes to schedule, config"""
-	print "Error: reset not implemented!"
-	pass
+	home_dir = os.path.expanduser("~")
+	influx_config = os.path.join(home_dir,".influxconfig.toml")
+	copy_influx_config(influx_config)
+	cp.config.create_default_config(True)
+
+def upgrade_install():
+	"""Try and pull new version of the code from PyPi"""
+	upgrade_task = cp.tasks.Upgradecode()
+	upgrade_task.run()
+
+
+
+
+def make_series():
+	"""Ensure that database contains series grafana and cheesepi"""
+	dao = cp.config.get_dao()
+	# TODO: dont make if already exists
+	dao.make_database("cheesepi")
+	dao.make_database("grafana")
 
 def build_json(dao, json_str):
 	"""Build a Task object out of a JSON string spec"""
@@ -128,7 +171,6 @@ def build_task(dao, spec):
 		return None
 
 	spec['taskname'] = spec['taskname'].lower()
-
 	if spec['taskname']=='ping':
 		return Ping(dao, spec)
 	elif spec['taskname']=='httping':
@@ -153,6 +195,12 @@ def build_task(dao, spec):
 		return Wifi(dao, spec)
 	elif spec['taskname']=='dummy':
 		return Dummy(dao, spec)
+	elif spec['taskname']=='upload':
+		return Upload(dao, spec)
+	elif spec['taskname']=='upgradecode':
+		return Upgradecode(dao, spec)
+	elif spec['taskname']=='updatetasks':
+		return Updatetasks(dao, spec)
 	else:
 		raise Exception('Task name not specified! '+str(spec))
 
@@ -190,8 +238,30 @@ def getCurrMAC():
 	return ret
 
 
-#get our source address
+def resolve_if(interface):
+	"""Get the IP address of an interface"""
+	addr_type = 2 # 2=AF_INET, 30=AF_INET6
+	try:
+		addr = netifaces.ifaddresses(interface)[addr_type][0]['addr']
+	except Exception as e:
+		# failed to resolve
+		return None
+	return addr
+
+def get_IP():
+	"""Try to get this host's active address"""
+	interfaces = ["eth0","en0","wlan0"]
+	# apppend all interfaces on this host
+	#interfaces.append(netifaces.interfaces())
+	for interface in interfaces:
+		ip = resolve_if(interface)
+		if ip!=None: # we have a valid IP
+			return ip
+	# unknown IP
+	return "127.0.0.1"
+
 def get_SA():
+	"""get our percieved remote source address"""
 	try:
 		ret = urllib2.urlopen('http://ip.42.pl/raw').read()
 	except Exception as e: # We may be offline

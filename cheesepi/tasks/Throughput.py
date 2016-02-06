@@ -1,13 +1,18 @@
+#!/usr/bin/env python
+
 import time
 import os
+
+# slightly modified to return collected data
+# It also requires a newer argparse, 1.4 works
+# https://pypi.python.org/pypi/speedtest-cli/
+import speedtest
 
 import cheesepi as cp
 import Task
 
 logger = cp.config.get_logger(__name__)
 
-# https://github.com/sivel/speedtest-cli
-import speedtest
 
 class Throughput(Task.Task):
 
@@ -23,11 +28,13 @@ class Throughput(Task.Task):
 
 	# measure and record funtion
 	def measure(self):
+		op_output=""
 		self.spec['start_time'] = cp.utils.now()
 		try:
 			op_output = speedtest.speedtest()
-		except:
-			logger.error("speedtest.py failed to run...")
+			print op_output
+		except Exception as e:
+			logger.error("speedtest_cli failed: %s" % e)
 			return
 		self.spec['end_time']= cp.utils.now()
 		logger.debug(op_output)

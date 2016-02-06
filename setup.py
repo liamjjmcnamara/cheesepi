@@ -29,20 +29,24 @@ Description: Handles all configuration file duties, including initialising
 a local config file (if one does not exist, and initialising logging options
 """
 
-from setuptools import setup, find_packages
+import os
+from setuptools import setup
 
 def readme():
 	with open('README.rst') as f:
 		return f.read()
 
+def version():
+	with open(os.path.join('cheesepi','VERSION')) as f:
+		return f.read().strip()
+
 setup(
 	name='cheesepi',
-	version='0.8',
 	description='CheesePi Library',
 	long_description=readme(),
+	version=version(),
 	url='http://cheesepi.sics.se',
 	packages=['cheesepi'],
-	#download-url= 'http://cheesepi.sics.se/files/cheesepi.tar.gz',
 	author='Liam McNamara',
 	author_email='ljjm@sics.se',
 	license= 'Apache 2.0',
@@ -60,6 +64,7 @@ setup(
 
 	# Runtime dependencies
 	install_requires=[
+		'setuptools',
 		'future',
 		'txmsgpackrpc',
 		'twisted',
@@ -69,8 +74,12 @@ setup(
 		'pymongo',
 		'uptime',
 		'cherrypy',
+		'speedtest-cli',
+		'netifaces',
+		'argparse',
 	],
 
+	scripts=['cheesepi/bin/tools/influxdb/influxdb'],
 	entry_points={
 		'console_scripts':[
 			'cheesepi = cheesepi.utils:console_script',
@@ -80,4 +89,5 @@ setup(
 		]
 	},
 	include_package_data=True,
+	zip_safe=False,
 )

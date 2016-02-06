@@ -97,6 +97,10 @@ def load_schedule():
 	if tasks==None:
 		# just use local
 		tasks = cp.config.load_local_schedule()
+	if cp.config.get("auto_upgrade"):
+		upgrade_period = 43200 # 24hrs
+		task_str = {'taskname':'upgradecode', 'period':upgrade_period, 'offset':'rand'}
+		tasks.append(task_str)
 	return tasks
 
 def print_schedule(schedule_list):
@@ -110,7 +114,7 @@ def start():
 	schedule_list = load_schedule()
 	print_schedule(schedule_list)
 	pool = multiprocessing.Pool(processes=pool_size)
-
+	cp.utils.make_series()
 	# reschedule all tasks from the schedule specified in config file
 	for t in schedule_list:
 		schedule_task(t)

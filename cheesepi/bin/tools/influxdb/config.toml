@@ -18,12 +18,12 @@ reporting-disabled = false
 [logging]
 # logging level can be one of "debug", "info", "warn" or "error"
 level  = "info"
-file   = "INFLUX_DIR/log.txt"         # stdout to log to standard out
+file   = "/var/lib/influxdb/log.txt"         # stdout to log to standard out
 
 # Configure the admin server
 [admin]
 port   = 8083              # binding is disabled if the port isn't set
-assets = "INFLUX_DIR/admin"
+assets = "/var/lib/influxdb/admin"
 
 # Configure the http api
 [api]
@@ -67,12 +67,12 @@ read-timeout = "5s"
 port = 8090
 
 # Where the raft logs are stored. The user running InfluxDB will need read/write access.
-dir  = "INFLUX_DIR/data/raft"
+dir  = "/var/lib/influxdb/data/raft"
 
 # election-timeout = "1s"
 
 [storage]
-dir = "INFLUX_DIR/data/db"
+dir = "/var/lib/influxdb/data/db"
 # How many requests to potentially buffer in memory. If the buffer gets filled then writes
 # will still be logged and once the local storage has caught up (or compacted) the writes
 # will be replayed from the WAL
@@ -182,7 +182,7 @@ write-batch-size = 5000000
 
 [wal]
 
-dir   = "INFLUX_DIR/data/wal"
+dir   = "/var/lib/influxdb/data/wal"
 flush-after = 1000 # the number of writes after which wal will be flushed, 0 for flushing on every write
 bookmark-after = 1000 # the number of writes after which a bookmark will be created
 

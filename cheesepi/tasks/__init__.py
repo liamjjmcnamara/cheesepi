@@ -3,6 +3,8 @@ from Task import Task
 from Dummy import Dummy
 from Beacon import Beacon
 from Upload import Upload
+from Upgradecode import Upgradecode
+from Updatetasks import Updatetasks
 from Status import Status
 from Ping import Ping
 from Httping import Httping

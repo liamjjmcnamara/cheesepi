@@ -45,7 +45,6 @@ cheesepi_dir  = os.path.dirname(os.path.realpath(__file__))
 home_dir      = os.environ['HOME']
 log_dir       = home_dir
 config_file   = os.path.join(cheesepi_dir, "cheesepi.conf")
-version_file  = os.path.join(cheesepi_dir, "version")
 
 # Store log in user's home directory
 log_file    = os.path.join(log_dir, ".cheesepi.log")
@@ -120,11 +119,11 @@ def generate_uuid():
 	return str(uuid.uuid4())
 
 
-def create_default_config():
+def create_default_config(clobber=False):
 	"""If config file does not exist, try to copy from default.
 	   Also add a local secret to the file."""
 	# is there already a local config file?
-	if os.path.isfile(config_file):
+	if not clobber and os.path.isfile(config_file):
 		return
 
 	print "Warning: Copying default config file to a local version"
@@ -192,7 +191,6 @@ def create_default_schedule(schedule_filename):
 		sys.exit(1)
 
 def load_local_schedule():
-
 	schedule_filename = os.path.join(cheesepi_dir, config['schedule'])
 	if not os.path.isfile(schedule_filename):
 		create_default_schedule(schedule_filename)
@@ -310,17 +308,9 @@ def make_databases():
 	os.system(cmd)
 
 def version():
-	"""Which version of the code are we running?"""
-	version="repos"
-	try:
-		fd = open(version_file)
-		lines = fd.readlines()
-		fd.close()
-		version = lines[0].strip()
-	except:
-		print "Warning: No version file!"
-	return version
-
+	"""Which version of CheesePi are we running?"""
+	with open(os.path.join(cheesepi_dir,'VERSION')) as f:
+		return f.read().strip()
 
 def get(key):
 	key = clean(key)
