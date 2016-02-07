@@ -122,7 +122,7 @@ def generate_uuid():
 	return str(uuid.uuid4())
 
 
-def create_default_config(clobber=False):
+def ensure_default_config(clobber=False):
 	"""If config file does not exist, try to copy from default.
 	   Also add a local secret to the file."""
 	# is there already a local config file?
@@ -149,7 +149,7 @@ def create_default_config(clobber=False):
 
 def read_config():
 	# ensure we have a config file to read
-	create_default_config()
+	ensure_default_config()
 	try:
 		fd = open(config_file)
 		lines = fd.readlines()

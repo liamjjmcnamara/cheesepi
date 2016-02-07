@@ -157,7 +157,7 @@ def control_dashboard(action):
 
 def control_all(action):
 	pool = multiprocessing.Pool(processes=3)
-	pool.apply_async(control_influxdb,  [action])
+	pool.apply_async(control_storage,  [action])
 	pool.apply_async(control_dispatcher,[action])
 	pool.apply_async(control_dashboard, [action])
 	pool.close()
@@ -168,7 +168,7 @@ def reset_install():
 	home_dir = os.path.expanduser("~")
 	influx_config = os.path.join(home_dir,".influxconfig.toml")
 	copy_influx_config(influx_config)
-	cp.config.create_default_config(True)
+	cp.config.ensure_default_config(True)
 
 def upgrade_install():
 	"""Try and pull new version of the code from PyPi"""
