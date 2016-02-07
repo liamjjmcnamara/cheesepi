@@ -170,17 +170,29 @@ class DistributionModel(object):
 			# Mean (the first moment is already normalized)
 			m1 = m1 + norm_delta_m1
 
+		if n < 1:
+		    return # No information gained anyway....
+		elif n == 1:
+		    # We need to avoid division by zero here
+		    div = 1
+		    # If we only got one sample, chances are that m2 is 0.0
+		    if m2 == 0.0:
+		        m2 = 1.0
+		else:
+		    div = n-1
+
+
 		# Normalized Variance (n-1 because for n=1 the second moment is 0)
-		self._new_variance = (m2 / (n-1))
+		self._new_variance = (m2 / div)
 
 		# Standard deviation
 		std_dev = math.sqrt(self._new_variance)
 
 		# Skewness
-		skew = (m3/(n-1)) / math.pow(std_dev, 3)
+		skew = (m3/div) / math.pow(std_dev, 3)
 
 		# Kurtosis, adjusted so kurtosis of Gauss = 0
-		kurtosis = (m4/(n-1)) / math.pow(std_dev, 4) - 3
+		kurtosis = (m4/div) / math.pow(std_dev, 4) - 3
 
 		self._skew = skew
 		self._kurtosis = kurtosis

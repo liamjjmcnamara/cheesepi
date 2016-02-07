@@ -13,8 +13,18 @@ UPLOAD_PATH = "/tmp/cheesepi/"
 class UploadHandler(Resource):
 
 	def __init__(self):
+		self._upload_queue = []
+
 		if not os.path.exists(UPLOAD_PATH):
 			os.makedirs(UPLOAD_PATH)
+
+	def _process_upload(self):
+		from cheesepi.server.processing.utils import process_upload
+
+		filename = self._upload_queue.pop(0)
+
+		# This call is blocking so it will run until done...
+		process_upload(filename)
 
 	def render_POST(self, request):
 
@@ -41,8 +51,9 @@ class UploadHandler(Resource):
 		# Schedule processing of file one second later
 		# NOTE: Maybe we'd like to chain together the completion of the
 		#       write with the processing using a callback?
-		from cheesepi.server.processing.utils import process_upload
-		reactor.callLater(1, process_upload, filename)
+		#from cheesepi.server.processing.utils import process_upload
+		self._upload_queue.append(filename)
+		reactor.callLater(1, self._process_upload)
 
 		response = b'Received upload of size %d bytes\n' % upload_size
 		request.setHeader(b'Content-Length', len(response))

@@ -130,7 +130,7 @@ class CheeseRPCServer(MsgpackRPCServer):
     def remote_get_schedule(self, data):
         try:
             # TODO skeleton code right now...
-            self.log.info("Someone trying to get schedule for {}".format(data['uuid']))
+            #self.log.info("Someone trying to get schedule for {}".format(data['uuid']))
 
             from cheesepi.server.scheduling.PingScheduler import PingScheduler
             ps = PingScheduler(data['uuid'])

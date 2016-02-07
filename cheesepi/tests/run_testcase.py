@@ -65,6 +65,7 @@ def full_coverage_pass(peers, sample_size):
 	os.mkdir(start_dir)
 	os.mkdir(tar_dir)
 
+	dl = []
 	for peer in peers:
 		uuid = peer.get_uuid()
 		puf = mp.PingUploadConstructor(uuid)
@@ -84,9 +85,13 @@ def full_coverage_pass(peers, sample_size):
 
 		# Write the data to file
 		with open(result_path, "w") as fd:
-			yield json.dump(dict_object, fd)
+			json.dump(dict_object, fd)
 
-		upload_results(uuid, result_path, tar_dir)
+		d = upload_results(uuid, result_path, tar_dir)
+		dl.append(d)
+
+	results = yield defer.gatherResults(dl)
+	defer.returnValue(results)
 
 
 @defer.inlineCallbacks
@@ -98,7 +103,7 @@ def upload_results(uuid, source_file, tar_dir):
 	with tarfile.open(name=tarpath, mode='w:gz') as tar:
 		tar.add(source_file, arcname='ping.json')
 
-	md5_hash = yield md5_filehash(tarpath)
+	md5_hash = md5_filehash(tarpath)
 
 	# Upload tar file
 	url = 'http://localhost:18090/upload'
@@ -146,7 +151,9 @@ def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size):
 
 	# TODO Am I sure everything will happen sequentially??????
 	# Yeah pretty sure, since twisted shouldn't introduce race conditions...
-	upload_results(uuid, result_path, tar_dir)
+	result = yield upload_results(uuid, result_path, tar_dir)
+
+	defer.returnValue(result)
 
 @defer.inlineCallbacks
 def measurement_pass(peers, pass_dir):
@@ -156,17 +163,28 @@ def measurement_pass(peers, pass_dir):
 	os.mkdir(pass_dir)
 	os.mkdir(tar_dir)
 
+	dl = []
 	for peer in peers:
 		uuid = peer.get_uuid()
 
 		peer_dir = os.path.join(pass_dir, uuid)
 
-		yield peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size)
+		d = peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size)
+		dl.append(d)
+
+	results = yield defer.gatherResults(dl)
+
+	defer.returnValue(results)
 
 @defer.inlineCallbacks
 def register_peers(peers):
+	dl = []
 	for peer in peers:
-		result = yield call_register(peer.get_uuid())
+		d = call_register(peer.get_uuid())
+		dl.append(d)
+
+	results = yield defer.gatherResults(dl)
+	defer.returnValue(results)
 
 @defer.inlineCallbacks
 def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
@@ -177,86 +195,32 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 	      "and sample size of {}".format(sample_size))
 
 	# Make sure the peers are present as entities in the database
-	yield register_peers(peers)
+	results = yield register_peers(peers)
+	#print(results)
 
 	if full_coverage_start:
-		full_coverage_pass(peers, sample_size)
+		results = yield full_coverage_pass(peers, sample_size)
+		#print(results)
 
 	# Maybe initialize with one iteration complete coverage???
 
+	dl = []
 	for i in range(0, iterations):
 		# Create directory
 		ITER_DIR = os.path.join(DIRNAME, str(i))
-		#TAR_DIR = os.path.join(ITER_DIR,"tar")
 
-		#os.mkdir(ITER_DIR)
-		#os.mkdir(TAR_DIR)
+		d = measurement_pass(peers, ITER_DIR)
+		dl.append(d)
 
-		yield measurement_pass(peers, ITER_DIR)
+	results = yield defer.gatherResults(dl)
+	#print(results)
 
-		#for peer in peers:
-			#uuid = peer.get_uuid()
+	# If we don't sleep there's a possibility that the last data written
+	# doesn't get taken into account when querying the database. There shouldn't
+	# be any race conditions on the server however.... I think...
+	print("DONE. Sleeping so database can catch up...")
+	time.sleep(1)
 
-			#peer_dir = os.path.join(ITER_DIR, uuid)
-			#peer_pass(peer, peer_dir, sched_size, sample_size)
-
-			# Create directory
-			# PEER_DIR = os.path.join(ITER_DIR, uuid)
-			# os.mkdir(PEER_DIR)
-
-			# # Result file
-			# PEER_RESULT = os.path.join(PEER_DIR, "ping.json")
-
-			# sched = yield call_get_schedule(uuid, sched_size)
-
-			# uuid_sched = [target['uuid'] for target in sched['result']]
-			# puf = mp.PingUploadConstructor(uuid)
-
-			# print("Got schedule:\n{}".format(pformat(uuid_sched)))
-			# for target in sched['result']:
-			# 	target_uuid = target['uuid']
-			# 	target_ip = target['ip']
-
-			# 	samples = peer.sample_link(target_uuid, sample_size)
-			# 	print("Generated samples for target {}\n{}".format(target_uuid,
-			# 		pformat(samples)))
-			# 	puf.add_result(samples, target_uuid, target_ip)
-
-			# dict_object = puf.construct()
-
-			# # Write the data to file
-			# with open(PEER_RESULT, "w") as fd:
-			# 	json.dump(dict_object, fd)
-
-			# # Tar the results
-			# tarname = uuid + ".tgz"
-			# tarpath = os.path.join(TAR_DIR, tarname)
-			# #print(tarpath)
-			# with tarfile.open(name=tarpath, mode='w:gz') as tar:
-			# 	tar.add(PEER_RESULT, arcname='ping.json')
-
-			# md5_hash = md5_filehash(tarpath)
-
-			# # Upload tar file
-			# url = 'http://localhost:18090/upload'
-			# params = {
-			# 	'filename':tarname,
-			# 	'md5_hash':md5_hash,
-			# }
-			# files = {'file':open(tarpath, 'rb')}
-
-			# response = requests.post(url, params, files=files)
-			#data = urllib.urlencode(params)
-			#request = urllib2.Request(url, data)
-			#response = urllib2.urlopen(request)
-			#body = response.read()
-			#print(response.text)
-
-		# Ugly way to try to avoid race conditions in the server...
-		# Maybe not needed...
-		#time.sleep(1)
-
-	print("DONE")
 	from cheesepi.server.storage.mongo import MongoDAO
 	from cheesepi.server.storage.models.PingStatistics import PingStatistics
 
@@ -283,6 +247,7 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 		peer_uuid = peer.get_uuid()
 
 		stats = dao.get_all_stats(peer.get_uuid())
+		print(stats)
 		for stat_index, stat in enumerate(stats):
 			assert isinstance(stat, PingStatistics)
 			stat_plot = peer_plot[stat_index]
@@ -292,6 +257,9 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 			print(target_uuid)
 
 			delay_model = stat.get_delay()
+
+			num_samples = delay_model._n
+
 			print("m={}, v={}, s={}, k={}".format(delay_model._m1,
 				delay_model._new_variance, delay_model._skew, delay_model._kurtosis))
 
@@ -303,6 +271,9 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 			#pdfs.append(pdf)
 			y_model_plot = np.array([pdf(x) for x in x_plot])
 			y_orig_plot = orig_dist.pdf(x_plot)
+
+			stat_plot.text(0.50, 0.40, "#samples={}".format(num_samples),
+					fontsize=8, transform=stat_plot.transAxes)
 
 			#stat_plot = fig.add_subplot(pn,1,1)
 			stat_plot.plot(x_plot, y_model_plot, color='r', label='model distribution')
