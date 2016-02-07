@@ -116,7 +116,7 @@ def find_influx_exe():
 	else:
 		if isARM():
 			print "cheesepi influx"
-			return cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb"
+			return cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb.arm"
 		else:
 			print "Error: Can't find InfluxDB binary, set 'database_exe' in the config file"
 			sys.exit(1)
