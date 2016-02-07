@@ -3,20 +3,20 @@ from __future__ import unicode_literals, absolute_import
 import logging
 import uuid
 
-from cheesepi.exceptions import UnsupportedTargetType
+from cheesepi.exceptions import UnsupportedEntityType
 
-class Target(object):
+class Entity(object):
 
-	log = logging.getLogger("cheesepi.server.storage.models.target.Target")
+	log = logging.getLogger("cheesepi.server.storage.models.entity.Entity")
 
 	@classmethod
 	def fromDict(cls, dct):
 		from pprint import pformat
-		target_type = dct['type']
+		entity_type = dct['type']
 
-		if target_type == 'landmark': return LandmarkTarget.fromDict(dct)
-		if target_type == 'peer': return PeerTarget.fromDict(dct)
-		else: raise UnsupportedTargetType("Unknown target type '{}'.".format(target_type))
+		if entity_type == 'landmark': return LandmarkEntity.fromDict(dct)
+		if entity_type == 'peer': return PeerEntity.fromDict(dct)
+		else: raise UnsupportedEntityType("Unknown entity type '{}'.".format(entity_type))
 
 	def toDict(self):
 		raise NotImplementedError("Abstract method 'toDict' not implemented.")
@@ -24,14 +24,14 @@ class Target(object):
 	def get_uuid(self):
 		raise NotImplementedError("Abstract method 'get_uuid' not implemented.")
 
-class LandmarkTarget(Target):
+class LandmarkEntity(Entity):
 
-	log = logging.getLogger("cheesepi.server.storage.models.target.LandmarkTarget")
+	log = logging.getLogger("cheesepi.server.storage.models.entity.LandmarkEntity")
 
 	@classmethod
 	def fromDict(cls, dct):
 		assert dct['type'] == 'landmark'
-		return LandmarkTarget(dct['ip'], dct['domain'])
+		return LandmarkEntity(dct['ip'], dct['domain'])
 
 	def __init__(self, ip, domain):
 		self._ip = ip
@@ -51,14 +51,14 @@ class LandmarkTarget(Target):
 		return str(self._uuid)
 
 
-class PeerTarget(Target):
+class PeerEntity(Entity):
 
-	log = logging.getLogger("cheesepi.server.storage.models.target.PeerTarget")
+	log = logging.getLogger("cheesepi.server.storage.models.entity.PeerEntity")
 
 	@classmethod
 	def fromDict(cls, dct):
 		assert dct['type'] == 'peer'
-		return PeerTarget(dct['ip'], dct['uuid'])
+		return PeerEntity(dct['ip'], dct['uuid'])
 
 	def __init__(self, ip, peer_uuid):
 		self._ip = ip

@@ -81,11 +81,11 @@ class CheeseRPCServer(MsgpackRPCServer):
         CheeseRPCServerFactory class and thus receives the ip of the connecting
         peer
         """
-        from cheesepi.server.storage.models.target import PeerTarget
+        from cheesepi.server.storage.models.entity import PeerEntity
         try:
             self.log.info("peer with uuid {peer_uuid} registering from host {host}",
                           peer_uuid=peer_uuid, host=host)
-            entity = PeerTarget(host, peer_uuid)
+            entity = PeerEntity(host, peer_uuid)
             #result = yield self.dao.register_entity(peer_uuid, host, 'peer')
             result = yield self.dao.register_peer_entity(entity)
             #self.log.info("register with result: {result}",result=result)
@@ -139,8 +139,8 @@ class CheeseRPCServer(MsgpackRPCServer):
             #self.log.info("got schedule: {schedule}", schedule=schedule)
 
             result = []
-            for target in schedule:
-                result.append(target.toDict())
+            for entity in schedule:
+                result.append(entity.toDict())
 
             #from pprint import pformat
             #self.log.info("returning:\n{result}", result=pformat(result))

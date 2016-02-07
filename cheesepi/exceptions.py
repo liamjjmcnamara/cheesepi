@@ -22,5 +22,5 @@ class NoSuchPeer(ServerDaoError):
 class UnsupportedResultType(CheesePiServerException):
     pass
 
-class UnsupportedTargetType(CheesePiServerException):
+class UnsupportedEntityType(CheesePiServerException):
     pass

@@ -2,14 +2,14 @@ from __future__ import unicode_literals, absolute_import
 
 from .statistics import Statistics
 from cheesepi.server.processing.utils import DistributionModel
-from cheesepi.server.storage.models.target import Target
+from cheesepi.server.storage.models.entity import Entity
 
 class PingStatistics(Statistics):
 
 	@classmethod
 	def fromDict(cls, dct):
 		p = PingStatistics()
-		p._target = Target.fromDict(dct['target'])
+		p._target = Entity.fromDict(dct['target'])
 		p._delay = DistributionModel.fromDict(dct['delay'])
 		p._average_delay = DistributionModel.fromDict(dct['average_delay'])
 		p._average_median_delay = DistributionModel.fromDict(dct['average_median_delay'])

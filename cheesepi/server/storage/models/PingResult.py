@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, absolute_import
 
 from .result import Result
-from .target import Target
+from .entity import Entity
 
 class PingResult(Result):
 
@@ -12,7 +12,7 @@ class PingResult(Result):
 		p = PingResult()
 		p._start_time = dct['start_time']
 		p._end_time = dct['end_time']
-		p._target = Target.fromDict(dct['target'])
+		p._target = Entity.fromDict(dct['target'])
 
 		seq = dct['value']['delay_sequence']
 		if isinstance(seq, str):

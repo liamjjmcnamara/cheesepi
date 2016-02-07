@@ -8,7 +8,7 @@ from .dao import DAO
 from cheesepi.exceptions import ServerDaoError, NoSuchPeer
 
 from cheesepi.server.storage.models.statistics import StatisticsSet
-from cheesepi.server.storage.models.target import Target, PeerTarget, LandmarkTarget
+from cheesepi.server.storage.models.entity import Entity, PeerEntity, LandmarkEntity
 
 # What is the threshold in seconds to be considered 'active'
 ACTIVE_THRESHOLD = 3600
@@ -99,7 +99,7 @@ class MongoDAO(DAO):
 	def register_peer_entity(self, entity):
 		"""
 		"""
-		assert isinstance(entity, PeerTarget)
+		assert isinstance(entity, PeerEntity)
 		result = self.db.entities.update_one(
 			{'uuid':entity.get_uuid()},
 			{'$set':entity.toDict()},
@@ -134,7 +134,7 @@ class MongoDAO(DAO):
 			#self.log.info("alive? {}".format(cursor.alive))
 			#self.log.info("\n{}".format(cursor.mystats()))
 			entity = cursor.next()
-			entity_obj = Target.fromDict(entity)
+			entity_obj = Entity.fromDict(entity)
 			return entity_obj
 		else:
 			# What does this mean????
@@ -177,7 +177,7 @@ class MongoDAO(DAO):
 
 		Args:
 			uuid: a peer uuid
-			target: a Target object
+			target: a Entity object
 		Returns:
 			A StatisticsSet object if query is successful, None
 			otherwise.
@@ -208,7 +208,7 @@ class MongoDAO(DAO):
 
 		Args:
 			uuid: a peer uuid
-			targets: a list of Target objects
+			targets: a list of Entity objects
 		Returns:
 			A StatisticsSet object if query is successful, None
 			otherwise.
