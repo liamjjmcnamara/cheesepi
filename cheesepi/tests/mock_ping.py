@@ -159,6 +159,7 @@ class PingUploadConstructor(object):
 		self._peer_id = peer_id
 		self._results = []
 
+	# TODO Should remove destination address and default to localhost
 	def add_result(self, data, target_id, destination_address):
 		# TODO packet loss assumed 0 for now but should extend so we can model
 		# that as well in the future

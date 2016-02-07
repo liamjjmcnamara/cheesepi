@@ -57,14 +57,37 @@ def call_register(uuid):
 		defer.returnValue(e)
 
 @defer.inlineCallbacks
-def full_coverage_pass(peers):
-	START_DIR = os.path.join(DIRNAME, "start")
-	TAR_DIR = os.path.join(START_DIR, "tar")
+def full_coverage_pass(peers, sample_size):
+	print("Running full coverage pass")
+	start_dir = os.path.join(DIRNAME, "start")
+	tar_dir = os.path.join(start_dir, "tar")
 
-	os.mkdir(START_DIR)
-	os.mkdir(TAR_DIR)
+	os.mkdir(start_dir)
+	os.mkdir(tar_dir)
 
-	# TODO
+	for peer in peers:
+		uuid = peer.get_uuid()
+		puf = mp.PingUploadConstructor(uuid)
+
+		peer_dir = os.path.join(start_dir, uuid)
+		os.mkdir(peer_dir)
+		result_path = os.path.join(peer_dir, "ping.json")
+
+		for link in peer._links.itervalues():
+			target_uuid = link._target_uuid
+			samples = link.sample_dist(sample_size)
+			print("Generated samples for target {}\n{}".format(target_uuid,
+				pformat(samples)))
+			puf.add_result(samples, target_uuid, "127.0.0.1")
+
+		dict_object = puf.construct()
+
+		# Write the data to file
+		with open(result_path, "w") as fd:
+			yield json.dump(dict_object, fd)
+
+		upload_results(uuid, result_path, tar_dir)
+
 
 @defer.inlineCallbacks
 def upload_results(uuid, source_file, tar_dir):
@@ -157,7 +180,7 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 	yield register_peers(peers)
 
 	if full_coverage_start:
-		full_coverage_pass(peers)
+		full_coverage_pass(peers, sample_size)
 
 	# Maybe initialize with one iteration complete coverage???
 
