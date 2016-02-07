@@ -12,7 +12,7 @@ import cheesepi as cp
 #logger = logging.getLogger(__name__)
 #logger.setLevel(logging.ERROR)
 
-quiet=False
+quiet=True
 if (quiet):
 	cherrypy.log.error_log.setLevel(30)
 

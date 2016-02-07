@@ -41,10 +41,13 @@ import cheesepi as cp
 
 
 # Globals
-cheesepi_dir  = os.path.dirname(os.path.realpath(__file__))
-home_dir      = os.environ['HOME']
-log_dir       = home_dir
-config_file   = os.path.join(cheesepi_dir, "cheesepi.conf")
+if 'HOME' in os.environ:
+	home_dir = os.environ['HOME']
+else:
+	home_dir = "/root"
+cheesepi_dir = os.path.dirname(os.path.realpath(__file__))
+log_dir      = home_dir
+config_file  = os.path.join(cheesepi_dir, "cheesepi.conf")
 
 # Store log in user's home directory
 log_file    = os.path.join(log_dir, ".cheesepi.log")

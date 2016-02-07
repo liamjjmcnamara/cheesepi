@@ -1,0 +1,10 @@
+[Unit]
+Description=CheesePi
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/usr/local/bin/cheesepi start all
+
+[Install]
+WantedBy=multi-user.target

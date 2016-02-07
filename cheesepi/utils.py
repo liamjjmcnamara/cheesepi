@@ -48,7 +48,7 @@ logger = cp.config.get_logger(__name__)
 def console_script():
 	"""Command line tool, installed through setup.py"""
 	commands = ['start','stop','status','reset','upgrade']
-	options  = ['dispatcher','influxdb','dashboard','all']
+	options  = ['dispatcher','storage','influxdb','dashboard','all']
 
 	parser = argparse.ArgumentParser(prog='cheesepi')
 	parser.add_argument('command', metavar='COMMAND', choices=commands, nargs='?', help="'start' or 'stop' one of the CheesePi components")
@@ -61,7 +61,7 @@ def console_script():
 	elif args.command=="upgrade": upgrade_install()
 	else: # both command and option required
 		if   args.option=='dispatcher': control_dispatcher(args.command)
-		elif args.option=='influxdb':   control_influxdb(args.command)
+		elif args.option=='storage' or args.option=='influxdb': control_storage(args.command)
 		elif args.option=='dashboard':  control_dashboard(args.command)
 		elif args.option=='all':        control_all(args.command)
 		else:
@@ -96,7 +96,32 @@ def copy_influx_config(influx_config):
 	print "Warning: copying from default config: %s" % default_config
 	cp.config.copyfile(default_config, influx_config, replace={"INFLUX_DIR":influx_dir} )
 
-def control_influxdb(action):
+def test_execute(cmd_array):
+	"""Return true if cmd_array can execute"""
+	try:
+		call(cmd_array)
+		return True
+	except:
+		return False
+
+def find_influx_exe():
+	"""See which influxdb we should use"""
+	config_path = cp.config.get("database_exe")
+	if config_path: # if database exectable was set in config file
+		print "set it configfile"
+		return config_path
+	elif (test_execute(["influxdb","-h"])):
+		print "system influx"
+		return "influxdb"
+	else:
+		if isARM():
+			print "cheesepi influx"
+			return cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb"
+		else:
+			print "Error: Can't find InfluxDB binary, set 'database_exe' in the config file"
+			sys.exit(1)
+
+def control_storage(action):
 	"""Start or stop InfluxDB, either the bundled or the system version"""
 	storage_dir = "/var/lib/influxdb"
 	if not os.path.exists(storage_dir):
@@ -109,7 +134,7 @@ def control_influxdb(action):
 		# test if we have already made the local config file
 		if not os.path.isfile(influx_config):
 			copy_influx_config(influx_config)
-		influx="influxdb"
+		influx=find_influx_exe()
 		# start the influx server
 		print "Running: "+influx+" -config="+influx_config
 		try:
