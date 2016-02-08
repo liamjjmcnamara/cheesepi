@@ -13,10 +13,6 @@ import matplotlib.pyplot as plt
 
 from pprint import pformat
 
-#from twisted.internet import defer
-#from txmsgpackrpc.client import connect
-
-#import msgpackrpc as mrpc
 from mprpc import RPCClient
 
 import mock_ping as mp
@@ -24,16 +20,16 @@ import mock_ping as mp
 # Changes later
 DIRNAME="testcase_dir/"
 
+
 def md5_filehash(filepath):
 	hasher = hashlib.md5()
 	with open(filepath) as fd:
 		hasher.update(fd.read())
 	return hasher.hexdigest()
 
-#@defer.inlineCallbacks
+
 def call_get_schedule(uuid, num, method="smart"):
 	print("Getting schedule for uuid: {}".format(uuid))
-		#d = connect('localhost', 18080, connectTimeout=5, waitTimeout=5)
 
 	data = {
 		'uuid':uuid,
@@ -46,39 +42,18 @@ def call_get_schedule(uuid, num, method="smart"):
 	client.close()
 
 	return result
-		#def sendRequest(c):
-			#res = c.createRequest('get_schedule', data)
-			#c.disconnect()
-			#return res
 
-		#d.addCallbacks(sendRequest)
 
-		#return d
-
-		#res = yield c.createRequest('get_schedule', data)
-		#defer.returnValue(res)
-	#except Exception as e:
-		#defer.returnValue(e)
-		#return e
-
-#@defer.inlineCallbacks
 def call_register(uuid):
 	print("Registering peer with uuid: {}".format(uuid))
-	#try:
-		#c = yield connect('localhost', 18080, connectTimeout=5, waitTimeout=5)
 
-		#res = yield c.createRequest('register', uuid)
-		#c.disconnect()
-		#defer.returnValue(res)
 	client = RPCClient(b'localhost', 18080)
 	res = client.call(b'register', uuid)
 	client.close()
-	return res
-	#except Exception as e:
-		#defer.returnValue(e)
-		#return e
 
-#@defer.inlineCallbacks
+	return res
+
+
 def full_coverage_pass(peers, sample_size):
 	print("Running full coverage pass")
 	start_dir = os.path.join(DIRNAME, "start")
@@ -87,7 +62,6 @@ def full_coverage_pass(peers, sample_size):
 	os.mkdir(start_dir)
 	os.mkdir(tar_dir)
 
-	#dl = []
 	for peer in peers:
 		uuid = peer.get_uuid()
 		puf = mp.PingUploadConstructor(uuid)
@@ -110,19 +84,13 @@ def full_coverage_pass(peers, sample_size):
 			json.dump(dict_object, fd)
 
 		upload_results(uuid, result_path, tar_dir)
-		#d = upload_results(uuid, result_path, tar_dir)
-		#dl.append(d)
-
-	#results = defer.gatherResults(dl)
-	#return results# defer.returnValue(results)
 
 
-#@defer.inlineCallbacks
 def upload_results(uuid, source_file, tar_dir):
 	# Tar the results
 	tarname = uuid + ".tgz"
 	tarpath = os.path.join(tar_dir, tarname)
-	#print(tarpath)
+
 	with tarfile.open(name=tarpath, mode='w:gz') as tar:
 		tar.add(source_file, arcname='ping.json')
 
@@ -139,10 +107,9 @@ def upload_results(uuid, source_file, tar_dir):
 	print("Uploading results for {}".format(uuid))
 	response = requests.post(url, params, files=files)
 
-	#defer.returnValue(response)
 	return response
 
-#@defer.inlineCallbacks
+
 def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size, schedule_method='smart'):
 
 	uuid = peer.get_uuid()
@@ -174,14 +141,9 @@ def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size, schedule_method=
 	with open(result_path, "w") as fd:
 		json.dump(dict_object, fd)
 
-	# TODO Am I sure everything will happen sequentially??????
-	# Yeah pretty sure, since twisted shouldn't introduce race conditions...
 	result = upload_results(uuid, result_path, tar_dir)
-	#print(result)
 
-	#defer.returnValue(result)
 
-#@defer.inlineCallbacks
 def measurement_pass(peers, pass_dir, schedule_method='smart'):
 
 	tar_dir = os.path.join(pass_dir, "tar")
@@ -189,68 +151,42 @@ def measurement_pass(peers, pass_dir, schedule_method='smart'):
 	os.mkdir(pass_dir)
 	os.mkdir(tar_dir)
 
-	#dc = defer.Deferred()
 	for peer in peers:
 		uuid = peer.get_uuid()
 
 		peer_dir = os.path.join(pass_dir, uuid)
 
-		#d = peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size,
-				#schedule_method=schedule_method)
 		peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size,
-				schedule_method=schedule_method)
-		#dl.append(d)
-		#dc.chainDeferred(d)
+			schedule_method=schedule_method)
 
-	#results = defer.gatherResults(dl)
 
-	#return dc #return results # defer.returnValue(results)
-
-#@defer.inlineCallbacks
 def register_peers(peers):
-	#dl = []
 	for peer in peers:
-		#d = call_register(peer.get_uuid())
 		call_register(peer.get_uuid())
-		#dl.append(d)
 
-	#results = defer.gatherResults(dl)
-	#defer.returnValue(results)
-	#return results
 
-#@defer.inlineCallbacks
 def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 		schedule_method="smart", full_coverage_start=False):
 
 	print("Running test with {} iterations ".format(iterations) +
-	      "with schedules of size {} ".format(sched_size) +
-	      "and sample size of {}".format(sample_size))
+		"with schedules of size {} ".format(sched_size) +
+		"and sample size of {}".format(sample_size))
 
 	# Make sure the peers are present as entities in the database
 	results = register_peers(peers)
 	#print(results)
-	#time.sleep(1)
 
 	if full_coverage_start:
 		results = full_coverage_pass(peers, sample_size)
 		#print(results)
-	#time.sleep(1)
 
 	# Maybe initialize with one iteration complete coverage???
 
-	#dc = defer.Deferred()
 	for i in range(0, iterations):
 		# Create directory
 		ITER_DIR = os.path.join(DIRNAME, str(i))
 
-		#d = measurement_pass(peers, ITER_DIR, schedule_method=schedule_method)
 		measurement_pass(peers, ITER_DIR, schedule_method=schedule_method)
-		#dl.append(d)
-		#dc.chainDeferred(d)
-
-	#results = yield defer.gatherResults(dl)
-	#results = yield dc
-	#print(results)
 
 	# If we don't sleep there's a possibility that the last data written
 	# doesn't get taken into account when querying the database. There shouldn't
@@ -266,7 +202,6 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 	dao = MongoDAO()
 
 	peer_stats = []
-	pdfs = []
 
 	# Plot stuff
 	xmin = 0
@@ -304,27 +239,20 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 
 			orig_dist = peer.get_link(target_uuid).get_dist()
 
-			#pdfs.append(pdf)
 			y_model_plot = np.array([pdf(x) for x in x_plot])
 			y_orig_plot = orig_dist.pdf(x_plot)
 
 			stat_plot.text(0.50, 0.40, "#samples={}".format(num_samples),
 					fontsize=8, transform=stat_plot.transAxes)
 
-			#stat_plot = fig.add_subplot(pn,1,1)
 			stat_plot.plot(x_plot, y_model_plot, color='r', label='model distribution')
 			stat_plot.plot(x_plot, y_orig_plot,  color='b', label='original distribution')
 			stat_plot.set_title("{}... -> {}...".format(peer_uuid[:8],
 				target_uuid[:8]), fontdict={'fontsize':10})
-			#stat_plot.legend(peer.get_uuid() + " -> " + stat.get_target().get_uuid())
 			stat_plot.legend(loc='upper right', ncol=1, fontsize=10)
 
 	plt.show()
 
-
-	#print(pdfs)
-
-	#reactor.stop()
 
 
 if __name__ == "__main__":
@@ -359,21 +287,6 @@ if __name__ == "__main__":
 
 		main_loop(peers, iterations, sched_size, sample_size, sched_method,
 				full_coverage_start)
-		#from twisted.internet import reactor
-		#reactor.callWhenRunning(main_loop, peers, iterations, sched_size,
-				#sample_size, sched_method, full_coverage_start)
-		#reactor.run()
-		#print(dir(mp))
-		#pm = mp.GammaDist()
-		#print(pm.sample_n(100))
 
-
-		#import matplotlib.pyplot as plt
-		#dist = pm.get_dist()
-		#x = [i for i in range(0, 50)]
-		#plt.plot(x, dist.pdf(x))
-		#plt.show()
-
-		# Now do something with the json object...
 	else:
 		print("No file...")
