@@ -168,8 +168,11 @@ def get_config():
 		if re.match('^\s*#', line) or not re.search('=',line):
 			continue
 		# logger.debug(line)
-		(key, value) = line.split("=",1)
-		config[clean(key)] = clean(value)
+		(key, value_string) = line.split("=",1)
+		value = clean(value_string)
+		if value=="true":  value=True
+		if value=="false": value=False
+		config[clean(key)] = value
 	config['cheesepi_dir'] = cheesepi_dir
 	config['config_file']  = config_file
 	config['version']      = version()
