@@ -26,7 +26,7 @@
 Authors: ljjm@sics.se
 Testers:
 Description: Handles all configuration file duties, including initialising
-a local config file (if one does not exist, and initialising logging options
+a local config file (if one does not exist), and initialising logging options
 """
 
 import os
@@ -51,7 +51,6 @@ setup(
 	author_email='ljjm@sics.se',
 	license= 'Apache 2.0',
 	platforms = ["RaspberryPi"],
-	# Which versions we support
 	classifiers=[
 		'Development Status :: 4 - Beta',
 		'License :: OSI Approved :: Apache Software License',
@@ -79,7 +78,6 @@ setup(
 		'argparse',
 	],
 
-	scripts=['cheesepi/bin/tools/influxdb/influxdb'],
 	entry_points={
 		'console_scripts':[
 			'cheesepi = cheesepi.utils:console_script',

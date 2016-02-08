@@ -41,10 +41,13 @@ import cheesepi as cp
 
 
 # Globals
-cheesepi_dir  = os.path.dirname(os.path.realpath(__file__))
-home_dir      = os.environ['HOME']
-log_dir       = home_dir
-config_file   = os.path.join(cheesepi_dir, "cheesepi.conf")
+if 'HOME' in os.environ:
+	home_dir = os.environ['HOME']
+else:
+	home_dir = "/root"
+cheesepi_dir = os.path.dirname(os.path.realpath(__file__))
+log_dir      = home_dir
+config_file  = os.path.join(cheesepi_dir, "cheesepi.conf")
 
 # Store log in user's home directory
 log_file    = os.path.join(log_dir, ".cheesepi.log")
@@ -119,7 +122,7 @@ def generate_uuid():
 	return str(uuid.uuid4())
 
 
-def create_default_config(clobber=False):
+def ensure_default_config(clobber=False):
 	"""If config file does not exist, try to copy from default.
 	   Also add a local secret to the file."""
 	# is there already a local config file?
@@ -146,7 +149,7 @@ def create_default_config(clobber=False):
 
 def read_config():
 	# ensure we have a config file to read
-	create_default_config()
+	ensure_default_config()
 	try:
 		fd = open(config_file)
 		lines = fd.readlines()
@@ -165,8 +168,11 @@ def get_config():
 		if re.match('^\s*#', line) or not re.search('=',line):
 			continue
 		# logger.debug(line)
-		(key, value) = line.split("=",1)
-		config[clean(key)] = clean(value)
+		(key, value_string) = line.split("=",1)
+		value = clean(value_string)
+		if value=="true":  value=True
+		if value=="false": value=False
+		config[clean(key)] = value
 	config['cheesepi_dir'] = cheesepi_dir
 	config['config_file']  = config_file
 	config['version']      = version()
