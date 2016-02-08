@@ -24,7 +24,7 @@ started.
 
 Start the storage server:
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-``$ cheesepi start influxdb``
+``$ cheesepi start storage``
 
 This will try to run the ARM version of influxdb from the CheesePi
 distribution. Alternatively, you can run the system version via its normal
@@ -51,7 +51,7 @@ To start the host's webserver running the dashboard use the following command:
 ``$ cheesepi start dashboard``
 
 This command starts a webserver on the localhost that will display the
-collected data. Browse to http://localhost:8080 to view this dashboard.
+collected data. Browse to http://HOSTNAME:8080 to view this dashboard.
 
 
 
@@ -83,8 +83,8 @@ Lines can be commmented out with a *#*.
 Schedule
 ~~~~~~~~
 
-The schedule file format is of one JSON sting (http://www.w3schools.com/json/)
-per line. Each JSON object represents a *measurement task*, the only required 
+The schedule file format is a list of JSON strings (http://www.w3schools.com/json/).
+Each JSON object represents a *measurement task*, the only required 
 field is *taskname*, all others are option parameters to the task. Lines can
 be commented out with a *#*.
 

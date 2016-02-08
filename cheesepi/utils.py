@@ -59,6 +59,7 @@ def console_script():
 	if   args.command=="status":  show_status()
 	elif args.command=="reset":   reset_install()
 	elif args.command=="upgrade": upgrade_install()
+	elif args.command=="list": list_data(args.option)
 	else: # both command and option required
 		if   args.option=='dispatcher': control_dispatcher(args.command)
 		elif args.option=='storage' or args.option=='influxdb': control_storage(args.command)
@@ -76,6 +77,10 @@ def show_status():
 	print "Log file:\t%s"      % cp.config.log_file
 	print "Config file:\t%s"   % cp.config.config_file
 	print "Schedule file:\t%s" % schedule_file
+
+def list_data(task="ping"):
+	dao = cp.config.get_dao()
+	print dao.read_op(task)
 
 def control_dispatcher(action):
 	"""Start or stop the dispatcher"""
