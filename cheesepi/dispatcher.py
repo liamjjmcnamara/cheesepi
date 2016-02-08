@@ -26,16 +26,15 @@ repeat_schedule = True # keep rescheuling?
 schedule_list = []
 
 pool = None # pool must be global, yet instantiated in __main__
-pool_size = 5
+pool_size = 5 # max number of concurrent tasks...
 
 # Task priority
 IMPORTANT  = 1
 NORMAL	   = 2
 
-results = []
 def log_result(result):
-	logging.info("Logging task result..."+str(result))
-	results.append(result)
+	#logging.info("Task callback() result..."+str(result))
+	pass
 def timestamp(): return (time.time()-start_time)
 def print_queue(): logger.debug(s.queue)
 
