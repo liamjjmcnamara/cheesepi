@@ -13,8 +13,11 @@ import matplotlib.pyplot as plt
 
 from pprint import pformat
 
-from twisted.internet import defer
-from txmsgpackrpc.client import connect
+#from twisted.internet import defer
+#from txmsgpackrpc.client import connect
+
+#import msgpackrpc as mrpc
+from mprpc import RPCClient
 
 import mock_ping as mp
 
@@ -27,36 +30,55 @@ def md5_filehash(filepath):
 		hasher.update(fd.read())
 	return hasher.hexdigest()
 
-@defer.inlineCallbacks
-def call_get_schedule(uuid, num):
+#@defer.inlineCallbacks
+def call_get_schedule(uuid, num, method="smart"):
 	print("Getting schedule for uuid: {}".format(uuid))
-	try:
-		c = yield connect('localhost', 18080, connectTimeout=5, waitTimeout=5)
+		#d = connect('localhost', 18080, connectTimeout=5, waitTimeout=5)
 
-		data = {
-			'uuid':uuid,
-			'num':num
-		}
+	data = {
+		'uuid':uuid,
+		'num':num,
+		'method':method
+	}
 
-		res = yield c.createRequest('get_schedule', data)
-		c.disconnect()
-		defer.returnValue(res)
-	except Exception as e:
-		defer.returnValue(e)
+	client = RPCClient(b'localhost', 18080)
+	result = client.call(b'get_schedule', data)
+	client.close()
 
-@defer.inlineCallbacks
+	return result
+		#def sendRequest(c):
+			#res = c.createRequest('get_schedule', data)
+			#c.disconnect()
+			#return res
+
+		#d.addCallbacks(sendRequest)
+
+		#return d
+
+		#res = yield c.createRequest('get_schedule', data)
+		#defer.returnValue(res)
+	#except Exception as e:
+		#defer.returnValue(e)
+		#return e
+
+#@defer.inlineCallbacks
 def call_register(uuid):
 	print("Registering peer with uuid: {}".format(uuid))
-	try:
-		c = yield connect('localhost', 18080, connectTimeout=5, waitTimeout=5)
+	#try:
+		#c = yield connect('localhost', 18080, connectTimeout=5, waitTimeout=5)
 
-		res = yield c.createRequest('register', uuid)
-		c.disconnect()
-		defer.returnValue(res)
-	except Exception as e:
-		defer.returnValue(e)
+		#res = yield c.createRequest('register', uuid)
+		#c.disconnect()
+		#defer.returnValue(res)
+	client = RPCClient(b'localhost', 18080)
+	res = client.call(b'register', uuid)
+	client.close()
+	return res
+	#except Exception as e:
+		#defer.returnValue(e)
+		#return e
 
-@defer.inlineCallbacks
+#@defer.inlineCallbacks
 def full_coverage_pass(peers, sample_size):
 	print("Running full coverage pass")
 	start_dir = os.path.join(DIRNAME, "start")
@@ -65,7 +87,7 @@ def full_coverage_pass(peers, sample_size):
 	os.mkdir(start_dir)
 	os.mkdir(tar_dir)
 
-	dl = []
+	#dl = []
 	for peer in peers:
 		uuid = peer.get_uuid()
 		puf = mp.PingUploadConstructor(uuid)
@@ -87,14 +109,15 @@ def full_coverage_pass(peers, sample_size):
 		with open(result_path, "w") as fd:
 			json.dump(dict_object, fd)
 
-		d = upload_results(uuid, result_path, tar_dir)
-		dl.append(d)
+		upload_results(uuid, result_path, tar_dir)
+		#d = upload_results(uuid, result_path, tar_dir)
+		#dl.append(d)
 
-	results = yield defer.gatherResults(dl)
-	defer.returnValue(results)
+	#results = defer.gatherResults(dl)
+	#return results# defer.returnValue(results)
 
 
-@defer.inlineCallbacks
+#@defer.inlineCallbacks
 def upload_results(uuid, source_file, tar_dir):
 	# Tar the results
 	tarname = uuid + ".tgz"
@@ -114,12 +137,13 @@ def upload_results(uuid, source_file, tar_dir):
 	files = {'file':open(tarpath, 'rb')}
 
 	print("Uploading results for {}".format(uuid))
-	response = yield requests.post(url, params, files=files)
+	response = requests.post(url, params, files=files)
 
-	defer.returnValue(response)
+	#defer.returnValue(response)
+	return response
 
-@defer.inlineCallbacks
-def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size):
+#@defer.inlineCallbacks
+def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size, schedule_method='smart'):
 
 	uuid = peer.get_uuid()
 
@@ -128,7 +152,8 @@ def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size):
 	# Result file
 	result_path = os.path.join(peer_dir, "ping.json")
 
-	sched = yield call_get_schedule(uuid, sched_size)
+	sched = call_get_schedule(uuid, sched_size, method=schedule_method)
+	#print(sched)
 
 	uuid_sched = [target['uuid'] for target in sched['result']]
 	puf = mp.PingUploadConstructor(uuid)
@@ -151,42 +176,49 @@ def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size):
 
 	# TODO Am I sure everything will happen sequentially??????
 	# Yeah pretty sure, since twisted shouldn't introduce race conditions...
-	result = yield upload_results(uuid, result_path, tar_dir)
+	result = upload_results(uuid, result_path, tar_dir)
+	#print(result)
 
-	defer.returnValue(result)
+	#defer.returnValue(result)
 
-@defer.inlineCallbacks
-def measurement_pass(peers, pass_dir):
+#@defer.inlineCallbacks
+def measurement_pass(peers, pass_dir, schedule_method='smart'):
 
 	tar_dir = os.path.join(pass_dir, "tar")
 
 	os.mkdir(pass_dir)
 	os.mkdir(tar_dir)
 
-	dl = []
+	#dc = defer.Deferred()
 	for peer in peers:
 		uuid = peer.get_uuid()
 
 		peer_dir = os.path.join(pass_dir, uuid)
 
-		d = peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size)
-		dl.append(d)
+		#d = peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size,
+				#schedule_method=schedule_method)
+		peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size,
+				schedule_method=schedule_method)
+		#dl.append(d)
+		#dc.chainDeferred(d)
 
-	results = yield defer.gatherResults(dl)
+	#results = defer.gatherResults(dl)
 
-	defer.returnValue(results)
+	#return dc #return results # defer.returnValue(results)
 
-@defer.inlineCallbacks
+#@defer.inlineCallbacks
 def register_peers(peers):
-	dl = []
+	#dl = []
 	for peer in peers:
-		d = call_register(peer.get_uuid())
-		dl.append(d)
+		#d = call_register(peer.get_uuid())
+		call_register(peer.get_uuid())
+		#dl.append(d)
 
-	results = yield defer.gatherResults(dl)
-	defer.returnValue(results)
+	#results = defer.gatherResults(dl)
+	#defer.returnValue(results)
+	#return results
 
-@defer.inlineCallbacks
+#@defer.inlineCallbacks
 def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 		schedule_method="smart", full_coverage_start=False):
 
@@ -195,24 +227,29 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 	      "and sample size of {}".format(sample_size))
 
 	# Make sure the peers are present as entities in the database
-	results = yield register_peers(peers)
+	results = register_peers(peers)
 	#print(results)
+	#time.sleep(1)
 
 	if full_coverage_start:
-		results = yield full_coverage_pass(peers, sample_size)
+		results = full_coverage_pass(peers, sample_size)
 		#print(results)
+	#time.sleep(1)
 
 	# Maybe initialize with one iteration complete coverage???
 
-	dl = []
+	#dc = defer.Deferred()
 	for i in range(0, iterations):
 		# Create directory
 		ITER_DIR = os.path.join(DIRNAME, str(i))
 
-		d = measurement_pass(peers, ITER_DIR)
-		dl.append(d)
+		#d = measurement_pass(peers, ITER_DIR, schedule_method=schedule_method)
+		measurement_pass(peers, ITER_DIR, schedule_method=schedule_method)
+		#dl.append(d)
+		#dc.chainDeferred(d)
 
-	results = yield defer.gatherResults(dl)
+	#results = yield defer.gatherResults(dl)
+	#results = yield dc
 	#print(results)
 
 	# If we don't sleep there's a possibility that the last data written
@@ -247,7 +284,6 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 		peer_uuid = peer.get_uuid()
 
 		stats = dao.get_all_stats(peer.get_uuid())
-		print(stats)
 		for stat_index, stat in enumerate(stats):
 			assert isinstance(stat, PingStatistics)
 			stat_plot = peer_plot[stat_index]
@@ -288,7 +324,7 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 
 	#print(pdfs)
 
-	reactor.stop()
+	#reactor.stop()
 
 
 if __name__ == "__main__":
@@ -321,10 +357,12 @@ if __name__ == "__main__":
 		full_coverage_start =  ("True" == json_obj['full_coverage_start'])
 
 
-		from twisted.internet import reactor
-		reactor.callWhenRunning(main_loop, peers, iterations, sched_size,
-				sample_size, sched_method, full_coverage_start)
-		reactor.run()
+		main_loop(peers, iterations, sched_size, sample_size, sched_method,
+				full_coverage_start)
+		#from twisted.internet import reactor
+		#reactor.callWhenRunning(main_loop, peers, iterations, sched_size,
+				#sample_size, sched_method, full_coverage_start)
+		#reactor.run()
 		#print(dir(mp))
 		#pm = mp.GammaDist()
 		#print(pm.sample_n(100))
