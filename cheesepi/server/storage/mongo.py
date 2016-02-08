@@ -81,21 +81,6 @@ class MongoDAO(DAO):
 			# What does this mean????
 			raise ServerDaoError()
 
-	def write_task(self, uuid, task):
-		result = self.db.peers.update(
-			{'uuid':uuid},
-			{'$push': {'tasks':task}}
-		)
-		return result
-
-	def get_tasks(self, uuid):
-		results = self.db.tasks.find(
-			{'uuid':uuid},
-			projection={'_id':0},
-			limit=5 # should be unlimited
-		)
-		return results
-
 	def register_peer_entity(self, entity):
 		"""
 		"""
@@ -139,6 +124,44 @@ class MongoDAO(DAO):
 		else:
 			# What does this mean????
 			raise ServerDaoError()
+
+	def get_sequential_entities(self, uuid, length=1):
+		sequence = []
+
+		# Initial guess
+		skip_length = 0
+
+		peer = self.db.peers.find_one({'uuid':uuid})
+		if peer is not None:
+			if 'round_robin_sequence_number' in peer:
+				skip_length = peer['round_robin_sequence_number']
+				#self.log.info("FETCHED STORED SKIPLENGTH: {}".format(skip_length))
+
+		num_entities = self.db.entities.find().count()
+
+		#self.log.info("NUM ENTITIES: {}".format(num_entities))
+		#self.log.info("LENGTH: {}".format(length))
+
+		while len(sequence) < length:
+			cursor = self.db.entities.find()
+			cursor.skip(skip_length)
+			cursor.limit(length)
+			for entity in cursor:
+				if entity['uuid'] != uuid:
+					sequence.append(Entity.fromDict(entity))
+
+			#self.log.info("OLD_SKIP_LENGTH: {}".format(skip_length))
+			skip_length = (skip_length + length) % num_entities
+			#self.log.info("NEW_SKIP_LENGTH: {}".format(skip_length))
+
+		# update skip length
+		update = self.db.peers.update(
+			{'uuid':uuid},
+			{'$set':{'round_robin_sequence_number':skip_length}},
+			upsert=True
+		)
+
+		return sequence
 
 	def write_result(self, uuid, result):
 		# Can probably merge these operations into one???
@@ -222,15 +245,15 @@ class MongoDAO(DAO):
 				key = "statistics.{}".format(target.get_uuid())
 				projection[key] = 1
 
-		stats = self.db.peers.find(
+		stats = self.db.peers.find_one(
 			{'uuid':uuid},
 			projection,
 		)
 
 		# Should be unique so can only ever find one
-		if stats.count() > 0:
+		if stats is not None and 'statistics' in stats:
 			#self.log.info(stats[0])
-			return StatisticsSet.fromDict(stats[0]['statistics'])
+			return StatisticsSet.fromDict(stats['statistics'])
 		else:
 			return StatisticsSet()
 
@@ -352,3 +375,21 @@ class MongoDAO(DAO):
 			}
 		)
 		return result
+
+
+### DEPRECATED ###
+	def write_task(self, uuid, task):
+		result = self.db.peers.update(
+			{'uuid':uuid},
+			{'$push': {'tasks':task}}
+		)
+		return result
+
+	def get_tasks(self, uuid):
+		results = self.db.tasks.find(
+			{'uuid':uuid},
+			projection={'_id':0},
+			limit=5 # should be unlimited
+		)
+		return results
+

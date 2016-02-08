@@ -17,7 +17,22 @@ class PingScheduler(Scheduler):
 		self.dao = MongoDAO('localhost', 27017)
 		self._uuid = uuid
 
+	def get_random_schedule(self, num=1):
+		schedule = []
+		for i in range(0, num):
+			entity = self.dao.get_random_entity(ignore_uuid=self._uuid)
+			schedule.append(entity)
+
+		return schedule
+
+	def get_round_robin_schedule(self, num=1):
+
+		schedule = self.dao.get_sequential_entities(self._uuid, num)
+
+		return schedule
+
 	def get_schedule(self, num=1):
+		self.log.info("Scheduling for {}".format(self._uuid))
 		from pprint import pformat
 
 		#self.log.info("Generating schedule with blind ratio = {}".format(
@@ -45,7 +60,12 @@ class PingScheduler(Scheduler):
 
 		for s in stats:
 			#print(pformat(s.toDict()))
-			delay_variance = s.get_delay().get_variance()
+			delay = s.get_delay()
+			self.log.info("\ndm1: {}\ndm2: {}\ndm3: {}\ndm4: {}\nsumdm: {}".format(
+				delay._dm1, delay._dm2, delay._dm3, delay._dm4,
+				delay._dm1 + delay._dm2 + delay._dm3 + delay._dm4)
+			)
+			delay_variance = delay.get_variance()
 			target = s.get_target()
 			#print(target)
 			#print(delay_variance)
@@ -61,10 +81,13 @@ class PingScheduler(Scheduler):
 			# schedule length needs to be filled with more blinds
 			blind_num = blind_num + (non_blind_num - len(schedule))
 
-		for i in range(0, blind_num):
-			#self.log.info("Adding blind to schedule")
-			entity = self.dao.get_random_entity(ignore_uuid=self._uuid)
-			schedule.append(entity)
+		random_schedule = self.get_random_schedule(blind_num)
+
+		schedule.extend(random_schedule)
+		#for i in range(0, blind_num):
+			##self.log.info("Adding blind to schedule")
+			#entity = self.dao.get_random_entity(ignore_uuid=self._uuid)
+			#schedule.append(entity)
 
 		return schedule
 

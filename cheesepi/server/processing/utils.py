@@ -60,10 +60,15 @@ class DistributionModel(object):
 			m2 = dct['m2']
 			m3 = dct['m3']
 			m4 = dct['m4']
+			dm1 = dct['dm1']
+			dm2 = dct['dm2']
+			dm3 = dct['dm3']
+			dm4 = dct['dm4']
 			new_variance = dct['new_variance']
 			skew = dct['skew']
 			kurtosis = dct['kurtosis']
-			return cls(mean, variance, n, m1, m2, m3, m4, new_variance, skew, kurtosis)
+			return cls(mean, variance, n, m1, m2, m3, m4,
+				dm1, dm2, dm3, dm4, new_variance, skew, kurtosis)
 		except (KeyError,TypeError) as e:
 			cls.log.exception("{} while parsing dict.".format(e.__class__.__name__))
 			return cls(0, 0)
@@ -78,13 +83,18 @@ class DistributionModel(object):
 			'm2':self._m2,
 			'm3':self._m3,
 			'm4':self._m4,
+			'dm1':self._dm1,
+			'dm2':self._dm2,
+			'dm3':self._dm3,
+			'dm4':self._dm4,
 			'new_variance':self._new_variance,
 			'skew':self._skew,
 			'kurtosis':self._kurtosis,
 		}
 
-	def __init__(self, mean=0, variance=0, n=0, m1=0, m2=0, m3=0, m4=0, new_variance=0,
-			skew=0, kurtosis=0, alpha=_DEFAULT_ALPHA):
+	def __init__(self, mean=0, variance=0, n=0, m1=0, m2=0, m3=0, m4=0,
+			dm1=0, dm2=0, dm3=0, dm4=0, new_variance=0, skew=0, kurtosis=0,
+			alpha=_DEFAULT_ALPHA):
 		self._mean = mean
 		self._variance = variance
 		self._std_dev = math.sqrt(variance)
@@ -95,6 +105,11 @@ class DistributionModel(object):
 		self._m2 = m2
 		self._m3 = m3
 		self._m4 = m4
+
+		self._dm1 = dm1
+		self._dm2 = dm2
+		self._dm3 = dm3
+		self._dm4 = dm4
 
 		self._new_variance = new_variance
 		self._skew = skew
@@ -196,6 +211,11 @@ class DistributionModel(object):
 
 		self._skew = skew
 		self._kurtosis = kurtosis
+
+		self._dm1 = math.fabs(self._m1 - m1)
+		self._dm2 = math.fabs(self._m2 - m2)
+		self._dm3 = math.fabs(self._m3 - m3)
+		self._dm4 = math.fabs(self._m4 - m4)
 
 		self._n = n
 		self._m1 = m1

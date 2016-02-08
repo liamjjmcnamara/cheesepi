@@ -135,7 +135,18 @@ class CheeseRPCServer(MsgpackRPCServer):
             from cheesepi.server.scheduling.PingScheduler import PingScheduler
             ps = PingScheduler(data['uuid'])
 
-            schedule = yield ps.get_schedule(data['num'])
+            if 'method' in data:
+                method = data['method']
+            else: method = 'smart'
+
+            if method == 'random':
+                schedule = yield ps.get_random_schedule(data['num'])
+            elif method == 'roundrobin':
+                schedule = yield ps.get_round_robin_schedule(data['num'])
+            elif method == 'smart':
+                schedule = yield ps.get_schedule(data['num'])
+            else:
+                raise Exception("Unkown scheduling method {}".format(method))
             #self.log.info("got schedule: {schedule}", schedule=schedule)
 
             result = []
