@@ -1,4 +1,6 @@
 #!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
 from __future__ import unicode_literals, absolute_import, print_function
 
 import json
@@ -7,6 +9,7 @@ import time
 import tarfile
 import requests
 import hashlib
+import math
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -104,7 +107,6 @@ def upload_results(uuid, source_file, tar_dir):
 	}
 	files = {'file':open(tarpath, 'rb')}
 
-	print("Uploading results for {}".format(uuid))
 	response = requests.post(url, params, files=files)
 
 	return response
@@ -116,6 +118,7 @@ def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size, schedule_method=
 
 	os.mkdir(peer_dir)
 
+
 	# Result file
 	result_path = os.path.join(peer_dir, "ping.json")
 
@@ -125,14 +128,14 @@ def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size, schedule_method=
 	uuid_sched = [target['uuid'] for target in sched['result']]
 	puf = mp.PingUploadConstructor(uuid)
 
-	print("Got schedule:\n{}".format(pformat(uuid_sched)))
+	#print("Got schedule:\n{}".format(pformat(uuid_sched)))
 	for target in sched['result']:
 		target_uuid = target['uuid']
 		target_ip = target['ip']
 
 		samples = peer.sample_link(target_uuid, sample_size)
-		print("Generated samples for target {}\n{}".format(target_uuid,
-			pformat(samples)))
+		#print("Generated samples for target {}\n{}".format(target_uuid,
+			#pformat(samples)))
 		puf.add_result(samples, target_uuid, target_ip)
 
 	dict_object = puf.construct()
@@ -141,7 +144,11 @@ def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size, schedule_method=
 	with open(result_path, "w") as fd:
 		json.dump(dict_object, fd)
 
+	print("Uploading results for {}".format(uuid))
 	result = upload_results(uuid, result_path, tar_dir)
+	print(result)
+
+	return peer
 
 
 def measurement_pass(peers, pass_dir, schedule_method='smart'):
@@ -151,13 +158,21 @@ def measurement_pass(peers, pass_dir, schedule_method='smart'):
 	os.mkdir(pass_dir)
 	os.mkdir(tar_dir)
 
+	modified_peers = []
+
 	for peer in peers:
 		uuid = peer.get_uuid()
 
 		peer_dir = os.path.join(pass_dir, uuid)
 
-		peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size,
-			schedule_method=schedule_method)
+		mod_peer = peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size,
+				schedule_method=schedule_method)
+
+		#print(pformat(mod_peer.dms))
+
+		modified_peers.append(mod_peer)
+
+	return modified_peers
 
 
 def register_peers(peers):
@@ -186,7 +201,7 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 		# Create directory
 		ITER_DIR = os.path.join(DIRNAME, str(i))
 
-		measurement_pass(peers, ITER_DIR, schedule_method=schedule_method)
+		peers = measurement_pass(peers, ITER_DIR, schedule_method=schedule_method)
 
 	# If we don't sleep there's a possibility that the last data written
 	# doesn't get taken into account when querying the database. There shouldn't
@@ -210,24 +225,44 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 
 	num_peers = len(peers)
 
-	fig, plots = plt.subplots(num_peers, num_peers-1, sharex='col', sharey='row')
+	#fig, plots = plt.subplots(num_peers, (num_peers-1)*3, sharex='col')
 
 	for peer_index, peer in enumerate(peers):
-		peer_plot = plots[peer_index]
-		print(peer)
+		#plt.figure(peer_index+1)
+		fig, plots = plt.subplots((num_peers-1), 3, sharex='col')
+		fig.suptitle(peer.get_uuid())
+		#peer_plot = plots[peer_index]
+		#print(peer)
+		#print(pformat(peer.dms))
+		#print(peer._dm2)
+		#print(peer._dm3)
+		#print(peer._dm4)
 
 		peer_uuid = peer.get_uuid()
+		print("SOURCE: {}".format(peer_uuid))
 
 		stats = dao.get_all_stats(peer.get_uuid())
 		for stat_index, stat in enumerate(stats):
 			assert isinstance(stat, PingStatistics)
-			stat_plot = peer_plot[stat_index]
+			plot_row = plots[stat_index]
+
+			stat_plot = plot_row[0]
+			mv_plot = plot_row[1]
+			sk_plot = plot_row[2]
+			#stat_plot = peer_plot[stat_index]
+			#mv_plot = peer_plot[stat_index + (num_peers-1)]
+			#sk_plot = peer_plot[stat_index + 2*(num_peers-1)]
 
 			target_uuid = stat.get_target().get_uuid()
 
-			print(target_uuid)
+			print("TARGET: {}".format(target_uuid))
 
 			delay_model = stat.get_delay()
+
+			#print(delay_model._dm1)
+			#print(delay_model._dm2)
+			#print(delay_model._dm3)
+			#print(delay_model._dm4)
 
 			num_samples = delay_model._n
 
@@ -245,11 +280,33 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 			stat_plot.text(0.50, 0.40, "#samples={}".format(num_samples),
 					fontsize=8, transform=stat_plot.transAxes)
 
+			# Distribution plots
 			stat_plot.plot(x_plot, y_model_plot, color='r', label='model distribution')
 			stat_plot.plot(x_plot, y_orig_plot,  color='b', label='original distribution')
-			stat_plot.set_title("{}... -> {}...".format(peer_uuid[:8],
-				target_uuid[:8]), fontdict={'fontsize':10})
-			stat_plot.legend(loc='upper right', ncol=1, fontsize=10)
+			stat_plot.set_title("{}...".format(target_uuid[:20]), fontdict={'fontsize':10})
+			stat_plot.legend(loc='upper right', ncol=1, fontsize=9)
+
+			# Mean and variance plots
+			print()
+			print()
+			print()
+			print(*zip(*delay_model._dm1))
+			print(*zip(*delay_model._dm2))
+			mv_plot.plot(*zip(*delay_model._dm1), label=r'$\Delta$mean')
+			mv_plot.plot(*zip(*delay_model._dm2), label=r'$\Delta$variance')
+			mv_plot.set_title("{}...".format(target_uuid[:20]), fontdict={'fontsize':10})
+			mv_plot.legend(loc='upper right', ncol=1, fontsize=9)
+
+			# Skew and kurtosis plots
+			print()
+			print()
+			print()
+			print(delay_model._dm1)
+			print(delay_model._dm2)
+			sk_plot.plot(*zip(*delay_model._dm3), label=r'$\Delta$skew')
+			sk_plot.plot(*zip(*delay_model._dm4), label=r'$\Delta$kurtosis')
+			sk_plot.set_title("{}...".format(target_uuid[:20]), fontdict={'fontsize':10})
+			sk_plot.legend(loc='upper right', ncol=1, fontsize=9)
 
 	plt.show()
 

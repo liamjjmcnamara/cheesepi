@@ -61,10 +61,10 @@ class PingScheduler(Scheduler):
 		for s in stats:
 			#print(pformat(s.toDict()))
 			delay = s.get_delay()
-			self.log.info("\ndm1: {}\ndm2: {}\ndm3: {}\ndm4: {}\nsumdm: {}".format(
-				delay._dm1, delay._dm2, delay._dm3, delay._dm4,
-				delay._dm1 + delay._dm2 + delay._dm3 + delay._dm4)
-			)
+			# self.log.info("\ndm1: {}\ndm2: {}\ndm3: {}\ndm4: {}\nsumdm: {}".format(
+			# 	delay._dm1, delay._dm2, delay._dm3, delay._dm4,
+			# 	delay._dm1 + delay._dm2 + delay._dm3 + delay._dm4)
+			# )
 			delay_variance = delay.get_variance()
 			target = s.get_target()
 			#print(target)

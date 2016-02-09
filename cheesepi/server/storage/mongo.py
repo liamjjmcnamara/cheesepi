@@ -34,7 +34,7 @@ class MongoDAO(DAO):
 		                            ("statistics.target_id",pymongo.ASCENDING)])
 
 	def close(self):
-		pass # Nothing to do??
+		self.client.close()
 
 	def get_bulk_writer(self):
 		return self.db.peers.initialize_ordered_bulk_op()
@@ -163,30 +163,20 @@ class MongoDAO(DAO):
 
 		return sequence
 
-	def write_result(self, uuid, result):
-		# Can probably merge these operations into one???
 
-		# Insert the result in the peers results-list if there is a task with a
-		# matching task_id in its tasks-list
-		update = self.db.peers.update(
-			{
-				'uuid':uuid,
-				#'tasks': {
-					#'$elemMatch':{'task_id':result['task_id']}
-				#}
-			},
-			{'$push': {'results':result}},
-			upsert=True
+	def get_result_count(self, uuid):
+
+		peer = self.db.peers.find_one(
+			{'uuid':uuid},
+			{'results_received':1}
 		)
-		# Remove the task with that task_id
-		#remove = self.db.peers.update(
-			#{'uuid':uuid},
-			#{'$pull': {
-				#'tasks':{'task_id':result['task_id']}
-				#}
-			#}
-		#)
-		return self._return_status(update['updatedExisting'])
+		#self.log.info("Peer is {}".format(type(peer)))
+
+		if peer is not None and 'results_received' in peer:
+			#self.log.info("returning result count {}".format(peer['results_received']))
+			return peer['results_received']
+		else:
+			return 0
 
 
 
@@ -348,13 +338,17 @@ class MongoDAO(DAO):
 		Returns:
 			the modified bulk writer object
 		"""
-		for result in results:
-			bulk_writer.find(
-				{'uuid':uuid}
-				).upsert(
-				).update(
-				{'$push': {'results':result.toDict()}}
-			)
+		bulk_writer.find(
+			{'uuid':uuid}
+			).upsert(
+			).update(
+			{'$inc': {'results_received': len(results)},
+			 '$push': {
+				'results':{
+					'$each': [r.toDict() for r in results]}
+				}
+			}
+		)
 		return bulk_writer
 
 	def purge_results(self, uuid):
