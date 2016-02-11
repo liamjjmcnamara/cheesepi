@@ -15,6 +15,8 @@ def process_upload(uploaded_file):
 	with ResultDataProcessor(uploaded_file) as data:
 		data.process()
 
+	return True
+
 # TODO Maybe this should be baked into ResultDataProcessor
 def untar(filename, destination):
 	with tarfile.open(filename) as tar:
@@ -71,7 +73,7 @@ class DistributionModel(object):
 				dm1, dm2, dm3, dm4, new_variance, skew, kurtosis)
 		except (KeyError,TypeError) as e:
 			cls.log.exception("{} while parsing dict.".format(e.__class__.__name__))
-			return cls(0, 0)
+			return cls()
 
 	def toDict(self):
 		return {
@@ -93,8 +95,9 @@ class DistributionModel(object):
 		}
 
 	def __init__(self, mean=0, variance=0, n=0, m1=0, m2=0, m3=0, m4=0,
-			dm1=0, dm2=0, dm3=0, dm4=0, new_variance=0, skew=0, kurtosis=0,
-			alpha=_DEFAULT_ALPHA):
+			dm1=None, dm2=None, dm3=None, dm4=None, new_variance=0, skew=0,
+			kurtosis=0, alpha=_DEFAULT_ALPHA):
+
 		self._mean = mean
 		self._variance = variance
 		self._std_dev = math.sqrt(variance)
@@ -106,10 +109,10 @@ class DistributionModel(object):
 		self._m3 = m3
 		self._m4 = m4
 
-		self._dm1 = dm1
-		self._dm2 = dm2
-		self._dm3 = dm3
-		self._dm4 = dm4
+		self._dm1 = [] if dm1 is None else dm1
+		self._dm2 = [] if dm2 is None else dm2
+		self._dm3 = [] if dm3 is None else dm3
+		self._dm4 = [] if dm4 is None else dm4
 
 		self._new_variance = new_variance
 		self._skew = skew
@@ -145,7 +148,7 @@ class DistributionModel(object):
 		self._variance = (1-alpha) * (self._variance + (delta * increment))
 		self._std_dev = math.sqrt(self._variance)
 
-	def add_data(self, samples):
+	def add_data(self, samples, upload_index=0):
 		"""
 		Update the distribution model with the new samples
 		"""
@@ -196,12 +199,11 @@ class DistributionModel(object):
 		else:
 		    div = n-1
 
-
 		# Normalized Variance (n-1 because for n=1 the second moment is 0)
-		self._new_variance = (m2 / div)
+		new_variance = (m2 / div)
 
 		# Standard deviation
-		std_dev = math.sqrt(self._new_variance)
+		std_dev = math.sqrt(new_variance)
 
 		# Skewness
 		skew = (m3/div) / math.pow(std_dev, 3)
@@ -209,13 +211,21 @@ class DistributionModel(object):
 		# Kurtosis, adjusted so kurtosis of Gauss = 0
 		kurtosis = (m4/div) / math.pow(std_dev, 4) - 3
 
+		self.log.info("Result index is {}".format(upload_index))
+		self.log.info("dm1 = {}".format(math.fabs(self._m1 - m1)))
+		#from pprint import pformat
+		#self.log.info("{}".format(pformat(self._dm1)))
+
+		# Deltas of the moments due to this pass
+		self._dm1.append((upload_index, math.fabs(self._m1 - m1)))
+		self._dm2.append((upload_index, math.fabs(self._new_variance - new_variance)))
+		self._dm3.append((upload_index, math.fabs(self._skew - skew)))
+		self._dm4.append((upload_index, math.fabs(self._kurtosis - kurtosis)))
+
+		self._new_variance = new_variance
 		self._skew = skew
 		self._kurtosis = kurtosis
 
-		self._dm1 = math.fabs(self._m1 - m1)
-		self._dm2 = math.fabs(self._m2 - m2)
-		self._dm3 = math.fabs(self._m3 - m3)
-		self._dm4 = math.fabs(self._m4 - m4)
 
 		self._n = n
 		self._m1 = m1

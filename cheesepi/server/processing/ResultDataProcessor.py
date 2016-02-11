@@ -45,8 +45,8 @@ class ResultDataProcessor(object):
 		return self._md5_hash
 
 	def extract(self):
-		self.log.info("Extracting {} --> {}".format(
-			self._filepath, self._extract_path))
+		#self.log.info("Extracting {} --> {}".format(
+		#    self._filepath, self._extract_path))
 		untar(self._filepath, self._extract_path)
 		self._extracted = True
 
@@ -54,7 +54,7 @@ class ResultDataProcessor(object):
 		if not self._extracted:
 			raise Exception("Data not extracted.")
 
-		self.log.info("Deleting folder {}".format(self._extract_path))
+		#self.log.info("Deleting folder {}".format(self._extract_path))
 		shutil.rmtree(self._extract_path)
 		self._extracted = False
 
@@ -62,40 +62,50 @@ class ResultDataProcessor(object):
 		if not self._extracted:
 			raise Exception("Data not extracted.")
 
-		self.log.info("Processing files in {}".format(self._extract_path))
+		#self.log.info("Processing files in {}".format(self._extract_path))
 
 		from cheesepi.server.storage.mongo import MongoDAO
 		from pprint import pformat
-
-		dao = MongoDAO('localhost', 27017)
 
 		# Process every file in the extracted folder
 		files = [os.path.join(self._extract_path, f)
 				for f in os.listdir(self._extract_path)]
 		for filename in files:
 			try:
+				dao = MongoDAO('localhost', 27017)
+
 				#parser = ResultParser.fromFile(filename)
 				with ResultParser.fromFile(filename) as parser:
 					results = parser.parse()
-					self.log.info("Results {}".format(results))
+					#self.log.info("Results {}".format(results))
 					peer_id = parser.get_peer_id()
 					self.log.info("Peer id {}".format(peer_id))
 
 					stats = dao.get_stats_set_for_results(peer_id, results)
-					self.log.info("Fetched old stats")
+					#self.log.info("Fetched old stats")
 					#self.log.info("Fetched:\n{}".format(pformat(stats.toDict())))
 
-					stats.absorb_results(results)
-					self.log.info("Absorbed new results")
+					upload_count = dao.get_result_count(peer_id)
+					stats.absorb_results(results, upload_index=upload_count+1)
+					#self.log.info("\n\nRESULT COUNT = {} for peer {}\n\n".format(result_count, peer_id))
+					#self.log.info("Absorbed new results")
 					#self.log.info("Absorbed:\n{}".format(pformat(stats.toDict())))
 
 					bulk_writer = dao.get_bulk_writer()
 
 					bulk_writer = dao.bulk_write_stats_set(bulk_writer, peer_id, stats)
 
-					result = bulk_writer.execute()
-					self.log.info("Bulk wrote to database with result: {}".format(result))
+					# Write results
+					bulk_writer = dao.bulk_write_results(bulk_writer, peer_id, results)
+
+					res = bulk_writer.execute()
+					self.log.info("Bulk wrote to database with result: {}".format(res))
+
 					#parser.write_to_db()
+
+					#for result in results:
+						#res = dao.write_result(peer_id, result)
+						#self.log.info(res)
 
 				#from pprint import PrettyPrinter
 				#printer = PrettyPrinter(indent=2)
@@ -108,10 +118,12 @@ class ResultDataProcessor(object):
 				self.log.warn("{}".format(e))
 			except Exception as e:
 				self.log.exception("Error parsing file {}".format(filename))
+			finally:
+				dao.close()
 
 	def delete(self):
 		"""
 		We're done, delete all files.
 		"""
-		self.log.info("Deleting file {}".format(self._filepath))
+		#self.log.info("Deleting file {}".format(self._filepath))
 		os.remove(self._filepath)

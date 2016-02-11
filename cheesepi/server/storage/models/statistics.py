@@ -14,14 +14,14 @@ class Statistics(object):
 	def fromDict(cls, dct):
 		name = dct['task_name']
 
-		from .PingStatistics import PingStatistics
+		from cheesepi.server.storage.models.PingStatistics import PingStatistics
 		if name == 'ping': return PingStatistics.fromDict(dct)
 		else: raise UnsupportedStatisticsType("Unknown statistics type '{}'.".format(name))
 
 	@classmethod
 	def fromName(cls, name, target):
 
-		from .PingStatistics import PingStatistics
+		from cheesepi.server.storage.models.PingStatistics import PingStatistics
 		if name == 'ping': return PingStatistics(target)
 		else: raise UnsupportedStatisticsType("Unknown statistics type '{}'.".format(name))
 	def get_type(self):
@@ -74,6 +74,12 @@ class StatisticsSet(object):
 		"""
 		return iter(self._statistics_set.values())
 
+	def get_stats_for_target(self, target_uuid):
+
+		keys = filter(lambda x: x[0] == target_uuid, self._statistics_set.keys())
+
+		return [self._statistics_set[key] for key in keys]
+
 	def toDict(self):
 		dct = {}
 		for target_stat, stat in self._statistics_set.iteritems():
@@ -88,7 +94,7 @@ class StatisticsSet(object):
 
 		return dct
 
-	def absorb_results(self, result_list):
+	def absorb_results(self, result_list, upload_index=0):
 		"""
 		Takes a list of results and updates all statistics objects accordingly
 		"""
@@ -103,6 +109,6 @@ class StatisticsSet(object):
 
 			if target_stat not in self._statistics_set:
 				self.log.info("TargetStat '{}' not present in set, inserting.".format(target_stat))
-				self._statistics_set[target_stat] = Statistics.fromName(task_name,
-				                                                        target)
-			self._statistics_set[target_stat].absorb_result(result)
+				stat = Statistics.fromName(task_name, target)
+				self._statistics_set[target_stat] = stat
+			self._statistics_set[target_stat].absorb_result(result, upload_index=upload_index)
