@@ -92,12 +92,17 @@ class MongoDAO(DAO):
 		)
 		return self._return_status(result.acknowledged)
 
-	def get_random_entity(self, ignore_uuid=None):
+	def get_random_entity(self, ignore_uuids=None):
 		import re
 		from random import randint
 
-		if ignore_uuid is not None:
-			query = {'uuid': { '$not': re.compile(ignore_uuid) } }
+		if ignore_uuids is not None:
+			#ignore_regex = []
+			#for uuid in ignore_uuids:
+				#r = re.compile(uuid)
+				#ignore_regex.append(r)
+
+			query = {'uuid': { '$nin': ignore_uuids } }
 		else:
 			query = {}
 
@@ -107,6 +112,10 @@ class MongoDAO(DAO):
 		#self.log.info("{} entities in collection".format(num_entities))
 
 		cursor = self.db.entities.find(query)
+		if cursor.count() < 1:
+			# No entities available
+			return None
+
 		skipcount = randint(0, cursor.count()-1)
 		#self.log.info("skipcount: {}".format(skipcount))
 		cursor.skip(skipcount) # skip the first skipcount elements
@@ -126,33 +135,43 @@ class MongoDAO(DAO):
 			raise ServerDaoError()
 
 	def get_sequential_entities(self, uuid, length=1):
+		"""
+		Gets a list of entities in sequence up to length or until unique
+		entities runs out. Does not allow duplicates.
+		"""
 		sequence = []
 
 		# Initial guess
 		skip_length = 0
+		consumed = 0
 
+		# Find out if there's a previous skip_length stored
 		peer = self.db.peers.find_one({'uuid':uuid})
 		if peer is not None:
 			if 'round_robin_sequence_number' in peer:
 				skip_length = peer['round_robin_sequence_number']
 				#self.log.info("FETCHED STORED SKIPLENGTH: {}".format(skip_length))
 
-		num_entities = self.db.entities.find().count()
+		cursor = self.db.entities.find(
+			{'uuid':{'$ne':uuid}}
+		)
+		num_entities = cursor.count()
 
 		#self.log.info("NUM ENTITIES: {}".format(num_entities))
 		#self.log.info("LENGTH: {}".format(length))
 
-		while len(sequence) < length:
-			cursor = self.db.entities.find()
-			cursor.skip(skip_length)
-			cursor.limit(length)
-			for entity in cursor:
-				if entity['uuid'] != uuid:
-					sequence.append(Entity.fromDict(entity))
+		# Apply skip and limit
+		cursor.skip(skip_length)
+		cursor.limit(length)
 
-			#self.log.info("OLD_SKIP_LENGTH: {}".format(skip_length))
-			skip_length = (skip_length + length) % num_entities
-			#self.log.info("NEW_SKIP_LENGTH: {}".format(skip_length))
+		for entity in cursor:
+			sequence.append(Entity.fromDict(entity))
+			consumed = consumed + 1
+
+		#self.log.info("OLD_SKIP_LENGTH: {}".format(skip_length))
+		# Update the new skip_length with amount consumed
+		skip_length = (skip_length + consumed) % num_entities
+		#self.log.info("NEW_SKIP_LENGTH: {}".format(skip_length))
 
 		# update skip length
 		update = self.db.peers.update(
@@ -168,13 +187,13 @@ class MongoDAO(DAO):
 
 		peer = self.db.peers.find_one(
 			{'uuid':uuid},
-			{'results_received':1}
+			{'uploads_received':1}
 		)
 		#self.log.info("Peer is {}".format(type(peer)))
 
-		if peer is not None and 'results_received' in peer:
-			#self.log.info("returning result count {}".format(peer['results_received']))
-			return peer['results_received']
+		if peer is not None and 'uploads_received' in peer:
+			#self.log.info("returning result count {}".format(peer['uploads_received']))
+			return peer['uploads_received']
 		else:
 			return 0
 
@@ -342,7 +361,7 @@ class MongoDAO(DAO):
 			{'uuid':uuid}
 			).upsert(
 			).update(
-			{'$inc': {'results_received': len(results)},
+			{'$inc': {'uploads_received': 1},
 			 '$push': {
 				'results':{
 					'$each': [r.toDict() for r in results]}

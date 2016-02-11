@@ -18,10 +18,21 @@ class PingScheduler(Scheduler):
 		self._uuid = uuid
 
 	def get_random_schedule(self, num=1):
+		"""
+		Get a random schedule, does not include self and does not allow for
+		duplicates.
+		"""
 		schedule = []
+		ignore_uuids = [self._uuid]
 		for i in range(0, num):
-			entity = self.dao.get_random_entity(ignore_uuid=self._uuid)
+			entity = self.dao.get_random_entity(ignore_uuids=ignore_uuids)
+
+			if entity is None:
+				# We've reached the limit of entities available for scheduling
+				break
+
 			schedule.append(entity)
+			ignore_uuids.append(entity.get_uuid())
 
 		return schedule
 

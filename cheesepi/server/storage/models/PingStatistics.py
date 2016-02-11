@@ -69,7 +69,7 @@ class PingStatistics(Statistics):
 	def get_total_probe_count(self):
 		return self._total_probe_count
 
-	def absorb_result(self, result, result_index=0):
+	def absorb_result(self, result, upload_index=0):
 		from cheesepi.server.processing.utils import median
 
 		assert result.get_taskname() == 'ping'
@@ -87,7 +87,7 @@ class PingStatistics(Statistics):
 			if d > 0:
 				self._delay.add_datum(d)
 				pure_sequence.append(d)
-		self._delay.add_data(pure_sequence, result_index=result_index)
+		self._delay.add_data(pure_sequence, upload_index=upload_index)
 
 		sequence_median = median(pure_sequence)
 		#self.log.info("MEDIAN {}".format(sequence_median))

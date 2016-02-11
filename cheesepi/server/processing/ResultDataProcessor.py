@@ -85,8 +85,8 @@ class ResultDataProcessor(object):
 					#self.log.info("Fetched old stats")
 					#self.log.info("Fetched:\n{}".format(pformat(stats.toDict())))
 
-					result_count = dao.get_result_count(peer_id)
-					stats.absorb_results(results, result_index=result_count+1)
+					upload_count = dao.get_result_count(peer_id)
+					stats.absorb_results(results, upload_index=upload_count+1)
 					#self.log.info("\n\nRESULT COUNT = {} for peer {}\n\n".format(result_count, peer_id))
 					#self.log.info("Absorbed new results")
 					#self.log.info("Absorbed:\n{}".format(pformat(stats.toDict())))

@@ -20,6 +20,9 @@ from mprpc import RPCClient
 
 import mock_ping as mp
 
+from cheesepi.server.storage.mongo import MongoDAO
+from cheesepi.server.storage.models.statistics import StatisticsSet
+
 # Changes later
 DIRNAME="testcase_dir/"
 
@@ -57,13 +60,15 @@ def call_register(uuid):
 	return res
 
 
-def full_coverage_pass(peers, sample_size):
+def full_coverage_pass(peers, sample_size, iteration):
 	print("Running full coverage pass")
-	start_dir = os.path.join(DIRNAME, "start")
+	start_dir = os.path.join(DIRNAME, "{}_full".format(str(iteration)))
 	tar_dir = os.path.join(start_dir, "tar")
 
 	os.mkdir(start_dir)
 	os.mkdir(tar_dir)
+
+	new_peers = []
 
 	for peer in peers:
 		uuid = peer.get_uuid()
@@ -80,6 +85,7 @@ def full_coverage_pass(peers, sample_size):
 				pformat(samples)))
 			puf.add_result(samples, target_uuid, "127.0.0.1")
 
+
 		dict_object = puf.construct()
 
 		# Write the data to file
@@ -87,6 +93,18 @@ def full_coverage_pass(peers, sample_size):
 			json.dump(dict_object, fd)
 
 		upload_results(uuid, result_path, tar_dir)
+
+		# Update stats
+		dao = MongoDAO()
+		old_stats = StatisticsSet()
+		new_stats = dao.get_all_stats(uuid)
+
+		peer = update_stats_for_links(peer, iteration, old_stats, new_stats)
+		new_peers.append(peer)
+
+		dao.close()
+
+	return new_peers
 
 
 def upload_results(uuid, source_file, tar_dir):
@@ -111,13 +129,74 @@ def upload_results(uuid, source_file, tar_dir):
 
 	return response
 
+def update_stats_for_links(peer, iteration, old_stats, new_stats):
+	# In the data we don't want 0-indexing
+	index = iteration + 1
 
-def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size, schedule_method='smart'):
+	for target_uuid, link in peer._links.iteritems():
+		old = old_stats.get_stats_for_target(target_uuid)
+		new = new_stats.get_stats_for_target(target_uuid)
+
+		# We know we're only getting one type of stat (ping)
+		old = None if len(old) == 0 else old[0]
+		new = None if len(new) == 0 else new[0]
+
+		# TODO if nothing has changed, the deltas should just be copies of the
+		# previous values
+		if new:
+			nd = new.get_delay()
+
+			m = nd._m1
+			v = nd._new_variance
+			s = nd._skew
+			k = nd._kurtosis
+
+			dm = None
+			dv = None
+			ds = None
+			dk = None
+
+			if old:
+				od = old.get_delay()
+
+				if (od._n < nd._n):
+					dm = math.fabs(od._m1 - m)
+					dv = math.fabs(od._new_variance - v)
+					ds = math.fabs(od._skew - s)
+					dk = math.fabs(od._kurtosis - k)
+				else:
+					# Nothing has changed, keep old values
+					print("NOTHING HAPPENED")
+			else:
+				# First iteration
+				dm = m
+				dv = v
+				ds = s
+				dk = k
+
+			link.add_historical_model_data(index, m, v, s, k, dm, dv, ds, dk)
+		#elif new:
+			# Deltas are now the same as the values since we start from 0
+			#d = new.get_delay()
+			#link.add_historical_model_data(iteration, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan)
+		else:
+			# Nothing to do???
+			# Maybe default everything to 0...
+			#link.add_historical_model_data(index)
+			pass
+	return peer
+
+
+def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size, iteration,
+		schedule_method='smart'):
 
 	uuid = peer.get_uuid()
 
 	os.mkdir(peer_dir)
 
+	dao = MongoDAO()
+
+	old_stats = dao.get_all_stats(uuid)
 
 	# Result file
 	result_path = os.path.join(peer_dir, "ping.json")
@@ -128,7 +207,7 @@ def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size, schedule_method=
 	uuid_sched = [target['uuid'] for target in sched['result']]
 	puf = mp.PingUploadConstructor(uuid)
 
-	#print("Got schedule:\n{}".format(pformat(uuid_sched)))
+	print("Got schedule:\n{}".format(pformat(uuid_sched)))
 	for target in sched['result']:
 		target_uuid = target['uuid']
 		target_ip = target['ip']
@@ -148,10 +227,20 @@ def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size, schedule_method=
 	result = upload_results(uuid, result_path, tar_dir)
 	print(result)
 
+	new_stats = dao.get_all_stats(uuid)
+
+	peer = update_stats_for_links(peer, iteration, old_stats, new_stats)
+
+	# TODO This is where deltas could be calculated!!!
+	#print(old_stats)
+	#print(new_stats)
+
+	dao.close()
+
 	return peer
 
 
-def measurement_pass(peers, pass_dir, schedule_method='smart'):
+def measurement_pass(peers, pass_dir, iteration, schedule_method='smart'):
 
 	tar_dir = os.path.join(pass_dir, "tar")
 
@@ -166,7 +255,7 @@ def measurement_pass(peers, pass_dir, schedule_method='smart'):
 		peer_dir = os.path.join(pass_dir, uuid)
 
 		mod_peer = peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size,
-				schedule_method=schedule_method)
+				iteration, schedule_method=schedule_method)
 
 		#print(pformat(mod_peer.dms))
 
@@ -191,17 +280,21 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 	results = register_peers(peers)
 	#print(results)
 
+	iteration_index = 0
+
 	if full_coverage_start:
-		results = full_coverage_pass(peers, sample_size)
+		peers = full_coverage_pass(peers, sample_size, iteration_index)
+		iteration_index = iteration_index + 1
 		#print(results)
 
 	# Maybe initialize with one iteration complete coverage???
 
 	for i in range(0, iterations):
 		# Create directory
-		ITER_DIR = os.path.join(DIRNAME, str(i))
+		ITER_DIR = os.path.join(DIRNAME, str(iteration_index))
 
-		peers = measurement_pass(peers, ITER_DIR, schedule_method=schedule_method)
+		peers = measurement_pass(peers, ITER_DIR, iteration_index, schedule_method=schedule_method)
+		iteration_index = iteration_index + 1
 
 	# If we don't sleep there's a possibility that the last data written
 	# doesn't get taken into account when querying the database. There shouldn't
@@ -219,24 +312,25 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 	peer_stats = []
 
 	# Plot stuff
-	xmin = 0
-	xmax = 100
-	x_plot = np.linspace(xmin, xmax, xmax-xmin)
+	#xmin = 0
+	#xmax = 100
+	#x_plot = np.linspace(xmin, xmax, xmax-xmin)
 
 	num_peers = len(peers)
 
-	#fig, plots = plt.subplots(num_peers, (num_peers-1)*3, sharex='col')
+	#fig, plots = plt.subplots(num_peers*4, 1, sharex='col')
+	#print(plots)
 
 	for peer_index, peer in enumerate(peers):
 		#plt.figure(peer_index+1)
-		fig, plots = plt.subplots((num_peers-1), 3, sharex='col')
-		fig.suptitle(peer.get_uuid())
+		#fig, plots = plt.subplots((num_peers-1), 3)
 		#peer_plot = plots[peer_index]
 		#print(peer)
 		#print(pformat(peer.dms))
 		#print(peer._dm2)
 		#print(peer._dm3)
 		#print(peer._dm4)
+		print(peer_index)
 
 		peer_uuid = peer.get_uuid()
 		print("SOURCE: {}".format(peer_uuid))
@@ -244,11 +338,11 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 		stats = dao.get_all_stats(peer.get_uuid())
 		for stat_index, stat in enumerate(stats):
 			assert isinstance(stat, PingStatistics)
-			plot_row = plots[stat_index]
+			#plot_row = plots[stat_index]
 
-			stat_plot = plot_row[0]
-			mv_plot = plot_row[1]
-			sk_plot = plot_row[2]
+			#stat_plot = plots[4*peer_index]
+			#mv_plot = plots[4*peer_index + 1]
+			#sk_plot = plots[4*peer_index + 2]
 			#stat_plot = peer_plot[stat_index]
 			#mv_plot = peer_plot[stat_index + (num_peers-1)]
 			#sk_plot = peer_plot[stat_index + 2*(num_peers-1)]
@@ -272,41 +366,92 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 			pdf = pdf_mvsk([delay_model._m1, delay_model._new_variance,
 					delay_model._skew, delay_model._kurtosis])
 
-			orig_dist = peer.get_link(target_uuid).get_dist()
+			link = peer.get_link(target_uuid)
 
+			orig_dist = link.get_dist()
+
+			# Boundaries
+			xmax = max(link._all_samples)
+			xmin = min(link._all_samples)
+			xmax = xmax + float(xmax)/10
+			xmin = float(xmin)/2
+			x_plot = np.linspace(xmin, xmax, xmax-xmin)
+
+			# Distribution y-values
 			y_model_plot = np.array([pdf(x) for x in x_plot])
 			y_orig_plot = orig_dist.pdf(x_plot)
 
-			stat_plot.text(0.50, 0.40, "#samples={}".format(num_samples),
-					fontsize=8, transform=stat_plot.transAxes)
+			# Histogram
+			hist_y, hist_x = np.histogram(link._all_samples, bins=np.linspace(xmin, xmax,
+				xmax-xmin), density=True)
 
-			# Distribution plots
-			stat_plot.plot(x_plot, y_model_plot, color='r', label='model distribution')
-			stat_plot.plot(x_plot, y_orig_plot,  color='b', label='original distribution')
-			stat_plot.set_title("{}...".format(target_uuid[:20]), fontdict={'fontsize':10})
-			stat_plot.legend(loc='upper right', ncol=1, fontsize=9)
+			# fig = plt.figure()
+			# fig.suptitle("{}".format(peer_uuid))
+
+			# # Plot histogram
+			# plt.bar(hist_x[:-1], hist_y, width=hist_x[1]-hist_x[0],
+			# 	color='green', alpha=0.2, linewidth=0)
+
+			# # Distribution plots
+			# plt.plot(x_plot, y_model_plot, color='r', label='Gram-Charlier Expansion')
+			# plt.plot(x_plot, y_orig_plot,  color='b', label='Original Distribution')
+			# plt.title("{}...".format(target_uuid[:20]), fontdict={'fontsize':10})
+			# plt.legend(loc='upper right', ncol=1, fontsize=9)
+
+			# # Additional Text
+			# ax = fig.get_axes()
+			# plt.text(0.70, 0.70, "#samples={}".format(num_samples),
+			# 		fontsize=8, transform=ax[0].transAxes)
 
 			# Mean and variance plots
 			print()
 			print()
 			print()
+			print("mean")
+			#print(link._historical_mean)
 			print(*zip(*delay_model._dm1))
+			print("variance")
+			#print(link._historical_variance)
 			print(*zip(*delay_model._dm2))
-			mv_plot.plot(*zip(*delay_model._dm1), label=r'$\Delta$mean')
-			mv_plot.plot(*zip(*delay_model._dm2), label=r'$\Delta$variance')
-			mv_plot.set_title("{}...".format(target_uuid[:20]), fontdict={'fontsize':10})
-			mv_plot.legend(loc='upper right', ncol=1, fontsize=9)
+			#print("skew")
+			#print(link._historical_skew)
+			#print("kurtosis")
+			#print(link._historical_kurtosis)
+			#print("delta mean")
+			#print(link._historical_delta_mean)
+			#print("delta variance")
+			#print(link._historical_delta_variance)
+			#print("delta skew")
+			#print(link._historical_delta_skew)
+			#print("delta kurtosis")
+			#print(link._historical_delta_kurtosis)
+
+			fig = plt.figure()
+			fig.suptitle("{}".format(peer_uuid))
+
+			plt.plot(*zip(*delay_model._dm1), linestyle='-', label=r'$\Delta$mean')
+			plt.plot(*zip(*delay_model._dm2), linestyle='-', label=r'$\Delta$variance')
+			plt.plot(*zip(*link._historical_delta_mean), linestyle='-.', label=r'$\Delta$mean2')
+			plt.plot(*zip(*link._historical_delta_variance), linestyle='-.', label=r'$\Delta$variance2')
+			plt.title("{}...".format(target_uuid[:20]), fontdict={'fontsize':10})
+			plt.legend(loc='upper right', ncol=1, fontsize=9)
 
 			# Skew and kurtosis plots
-			print()
-			print()
-			print()
-			print(delay_model._dm1)
-			print(delay_model._dm2)
-			sk_plot.plot(*zip(*delay_model._dm3), label=r'$\Delta$skew')
-			sk_plot.plot(*zip(*delay_model._dm4), label=r'$\Delta$kurtosis')
-			sk_plot.set_title("{}...".format(target_uuid[:20]), fontdict={'fontsize':10})
-			sk_plot.legend(loc='upper right', ncol=1, fontsize=9)
+			#print()
+			#print()
+			#print()
+			#print(delay_model._dm1)
+			#print(delay_model._dm2)
+
+			# fig = plt.figure()
+			# fig.suptitle("{}".format(peer_uuid))
+
+			# plt.plot(*zip(*delay_model._dm3), linestyle='-', label=r'$\Delta$skew')
+			# plt.plot(*zip(*delay_model._dm4), linestyle='-', label=r'$\Delta$kurtosis')
+			# #plt.plot(link._historical_delta_skew, linestyle='-.', label=r'$\Delta$skew2')
+			# #plt.plot(link._historical_delta_kurtosis, linestyle='-.', label=r'$\Delta$kurtosis2')
+			# plt.title("{}...".format(target_uuid[:20]), fontdict={'fontsize':10})
+			# plt.legend(loc='upper right', ncol=1, fontsize=9)
 
 	plt.show()
 

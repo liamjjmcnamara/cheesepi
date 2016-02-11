@@ -148,7 +148,7 @@ class DistributionModel(object):
 		self._variance = (1-alpha) * (self._variance + (delta * increment))
 		self._std_dev = math.sqrt(self._variance)
 
-	def add_data(self, samples, result_index=0):
+	def add_data(self, samples, upload_index=0):
 		"""
 		Update the distribution model with the new samples
 		"""
@@ -211,15 +211,16 @@ class DistributionModel(object):
 		# Kurtosis, adjusted so kurtosis of Gauss = 0
 		kurtosis = (m4/div) / math.pow(std_dev, 4) - 3
 
-		self.log.info("Result index is {}".format(result_index))
+		self.log.info("Result index is {}".format(upload_index))
 		self.log.info("dm1 = {}".format(math.fabs(self._m1 - m1)))
-		from pprint import pformat
-		self.log.info("{}".format(pformat(self._dm1)))
+		#from pprint import pformat
+		#self.log.info("{}".format(pformat(self._dm1)))
+
 		# Deltas of the moments due to this pass
-		self._dm1.append((result_index, math.fabs(self._m1 - m1)))
-		self._dm2.append((result_index, math.fabs(self._new_variance - new_variance)))
-		self._dm3.append((result_index, math.fabs(self._skew - skew)))
-		self._dm4.append((result_index, math.fabs(self._kurtosis - kurtosis)))
+		self._dm1.append((upload_index, math.fabs(self._m1 - m1)))
+		self._dm2.append((upload_index, math.fabs(self._new_variance - new_variance)))
+		self._dm3.append((upload_index, math.fabs(self._skew - skew)))
+		self._dm4.append((upload_index, math.fabs(self._kurtosis - kurtosis)))
 
 		self._new_variance = new_variance
 		self._skew = skew

@@ -143,15 +143,66 @@ class LinkMocker(object):
 		self._target_uuid = target_uuid
 		self._dist = dist
 
+		# Incremental stats of the generated model
+		self._historical_mean = []
+		self._historical_variance = []
+		self._historical_skew = []
+		self._historical_kurtosis = []
+
+		self._historical_delta_mean = []
+		self._historical_delta_variance = []
+		self._historical_delta_skew = []
+		self._historical_delta_kurtosis = []
+
+		self._all_samples = []
+
 	def __repr__(self):
 		return "LinkMocker({} -> {})\n\t{}".format(self._source_uuid,
 				self._target_uuid, str(self._dist))
+
+	def add_historical_model_data(self, index, m=None, v=None, s=None, k=None,
+			dm=None, dv=None, ds=None, dk=None):
+		"""
+		Adds historical data gathered at every iteration to lists.
+		Default everything to 0
+		"""
+		if m is not None:
+			self._historical_mean.append((index, m))
+		if v is not None:
+			self._historical_variance.append((index, v))
+		if s is not None:
+			self._historical_skew.append((index, s))
+		if k is not None:
+			self._historical_kurtosis.append((index, k))
+
+		#if dm is None:
+			#self._historical_delta_mean.append(self._historical_delta_mean[-1])
+		#else:
+		if dm is not None:
+			self._historical_delta_mean.append((index, dm))
+		#if dv is None:
+			#self._historical_delta_variance.append(self._historical_delta_variance[-1])
+		#else:
+		if dv is not None:
+			self._historical_delta_variance.append((index, dv))
+		#if ds is None:
+			#self._historical_delta_skew.append(self._historical_delta_skew[-1])
+		#else:
+		if ds is not None:
+			self._historical_delta_skew.append((index, ds))
+		#if dk is None:
+			#self._historical_delta_kurtosis.append(self._historical_delta_kurtosis[-1])
+		#else:
+		if dk is not None:
+			self._historical_delta_kurtosis.append((index, dk))
 
 	def get_dist(self):
 		return self._dist.get_dist()
 
 	def sample_dist(self, num=10):
-		return self._dist.sample_n(num)
+		samples = self._dist.sample_n(num)
+		self._all_samples.extend(samples)
+		return samples
 
 class PingUploadConstructor(object):
 
