@@ -17,13 +17,18 @@ class PingScheduler(Scheduler):
 		self.dao = MongoDAO('localhost', 27017)
 		self._uuid = uuid
 
-	def get_random_schedule(self, num=1):
+	def get_random_schedule(self, num=1, ignore_uuids=None):
 		"""
 		Get a random schedule, does not include self and does not allow for
 		duplicates.
 		"""
 		schedule = []
-		ignore_uuids = [self._uuid]
+
+		if ignore_uuids is None:
+			ignore_uuids = [self._uuid]
+		else:
+			ignore_uuids.append(self._uuid)
+
 		for i in range(0, num):
 			entity = self.dao.get_random_entity(ignore_uuids=ignore_uuids)
 
@@ -42,7 +47,13 @@ class PingScheduler(Scheduler):
 
 		return schedule
 
-	def get_schedule(self, num=1):
+	def get_schedule(self, num=1, ignore_uuids=None):
+
+		if ignore_uuids is None:
+			ignore_uuids = [self._uuid]
+		else:
+			ignore_uuids.append(self._uuid)
+
 		self.log.info("Scheduling for {}".format(self._uuid))
 		from pprint import pformat
 
@@ -70,29 +81,37 @@ class PingScheduler(Scheduler):
 		priority_sorted_targets = []
 
 		for s in stats:
-			#print(pformat(s.toDict()))
-			delay = s.get_delay()
-			# self.log.info("\ndm1: {}\ndm2: {}\ndm3: {}\ndm4: {}\nsumdm: {}".format(
-			# 	delay._dm1, delay._dm2, delay._dm3, delay._dm4,
-			# 	delay._dm1 + delay._dm2 + delay._dm3 + delay._dm4)
-			# )
-			delay_variance = delay.get_variance()
 			target = s.get_target()
-			#print(target)
-			#print(delay_variance)
-			heapq.heappush(priority_sorted_targets, (-delay_variance, target))
+			target_uuid = target.get_uuid()
+
+			if target_uuid not in ignore_uuids:
+				#print(pformat(s.toDict()))
+				delay = s.get_delay()
+				# self.log.info("\ndm1: {}\ndm2: {}\ndm3: {}\ndm4: {}\nsumdm: {}".format(
+				# 	delay._dm1, delay._dm2, delay._dm3, delay._dm4,
+				# 	delay._dm1 + delay._dm2 + delay._dm3 + delay._dm4)
+				# )
+				delay_variance = delay.get_variance()
+				#print(target)
+				#print(delay_variance)
+				heapq.heappush(priority_sorted_targets, (-delay_variance, target))
 
 		#print(priority_sorted_targets)
 
 		for i in range(0, min(non_blind_num,len(priority_sorted_targets))):
 			target = heapq.heappop(priority_sorted_targets)
+			target_uuid = target[1].get_uuid()
+
 			schedule.append(target[1])
+
+			ignore_uuids.append(target_uuid)
 
 		if len(schedule) < non_blind_num:
 			# schedule length needs to be filled with more blinds
 			blind_num = blind_num + (non_blind_num - len(schedule))
 
-		random_schedule = self.get_random_schedule(blind_num)
+		random_schedule = self.get_random_schedule(blind_num,
+				ignore_uuids=ignore_uuids)
 
 		schedule.extend(random_schedule)
 		#for i in range(0, blind_num):
