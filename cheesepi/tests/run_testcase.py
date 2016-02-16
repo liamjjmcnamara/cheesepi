@@ -19,6 +19,7 @@ from pprint import pformat
 from mprpc import RPCClient
 
 import mock_ping as mp
+import datasets as ds
 
 from cheesepi.server.storage.mongo import MongoDAO
 from cheesepi.server.storage.models.statistics import StatisticsSet
@@ -166,7 +167,8 @@ def update_stats_for_links(peer, iteration, old_stats, new_stats):
 					dk = math.fabs(od._kurtosis - k)
 				else:
 					# Nothing has changed, keep old values
-					print("NOTHING HAPPENED")
+					#print("NOTHING HAPPENED")
+					pass
 			else:
 				# First iteration
 				dm = m
@@ -309,27 +311,7 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 
 	dao = MongoDAO()
 
-	peer_stats = []
-
-	# Plot stuff
-	#xmin = 0
-	#xmax = 100
-	#x_plot = np.linspace(xmin, xmax, xmax-xmin)
-
-	num_peers = len(peers)
-
-	#fig, plots = plt.subplots(num_peers*4, 1, sharex='col')
-	#print(plots)
-
 	for peer_index, peer in enumerate(peers):
-		#plt.figure(peer_index+1)
-		#fig, plots = plt.subplots((num_peers-1), 3)
-		#peer_plot = plots[peer_index]
-		#print(peer)
-		#print(pformat(peer.dms))
-		#print(peer._dm2)
-		#print(peer._dm3)
-		#print(peer._dm4)
 		print(peer_index)
 
 		peer_uuid = peer.get_uuid()
@@ -338,25 +320,12 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 		stats = dao.get_all_stats(peer.get_uuid())
 		for stat_index, stat in enumerate(stats):
 			assert isinstance(stat, PingStatistics)
-			#plot_row = plots[stat_index]
-
-			#stat_plot = plots[4*peer_index]
-			#mv_plot = plots[4*peer_index + 1]
-			#sk_plot = plots[4*peer_index + 2]
-			#stat_plot = peer_plot[stat_index]
-			#mv_plot = peer_plot[stat_index + (num_peers-1)]
-			#sk_plot = peer_plot[stat_index + 2*(num_peers-1)]
 
 			target_uuid = stat.get_target().get_uuid()
 
 			print("TARGET: {}".format(target_uuid))
 
 			delay_model = stat.get_delay()
-
-			#print(delay_model._dm1)
-			#print(delay_model._dm2)
-			#print(delay_model._dm3)
-			#print(delay_model._dm4)
 
 			num_samples = delay_model._n
 
@@ -385,75 +354,25 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 			hist_y, hist_x = np.histogram(link._all_samples, bins=np.linspace(xmin, xmax,
 				xmax-xmin), density=True)
 
-			# fig = plt.figure()
-			# fig.suptitle("{}".format(peer_uuid))
+			# Save datasets
+			ds.DistData(peer_uuid, target_uuid, x_plot, y_orig_plot,
+					y_model_plot, hist_x, hist_y,
+					num_samples, delay_model).pickle(os.path.join(DIRNAME,
+						"dist_{}_{}.pickle".format(peer_index, stat_index)))
 
-			# # Plot histogram
-			# plt.bar(hist_x[:-1], hist_y, width=hist_x[1]-hist_x[0],
-			# 	color='green', alpha=0.2, linewidth=0)
+			ds.DeltaData(peer_uuid, target_uuid, link._historical_delta_mean,
+					link._historical_delta_variance, link._historical_delta_skew,
+					link._historical_delta_kurtosis).pickle(os.path.join(DIRNAME,
+						"delta_{}_{}.pickle".format(peer_index, stat_index)))
 
-			# # Distribution plots
-			# plt.plot(x_plot, y_model_plot, color='r', label='Gram-Charlier Expansion')
-			# plt.plot(x_plot, y_orig_plot,  color='b', label='Original Distribution')
-			# plt.title("{}...".format(target_uuid[:20]), fontdict={'fontsize':10})
-			# plt.legend(loc='upper right', ncol=1, fontsize=9)
+			ds.ValuesData(peer_uuid, target_uuid, link._dist.get_mean(),
+					link._dist.get_variance(), link._dist.get_skew(),
+					link._dist.get_kurtosis(),
+					link._historical_mean,
+					link._historical_variance, link._historical_skew,
+					link._historical_kurtosis).pickle(os.path.join(DIRNAME,
+						"values_{}_{}.pickle".format(peer_index, stat_index)))
 
-			# # Additional Text
-			# ax = fig.get_axes()
-			# plt.text(0.70, 0.70, "#samples={}".format(num_samples),
-			# 		fontsize=8, transform=ax[0].transAxes)
-
-			# Mean and variance plots
-			print()
-			print()
-			print()
-			print("mean")
-			#print(link._historical_mean)
-			print(*zip(*delay_model._dm1))
-			print("variance")
-			#print(link._historical_variance)
-			print(*zip(*delay_model._dm2))
-			#print("skew")
-			#print(link._historical_skew)
-			#print("kurtosis")
-			#print(link._historical_kurtosis)
-			#print("delta mean")
-			#print(link._historical_delta_mean)
-			#print("delta variance")
-			#print(link._historical_delta_variance)
-			#print("delta skew")
-			#print(link._historical_delta_skew)
-			#print("delta kurtosis")
-			#print(link._historical_delta_kurtosis)
-
-			fig = plt.figure()
-			fig.suptitle("{}".format(peer_uuid))
-
-			plt.plot(*zip(*delay_model._dm1), linestyle='-', label=r'$\Delta$mean')
-			plt.plot(*zip(*delay_model._dm2), linestyle='-', label=r'$\Delta$variance')
-			plt.plot(*zip(*link._historical_delta_mean), linestyle='-.', label=r'$\Delta$mean2')
-			plt.plot(*zip(*link._historical_delta_variance), linestyle='-.', label=r'$\Delta$variance2')
-			plt.title("{}...".format(target_uuid[:20]), fontdict={'fontsize':10})
-			plt.legend(loc='upper right', ncol=1, fontsize=9)
-
-			# Skew and kurtosis plots
-			#print()
-			#print()
-			#print()
-			#print(delay_model._dm1)
-			#print(delay_model._dm2)
-
-			# fig = plt.figure()
-			# fig.suptitle("{}".format(peer_uuid))
-
-			# plt.plot(*zip(*delay_model._dm3), linestyle='-', label=r'$\Delta$skew')
-			# plt.plot(*zip(*delay_model._dm4), linestyle='-', label=r'$\Delta$kurtosis')
-			# #plt.plot(link._historical_delta_skew, linestyle='-.', label=r'$\Delta$skew2')
-			# #plt.plot(link._historical_delta_kurtosis, linestyle='-.', label=r'$\Delta$kurtosis2')
-			# plt.title("{}...".format(target_uuid[:20]), fontdict={'fontsize':10})
-			# plt.legend(loc='upper right', ncol=1, fontsize=9)
-
-	plt.show()
 
 
 
