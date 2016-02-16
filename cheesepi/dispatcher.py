@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 start_time = time.time()
 
-dao    = cp.config.get_dao()
 config = cp.config.get_config()
+dao    = cp.config.get_dao()
 logger = cp.config.get_logger(__name__)
 
 # Create scheduler object, use 'real' time

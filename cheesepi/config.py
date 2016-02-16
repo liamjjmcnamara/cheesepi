@@ -126,7 +126,7 @@ def ensure_default_config(clobber=False):
 	"""If config file does not exist, try to copy from default.
 	   Also add a local secret to the file."""
 	# is there already a local config file?
-	if not clobber and os.path.isfile(config_file):
+	if os.path.isfile(config_file) and not clobber:
 		return
 
 	print "Warning: Copying default config file to a local version"

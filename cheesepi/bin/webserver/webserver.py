@@ -1,85 +1,84 @@
 #!/usr/bin/env python
 
 import os
-import logging
-import socket
 import cherrypy
-
 from cherrypy.lib.static import serve_file
 
 import cheesepi as cp
 
-#logger = logging.getLogger(__name__)
-#logger.setLevel(logging.ERROR)
-
-quiet=True
-if (quiet):
-	cherrypy.log.error_log.setLevel(30)
-
 resultLimit = 5 # number of results per page
 serveroot = os.path.dirname(os.path.realpath(__file__))
 confpath  = os.path.join(serveroot,'cherrypy.conf')
-#print "Webserver root: "+serveroot
 
-#serveroot = os.path.join(serveroot,"dashboard")
-#print serveroot
-#dao = cp.config.get_dao()
+def match_path(pathA, pathB):
+	if len(pathA)!=len(pathB):
+		return False
+	for i in xrange(len(pathA)):
+		if pathA[i]!=pathB[i]:
+			return False
+	return True
 
-class Root:
+
+class Root(object):
+	@cherrypy.expose
 	def index(self):
 		raise cherrypy.HTTPRedirect("/dashboard")
 		return
-	index.exposed = True
 
-class Dynamic:
-	def index(self, **params):
-		return serve_file(os.path.join(serveroot,"dashboard","index.html"))
-		#cherrypy.response.headers["Content-Type"]  = "application/json"
-		#return '{[{"value":10},{"value":15}]}'
-		#return '{["value":1],["value":2]}'
-		#return dao.get_op("ping")
-
-	@cherrypy.expose
-	def config_js(self, **params):
-		"""Serve the config file, replace the local IP"""
+class RestAPI(object):
+	exposed = True
+	def serve_config_js(self):
+		cherrypy.response.headers['Content-Type'] = "text/javascript"
 		with open(os.path.join(serveroot,"dashboard","config.js"), 'r') as f:
 			content = f.read()
 			ip = cp.utils.get_IP()
 			return content.replace("INFLUXDB_IP",ip)
-		return "Error"
 
-	def default(self, **name):
-		path = os.path.join(serveroot,"dashboard",name)
-		print path
-		return serve_file(path)
-	default.exposed = True
-	index.exposed = True
-	config_js.exposed = True
+	def serve_default_json(self, **params):
+		"""Serve the dashboard file, replace the WiFi AP"""
+		cherrypy.response.headers['Content-Type'] = "application/json"
+		with open(os.path.join(serveroot,"dashboard","app","dashboards","default.json"), 'r') as f:
+			content = f.read()
+			essid = cp.config.get('ap')
+			if essid==None: essid="ACCESSPOINTESSID"
+			return content.replace("ACCESSPOINTESSID",essid)
+		return "Error: Can't read default.json file"
+
+	def serve_css(self,css):
+		return serve_file(os.path.join(serveroot,"dashboard","css",css))
+
+	def GET(self, *vpath, **params):
+		if len(vpath)==2 and vpath[0]=="css": return self.serve_css(vpath[1])
+		if match_path(vpath,["config.js"]):   return self.serve_config_js()
+		if match_path(vpath,["app","dashboards","default.json"]):
+			return self.serve_default_json()
+		#if len(vpath)==1 and vpath[0]=="config.js": return self.serve_config_js()
+		#if len(vpath)==3 and vpath[2]=="default.json": return self.serve_default_json()
+		#cherrypy.response.headers['Content-Type'] = "text/javascript"
+
+		filename="index.html"
+		if len(vpath)>0:
+			filename = "/".join(vpath)
+		serve_path = os.path.join(serveroot,"dashboard",filename)
+		print "Serving: %s" % serve_path
+		return serve_file(serve_path)
+
 
 def setup_server(port=8080):
-	root = Root()
-	root.dashboard = Dynamic()
-	config = { 'global': { 'environment': 'embedded', }, }
-	for d in ["css","app","img","font","plugins"]:
-		config["/dashboard/"+d] = {
-			'tools.staticdir.on':    True,
-			'tools.staticdir.root':  serveroot,
-			'tools.staticdir.dir':   'dashboard/'+d,
-			'tools.staticdir.index': 'index.html',
+	cherrypy.config.update({
+		'global': {
+			'environment': 'test_suite',
+			'server.socket_host': '0.0.0.0',
+			'server.socket_port': port,
 		}
-	cherrypy.log.screen = False
-	cherrypy.tree.mount(root, config=config)
-	cherrypy.config.update({ 'server.socket_host':'0.0.0.0', 'server.socket_port':port, })
-	try:
-		cherrypy.server.start()
-	except IOError as e:
-		msg = "Error: Can't start server, port probably already in use: "+str(e)
-		print msg
-		logging.error(msg)
+	})
+
+	restconf = {'/': {'request.dispatch': cherrypy.dispatch.MethodDispatcher()} }
+	cherrypy.tree.mount(Root())
+	cherrypy.tree.mount(RestAPI(), '/dashboard', restconf)
+
+	cherrypy.engine.start()
+	cherrypy.engine.block()
 
 if __name__ == "__main__":
 	setup_server()
-
-
-
-
