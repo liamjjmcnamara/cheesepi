@@ -8,12 +8,14 @@ from fnmatch import fnmatch
 
 import matplotlib.pyplot as plt
 import numpy as np
+from statsmodels.sandbox.distributions.extras import pdf_mvsk
 
 from tkinter import Tk, ttk, Toplevel, Menu
 import tkinter as tk
 import tkFont
 
 import datasets as ds
+import mock_ping as mp
 
 class DataEntry(object):
 
@@ -101,6 +103,18 @@ def unpickle(filepath):
 	with open(filepath, 'r') as fd:
 		obj = pickle.load(fd)
 
+		# Special case since Numpy distributions can't be pickled, so the
+		# arguments are pickled instead and then we recreate the object from
+		# the arguments.
+		if isinstance(obj, ds.DistData):
+			unpacked = []
+			for d in obj._original_distributions:
+				#print(*d[1][1:])
+				nd = mp.GammaDist(*d[1][1:])
+				unpacked.append((d[0],nd))
+			#print(unpacked)
+			obj._original_distributions = unpacked
+
 	return obj
 
 def setup_plot(data):
@@ -116,26 +130,55 @@ def setup_dist_plot(dist_data):
 	fig = plt.figure()
 	fig.suptitle("DIST: {}".format(dist_data._source))
 
+	#print(dist_data._samples)
+
+	# Boundaries and x values
+	xmax = max(dist_data._samples)
+	xmin = min(dist_data._samples)
+	xmax = xmax + float(xmax)/10
+	xmin = float(xmin)/2
+	x_plot = np.linspace(xmin, xmax, xmax-xmin)
+
+	# Histogram
+	hist_y, hist_x = np.histogram(dist_data._samples, bins=np.linspace(xmin, xmax,
+		xmax-xmin), density=True)
+
 	# Plot histogram
-	plt.bar(dist_data._x_hist[:-1], dist_data._y_hist,
-		width=dist_data._x_hist[1]-dist_data._x_hist[0],
+	plt.bar(hist_x[:-1], hist_y,
+		width=hist_x[1]-hist_x[0],
 		color='green', alpha=0.2, linewidth=0)
 
-	# Distribution plots
-	plt.plot(dist_data._x_values, dist_data._y_model, color='r',
-		label='Gram-Charlier Expansion')
-	plt.plot(dist_data._x_values, dist_data._y_original,  color='b',
-		label='Original Distribution')
+	# Model distribution
+	model = dist_data._distribution_model
+	model_pdf = pdf_mvsk([model._m1, model._new_variance,
+			model._skew, model._kurtosis])
 
-	plt.axvline(x=dist_data._dist_model._m1, ymin=0, ymax=1, linestyle=':',
-		label='Mean')
+	# Distribution y-values
+	y_model_plot = np.array([model_pdf(x) for x in x_plot])
+
+	# Distribution plots
+	plt.plot(x_plot, y_model_plot, color='r',
+		label='Gram-Charlier Expansion (after last iteration)')
+
+	for i, d in enumerate(dist_data._original_distributions):
+		#print("{}, {}".format(i, d))
+		start_time = d[0]
+		dist = d[1].get_dist()
+		#print("{} {}".format(start_time, dist))
+		y_plot = dist.pdf(x_plot)
+
+		plt.plot(x_plot, y_plot,
+			label='Distribution {} (start at iteration {})'.format(i, start_time))
+
+	plt.axvline(x=dist_data._distribution_model._m1, ymin=0, ymax=1, linestyle=':',
+		label='Model Mean (after last iteration)')
 
 	plt.title("{}...".format(dist_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
 
 	# Additional Text
 	ax = fig.get_axes()
-	plt.text(0.70, 0.70, "#samples={}".format(dist_data._n_samples),
+	plt.text(0.70, 0.70, "#samples={}".format(len(dist_data._samples)),
 			fontsize=8, transform=ax[0].transAxes)
 
 def setup_delta_plot(delta_data):
@@ -174,14 +217,16 @@ def setup_values_plot(values_data):
 	x_plot, y_plot = zip(*values_data._mean_values)
 	plt.plot(x_plot, y_plot, linestyle='-', label=r'mean')
 
-	plt.axhline(y=values_data._real_mean, xmin=0, xmax=1, linestyle=':',
-		label=r'real mean')
+	for i, rm in enumerate(values_data._real_means):
+	    plt.axhline(y=rm, xmin=0, xmax=1, linestyle='-.',
+		    label="real mean {}".format(i))
 
 	x_plot, y_plot = zip(*values_data._variance_values)
 	plt.plot(x_plot, y_plot, linestyle='-', label=r'variance')
 
-	plt.axhline(y=values_data._real_variance, xmin=0, xmax=1, linestyle=':',
-		label=r'real variance')
+	for i, rv in enumerate(values_data._real_variances):
+	    plt.axhline(y=rv, xmin=0, xmax=1, linestyle=':',
+		    label="real variance {}".format(i))
 
 	plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
@@ -192,14 +237,16 @@ def setup_values_plot(values_data):
 	x_plot, y_plot = zip(*values_data._skew_values)
 	plt.plot(x_plot, y_plot, linestyle='-', label=r'skew')
 
-	plt.axhline(y=values_data._real_skew, xmin=0, xmax=1, linestyle=':',
-		label=r'real skew')
+	for i, rs in enumerate(values_data._real_skews):
+	    plt.axhline(y=rs, xmin=0, xmax=1, linestyle='-.',
+		    label="real skew {}".format(i))
 
 	x_plot, y_plot = zip(*values_data._kurtosis_values)
 	plt.plot(x_plot, y_plot, linestyle='-', label=r'kurtosis')
 
-	plt.axhline(y=values_data._real_kurtosis, xmin=0, xmax=1, linestyle=':',
-		label=r'real kurtosis')
+	for i, rk in enumerate(values_data._real_kurtosiss):
+	    plt.axhline(y=rk, xmin=0, xmax=1, linestyle=':',
+		    label="real kurtosis {}".format(i))
 
 	plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)

@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import, print_function
 
 import pickle
+import math
 
 class Data(object):
 
@@ -11,35 +12,42 @@ class Data(object):
 
 class DistData(Data):
 
-	def __init__(self, source, target, x_values, y_original, y_model,
-			x_hist, y_hist, n_samples, distribution_model):
+	def __init__(self, source, target, original_distributions,
+			distribution_model, samples):
 
 		self._source = source
 		self._target = target
 
-		self._x_values = x_values
-		self._y_original = y_original
-		self._y_model = y_model
-		self._x_hist = x_hist
-		self._y_hist = y_hist
-		self._n_samples = n_samples
+		#self._x_values = x_values
+		#self._y_original = y_original
+		#self._y_model = y_model
+		#self._x_hist = x_hist
+		#self._y_hist = y_hist
+		#self._n_samples = n_samples
 
-		self._dist_model = distribution_model
+		# Array of (iteration, distribution)
+		self._original_distributions = original_distributions
+
+		# DistributionModel object
+		self._distribution_model = distribution_model
+
+		# Samples
+		self._samples = samples
 
 class ValuesData(Data):
 
-	def __init__(self, source, target, real_mean, real_variance, real_skew,
-			real_kurtosis, mean_values, variance_values, skew_values,
+	def __init__(self, source, target, real_means, real_variances, real_skews,
+			real_kurtosiss, mean_values, variance_values, skew_values,
 			kurtosis_values):
 
 		self._source = source
 		self._target = target
 
-		# The actual values of the generating distribution
-		self._real_mean = real_mean
-		self._real_variance = real_variance
-		self._real_skew = real_skew
-		self._real_kurtosis = real_kurtosis
+		# The actual values of the generating distributions
+		self._real_means = real_means
+		self._real_variances = real_variances
+		self._real_skews = real_skews
+		self._real_kurtosiss = real_kurtosiss
 
 		# The values at given points in time, in arrays of tuples (index, value)
 		self._mean_values = mean_values

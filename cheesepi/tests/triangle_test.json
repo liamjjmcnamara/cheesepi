@@ -2,7 +2,7 @@
     "sample_size":10,
     "iterations":10,
     "schedule_size":1,
-    "schedule_method":"smart",
+    "schedule_method":"random",
     "full_coverage_start":"False",
     "peers":[
         {
@@ -10,9 +10,16 @@
             "links":[
                 {
                     "uuid":"14db8b89-cbf7-431a-90f0-b6ccc6bc7afc",
-                    "dist":{
-                        "shape":3
-                    }
+                    "dist":[
+                        {
+                            "shape":3
+                        },
+                        {
+                            "start_iter":5,
+                            "shape":6,
+                            "loc": 50
+                        }
+                    ]
                 },
                 {
                     "uuid":"4f719cf1-d23f-4c6c-a6d8-c52eaf77a53f"
@@ -24,9 +31,11 @@
             "links":[
                 {
                     "uuid":"54a7969d-8436-49a3-a242-937dcf7c2d36",
-                    "dist":{
-                        "loc":15
-                    }
+                    "dist":[
+                        {
+                            "loc":15
+                        }
+                    ]
                 },
                 {
                     "uuid":"4f719cf1-d23f-4c6c-a6d8-c52eaf77a53f"
@@ -38,17 +47,21 @@
             "links":[
                 {
                     "uuid":"14db8b89-cbf7-431a-90f0-b6ccc6bc7afc",
-                    "dist":{
-                        "scale":7,
-                        "shape":1.4,
-                        "loc":20
-                    }
+                    "dist":[
+                        {
+                            "scale":7,
+                            "shape":1.4,
+                            "loc":20
+                        }
+                    ]
                 },
                 {
                     "uuid":"54a7969d-8436-49a3-a242-937dcf7c2d36",
-                    "dist":{
-                        "lossrate":0.5
-                    }
+                    "dist":[
+                        {
+                            "lossrate":0.5
+                        }
+                    ]
                 }
             ]
         }

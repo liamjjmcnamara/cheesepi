@@ -214,7 +214,7 @@ def peer_pass(peer, peer_dir, tar_dir, sched_size, sample_size, iteration,
 		target_uuid = target['uuid']
 		target_ip = target['ip']
 
-		samples = peer.sample_link(target_uuid, sample_size)
+		samples = peer.sample_link(target_uuid, sample_size, iteration)
 		#print("Generated samples for target {}\n{}".format(target_uuid,
 			#pformat(samples)))
 		puf.add_result(samples, target_uuid, target_ip)
@@ -327,47 +327,64 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 
 			delay_model = stat.get_delay()
 
-			num_samples = delay_model._n
+			# num_samples = delay_model._n
 
 			print("m={}, v={}, s={}, k={}".format(delay_model._m1,
 				delay_model._new_variance, delay_model._skew, delay_model._kurtosis))
 
-			pdf = pdf_mvsk([delay_model._m1, delay_model._new_variance,
-					delay_model._skew, delay_model._kurtosis])
+			# pdf = pdf_mvsk([delay_model._m1, delay_model._new_variance,
+			# 		delay_model._skew, delay_model._kurtosis])
 
 			link = peer.get_link(target_uuid)
 
-			orig_dist = link.get_dist()
+			orig_dists = link.get_dist_params()
+			print(orig_dists)
 
-			# Boundaries
-			xmax = max(link._all_samples)
-			xmin = min(link._all_samples)
-			xmax = xmax + float(xmax)/10
-			xmin = float(xmin)/2
-			x_plot = np.linspace(xmin, xmax, xmax-xmin)
+			# # Boundaries
+			# xmax = max(link._all_samples)
+			# xmin = min(link._all_samples)
+			# xmax = xmax + float(xmax)/10
+			# xmin = float(xmin)/2
+			# x_plot = np.linspace(xmin, xmax, xmax-xmin)
 
-			# Distribution y-values
-			y_model_plot = np.array([pdf(x) for x in x_plot])
-			y_orig_plot = orig_dist.pdf(x_plot)
+			# # Distribution y-values
+			# y_model_plot = np.array([pdf(x) for x in x_plot])
+			# y_orig_plot = orig_dist.pdf(x_plot)
 
-			# Histogram
-			hist_y, hist_x = np.histogram(link._all_samples, bins=np.linspace(xmin, xmax,
-				xmax-xmin), density=True)
+			# # Histogram
+			# hist_y, hist_x = np.histogram(link._all_samples, bins=np.linspace(xmin, xmax,
+			# 	xmax-xmin), density=True)
 
 			# Save datasets
-			ds.DistData(peer_uuid, target_uuid, x_plot, y_orig_plot,
-					y_model_plot, hist_x, hist_y,
-					num_samples, delay_model).pickle(os.path.join(DIRNAME,
+			#dm = ds.DistributionModelData(delay_model)
+			ds.DistData(peer_uuid, target_uuid, orig_dists, delay_model,
+					link._all_samples).pickle(os.path.join(DIRNAME,
 						"dist_{}_{}.pickle".format(peer_index, stat_index)))
 
+			#print(link._historical_delta_mean)
+			#print(link._historical_delta_variance)
+			#print(link._historical_delta_skew)
+			#print(link._historical_delta_kurtosis)
 			ds.DeltaData(peer_uuid, target_uuid, link._historical_delta_mean,
 					link._historical_delta_variance, link._historical_delta_skew,
 					link._historical_delta_kurtosis).pickle(os.path.join(DIRNAME,
 						"delta_{}_{}.pickle".format(peer_index, stat_index)))
 
-			ds.ValuesData(peer_uuid, target_uuid, link._dist.get_mean(),
-					link._dist.get_variance(), link._dist.get_skew(),
-					link._dist.get_kurtosis(),
+
+			real_means = []
+			real_variances = []
+			real_skews = []
+			real_kurtosiss = []
+			for d in link._dists:
+			    dist = d[1]
+			    real_means.append(dist.get_mean())
+			    real_variances.append(dist.get_variance())
+			    real_skews.append(dist.get_skew())
+			    real_kurtosiss.append(dist.get_kurtosis())
+
+			ds.ValuesData(peer_uuid, target_uuid, real_means,
+					real_variances, real_skews,
+					real_kurtosiss,
 					link._historical_mean,
 					link._historical_variance, link._historical_skew,
 					link._historical_kurtosis).pickle(os.path.join(DIRNAME,

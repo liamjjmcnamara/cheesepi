@@ -27,6 +27,7 @@ class GammaDist(object):
 		self._loc = loc
 		self._scale = scale
 		self._lossrate = lossrate
+		self._seed = seed
 		self._generate_dist()
 
 	@classmethod
@@ -48,8 +49,8 @@ class GammaDist(object):
 	def __repr__(self):
 		return "GammaDist({}, {}, {}, {}) mvsk=({}, {}, {}, {})".format(
 				self._shape, self._loc, self._scale, self._lossrate,
-				self.get_mean(), self.get_variance(), self.get_skew(),
-				self.get_kurtosis())
+				str(self.get_mean()), str(self.get_variance()), str(self.get_skew()),
+				str(self.get_kurtosis()))
 
 	def _generate_dist(self):
 		self._dist = gamma(self._shape, loc=self._loc, scale=self._scale)
@@ -101,12 +102,16 @@ class PeerMocker(object):
 		uuid = dct['uuid']
 
 		for link in dct['links']:
+			dists = []
 			if 'dist' in link:
-				dist = GammaDist.fromDict(link['dist'])
+				for d in link['dist']:
+					if 'start_iter' in d:
+						dists.append((d['start_iter'], GammaDist.fromDict(d)))
+					else:
+						dists.append((0, GammaDist.fromDict(d)))
 			else:
-				dist = GammaDist()
-			#print(dist)
-			lm = LinkMocker(uuid, link['uuid'], dist)
+				dists.append((0, GammaDist()))
+			lm = LinkMocker(uuid, link['uuid'], dists)
 			links[link['uuid']] = lm
 
 		return PeerMocker(uuid, links)
@@ -129,19 +134,29 @@ class PeerMocker(object):
 		else: return None
 
 
-	def sample_link(self, target_uuid, num=10):
+	def sample_link(self, target_uuid, num=10, iteration=0):
 		if target_uuid in self._links:
-			return self._links[target_uuid].sample_dist(num)
+			return self._links[target_uuid].sample_link(num=num, iteration=iteration)
 		else:
 			raise Exception("Peer {} has no link to {}".format(self._uuid,
 				target_uuid))
 
 class LinkMocker(object):
 
-	def __init__(self, source_uuid, target_uuid, dist=GammaDist()):
+	def __init__(self, source_uuid, target_uuid, dists=None):
 		self._source_uuid = source_uuid
 		self._target_uuid = target_uuid
-		self._dist = dist
+
+		# Which distribution is currently active
+		self._dists = []
+
+		if dists is None:
+			self._dists = [(0, GammaDist())]
+		else:
+			self._dists = dists
+
+		# Sort by start iteration
+		self._dists.sort(key=lambda tup: tup[0])
 
 		# Incremental stats of the generated model
 		self._historical_mean = []
@@ -196,11 +211,27 @@ class LinkMocker(object):
 		if dk is not None:
 			self._historical_delta_kurtosis.append((index, dk))
 
+	# TODO
 	def get_dist(self):
 		return self._dist.get_dist()
 
-	def sample_dist(self, num=10):
-		samples = self._dist.sample_n(num)
+	def get_dist_params(self):
+		return [(d[0], (d[1].__class__, d[1]._shape, d[1]._loc, d[1]._scale,
+					d[1]._lossrate, d[1]._seed))
+				for d in self._dists]
+
+	def get_current_dist(self, iteration):
+		if len(self._dists) == 1:
+			return self._dists[0][1]
+
+		filtered = filter(lambda tup: tup[0] <= iteration, self._dists)
+		#print(iteration)
+		#print(filtered)
+		return filtered[-1][1]
+
+	def sample_link(self, num=10, iteration=0):
+		current_dist = self.get_current_dist(iteration)
+		samples = current_dist.sample_n(num)
 		self._all_samples.extend(samples)
 		return samples
 
