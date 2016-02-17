@@ -126,10 +126,10 @@ def ensure_default_config(clobber=False):
 	"""If config file does not exist, try to copy from default.
 	   Also add a local secret to the file."""
 	# is there already a local config file?
-	if not clobber and os.path.isfile(config_file):
+	if os.path.isfile(config_file) and not clobber:
 		return
 
-	print "Warning: Copying default config file to a local version"
+	print "Warning: Copying cheesepi.default.conf file to a local version: %s" % config_file
 	default_config = os.path.join(cheesepi_dir,"cheesepi.default.conf")
 	# Can we find the default config file?
 	if os.path.isfile(default_config):
@@ -169,7 +169,7 @@ def get_config():
 			continue
 		# logger.debug(line)
 		(key, value_string) = line.split("=",1)
-		value = clean(value_string)
+		value = value_string.strip()
 		if value=="true":  value=True
 		if value=="false": value=False
 		config[clean(key)] = value

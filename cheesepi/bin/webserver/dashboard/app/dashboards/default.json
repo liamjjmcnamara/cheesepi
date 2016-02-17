@@ -550,7 +550,7 @@
       "collapse": false,
       "panels": [
         {
-          "title": "Speedtest Download Speed",
+          "title": "Speedtest Speeds",
           "error": false,
           "span": 6,
           "editable": true,
@@ -583,7 +583,7 @@
           "stack": false,
           "percentage": false,
           "legend": {
-            "show": false,
+            "show": true,
             "values": false,
             "min": false,
             "max": false,
@@ -603,8 +603,16 @@
               "column": "value",
               "rawQuery": true,
               "query": "select \"download_speed\" from throughput",
-              "alias": "Speedtest",
+              "alias": "Download",
               "hide": false
+            },
+            {
+              "target": "",
+              "function": "mean",
+              "column": "value",
+              "rawQuery": true,
+              "query": "select \"upload_speed\" from throughput",
+              "alias": "Upload"
             }
           ],
           "aliasColors": {
@@ -788,13 +796,14 @@
           "stack": false,
           "percentage": false,
           "legend": {
-            "show": true,
+            "show": false,
             "values": false,
             "min": false,
             "max": false,
             "current": false,
             "total": false,
-            "avg": false
+            "avg": false,
+            "hideEmpty": true
           },
           "nullPointMode": "connected",
           "steppedLine": false,
@@ -966,7 +975,7 @@
               "function": "mean",
               "column": "value",
               "rawQuery": true,
-              "query": "select signal from wifi_ap where ESSID='SICS'",
+              "query": "select signal from wifi_ap where ESSID='ACCESSPOINTESSID'",
               "hide": false,
               "alias": "Signal"
             },
@@ -974,7 +983,7 @@
               "function": "mean",
               "column": "value",
               "rawQuery": true,
-              "query": "select quality from wifi_ap where ESSID='SICS'",
+              "query": "select quality from wifi_ap where ESSID='ACCESSPOINTESSID'",
               "hide": false,
               "alias": "Quality"
             }

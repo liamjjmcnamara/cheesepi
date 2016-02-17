@@ -163,6 +163,7 @@ def control_dashboard(action):
 def control_all(action):
 	pool = multiprocessing.Pool(processes=3)
 	pool.apply_async(control_storage,  [action])
+	time.sleep(3) # allow spoolup and config generation
 	pool.apply_async(control_dispatcher,[action])
 	pool.apply_async(control_dashboard, [action])
 	pool.close()

@@ -6,6 +6,7 @@ import math
 import sys
 import sched
 import multiprocessing
+import signal
 import logging
 
 import cheesepi as cp
@@ -15,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 start_time = time.time()
 
-dao    = cp.config.get_dao()
 config = cp.config.get_config()
+dao    = cp.config.get_dao()
 logger = cp.config.get_logger(__name__)
 
 # Create scheduler object, use 'real' time
@@ -26,18 +27,18 @@ repeat_schedule = True # keep rescheuling?
 schedule_list = []
 
 pool = None # pool must be global, yet instantiated in __main__
-pool_size = 5
+pool_size = 5 # max number of concurrent tasks...
 
 # Task priority
 IMPORTANT  = 1
 NORMAL	   = 2
 
-results = []
 def log_result(result):
-	logging.info("Logging task result..."+str(result))
-	results.append(result)
+	#logging.info("Task callback() result..."+str(result))
+	pass
 def timestamp(): return (time.time()-start_time)
 def print_queue(): logger.debug(s.queue)
+
 
 # Need to catch Ctrl+C, and so wrap the Interupt as an Exception
 def async(task):
@@ -108,6 +109,12 @@ def print_schedule(schedule_list):
 	for t in schedule_list:
 		print t
 
+def HUP():
+	"""Reload config if we receive a HUP signal"""
+	global pool
+	print "Reloading..."
+	pool.terminate()
+	start()
 
 def start():
 	global pool
@@ -119,7 +126,6 @@ def start():
 	for t in schedule_list:
 		schedule_task(t)
 	s.run()
-
 	if pool is not None:
 		pool.close()
 		pool.join()
@@ -128,8 +134,13 @@ def start():
 	max_period = 10000
 	time.sleep(max_period)
 
+
 if __name__ == "__main__":
 	logger.info("Dispatcher PID: %d" % os.getpid())
+
+	# register HUP signal catcher
+	signal.signal(signal.SIGHUP, HUP)
+
 	start()
 
 

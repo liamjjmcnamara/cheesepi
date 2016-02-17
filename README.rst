@@ -77,7 +77,7 @@ set with the format:
 
 *key = value*
 
-Lines can be commmented out with a *#*.
+Lines can be commented out with a *#*.
 
 
 Schedule

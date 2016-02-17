@@ -3,5 +3,6 @@ recursive-include docs *
 include setup.py
 include LICENSE
 include *.rst
+exclude cheesepi.conf schedule.dat
 global-exclude *pyc
 prune cheesepi/deprecated
