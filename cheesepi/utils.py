@@ -51,8 +51,12 @@ def console_script():
 	options  = ['dispatcher','storage','influxdb','dashboard','all']
 
 	parser = argparse.ArgumentParser(prog='cheesepi')
-	parser.add_argument('command', metavar='COMMAND', choices=commands, nargs='?', help="'start' or 'stop' one of the CheesePi components")
-	parser.add_argument('option',  metavar='OPTION', choices=options, nargs='?', help='Options to the command')
+	parser.add_argument('command', metavar='COMMAND', choices=commands, nargs='?',
+		help="'start' or 'stop' one of the CheesePi components.\n"+
+			"status, reset or upgrade")
+	parser.add_argument('option',  metavar='OPTION', choices=options, nargs='?',
+		help='Options to the command. If starting or stopping, then name the component'+
+			'storage, dispatcher or dashboard')
 	args = parser.parse_args()
 
 	# single parameter commands
