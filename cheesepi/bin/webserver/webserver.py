@@ -76,7 +76,6 @@ def setup_server(port=8080):
 	restconf = {'/': {'request.dispatch': cherrypy.dispatch.MethodDispatcher()} }
 	cherrypy.tree.mount(Root())
 	cherrypy.tree.mount(RestAPI(), '/dashboard', restconf)
-
 	cherrypy.engine.start()
 	cherrypy.engine.block()
 

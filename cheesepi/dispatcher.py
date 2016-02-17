@@ -6,6 +6,7 @@ import math
 import sys
 import sched
 import multiprocessing
+import signal
 import logging
 
 import cheesepi as cp
@@ -37,6 +38,7 @@ def log_result(result):
 	pass
 def timestamp(): return (time.time()-start_time)
 def print_queue(): logger.debug(s.queue)
+
 
 # Need to catch Ctrl+C, and so wrap the Interupt as an Exception
 def async(task):
@@ -107,6 +109,12 @@ def print_schedule(schedule_list):
 	for t in schedule_list:
 		print t
 
+def HUP():
+	"""Reload config if we receive a HUP signal"""
+	global pool
+	print "Reloading..."
+	pool.terminate()
+	start()
 
 def start():
 	global pool
@@ -118,7 +126,6 @@ def start():
 	for t in schedule_list:
 		schedule_task(t)
 	s.run()
-
 	if pool is not None:
 		pool.close()
 		pool.join()
@@ -127,8 +134,13 @@ def start():
 	max_period = 10000
 	time.sleep(max_period)
 
+
 if __name__ == "__main__":
 	logger.info("Dispatcher PID: %d" % os.getpid())
+
+	# register HUP signal catcher
+	signal.signal(signal.SIGHUP, HUP)
+
 	start()
 
 
