@@ -12,6 +12,7 @@ confpath  = os.path.join(serveroot,'cherrypy.conf')
 
 def match_path(pathA, pathB):
 	"""Ensure each member of pathB is matched in pathA (not reflexive!)"""
+	if len(pathB)>len(pathA): return False
 	for i in xrange(len(pathB)):
 		if pathA[i]!=pathB[i]:
 			return False
@@ -67,9 +68,8 @@ def setup_server(port=8080):
 	})
 
 	restconf = {'/': {'request.dispatch': cherrypy.dispatch.MethodDispatcher()} }
-	cherrypy.tree.mount(RestAPI(), '/', restconf)
-	cherrypy.engine.start()
-	cherrypy.engine.block()
+	# start the cherrypy event loop
+	cherrypy.quickstart(RestAPI(), '/', restconf)
 
 if __name__ == "__main__":
 	setup_server()
