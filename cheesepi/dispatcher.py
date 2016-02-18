@@ -2,12 +2,10 @@
 
 import os
 import time
-import math
 import sys
-import sched
 import multiprocessing
-import signal
 import logging
+from sched import scheduler
 
 import cheesepi as cp
 
@@ -21,7 +19,7 @@ dao    = cp.config.get_dao()
 logger = cp.config.get_logger(__name__)
 
 # Create scheduler object, use 'real' time
-s = sched.scheduler(time.time, time.sleep)
+s = scheduler(time.time, time.sleep)
 repeat_schedule = True # keep rescheuling?
 # list of tasks to perform each schedule (populate later)
 schedule_list = []
@@ -68,6 +66,7 @@ def run(task, spec):
 
 def schedule_task(spec):
 	"""Ensure task defiend by specificaiton is executed"""
+	import math
 	task = cp.utils.build_task(dao, spec)
 	if task == None:
 		logger.error("Task specification not valid: "+str(spec))
@@ -136,6 +135,7 @@ def start():
 
 
 if __name__ == "__main__":
+	import signal
 	logger.info("Dispatcher PID: %d" % os.getpid())
 
 	# register HUP signal catcher

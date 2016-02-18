@@ -28,15 +28,8 @@ Testers:
 
 import os
 import sys
-import json
-import urllib2
 import uuid
 import time
-import md5
-import argparse
-import multiprocessing
-import platform
-import netifaces
 from subprocess import call
 
 import cheesepi as cp
@@ -47,6 +40,7 @@ logger = cp.config.get_logger(__name__)
 
 def console_script():
 	"""Command line tool, installed through setup.py"""
+	import argparse
 	commands = ['start','stop','status','reset','upgrade']
 	options  = ['dispatcher','storage','influxdb','dashboard','all']
 
@@ -117,17 +111,15 @@ def find_influx_exe():
 	"""See which influxdb we should use"""
 	config_path = cp.config.get("database_exe")
 	if config_path: # if database exectable was set in config file
-		print "set it configfile"
 		return config_path
 	elif (test_execute(["influxdb","-h"])):
-		print "system influx"
 		return "influxdb"
 	else:
 		if isARM():
-			print "cheesepi influx"
 			return cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb.arm"
 		else:
-			print "Error: Can't find InfluxDB binary, set 'database_exe' in the config file"
+			print "Error: Can't find a valid InfluxDB binary"
+			print "Install InfluxDB and then set the binary's path as 'database_exe' in cheesepi.conf"
 			sys.exit(1)
 
 def control_storage(action):
@@ -135,6 +127,13 @@ def control_storage(action):
 	storage_dir = "/var/lib/influxdb"
 	if not os.path.exists(storage_dir):
 		print "Warning: Default InfluxDB storage dir %s does not exist!" % storage_dir
+		print "Will try to make it..."
+		# try to make the dir
+		try:
+			os.mkdirs(storage_dir)
+		except Exception as e:
+			print "Tried to make the directory, but it failed: %s" % e
+			sys.exit(1)
 
 	if action=='start':
 		print "Starting InfluxDB..."
@@ -165,6 +164,7 @@ def control_dashboard(action):
 		print "Error: action not yet implemented!"
 
 def control_all(action):
+	import multiprocessing
 	pool = multiprocessing.Pool(processes=3)
 	pool.apply_async(control_storage,  [action])
 	time.sleep(3) # allow spoolup and config generation
@@ -197,6 +197,7 @@ def make_series():
 
 def build_json(dao, json_str):
 	"""Build a Task object out of a JSON string spec"""
+	import json
 	spec = json.loads(json_str)
 	return build_task(dao, spec)
 
@@ -246,6 +247,7 @@ def now():
 	#return int(datetime.datetime.utcnow().strftime("%s"))
 
 def isARM():
+	import platform
 	if "arm" in platform.machine():
 		return True
 	return False
@@ -264,6 +266,7 @@ def get_MAC():
 
 def get_host_id():
 	"""Return this host's ID"""
+	import md5
 	return str(md5.new(get_MAC()).hexdigest())
 
 
@@ -274,6 +277,7 @@ def getCurrMAC():
 
 
 def resolve_if(interface):
+	import netifaces
 	"""Get the IP address of an interface"""
 	addr_type = 2 # 2=AF_INET, 30=AF_INET6
 	try:
@@ -287,7 +291,6 @@ def get_IP():
 	"""Try to get this host's active address"""
 	interfaces = ["eth0","en0","wlan0"]
 	# apppend all interfaces on this host
-	#interfaces.append(netifaces.interfaces())
 	for interface in interfaces:
 		ip = resolve_if(interface)
 		if ip!=None: # we have a valid IP
@@ -297,6 +300,7 @@ def get_IP():
 
 def get_SA():
 	"""get our percieved remote source address"""
+	import urllib2
 	try:
 		ret = urllib2.urlopen('http://ip.42.pl/raw').read()
 	except Exception as e: # We may be offline
