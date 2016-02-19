@@ -181,9 +181,9 @@ def reset_install():
 
 def upgrade_install():
 	"""Try and pull new version of the code from PyPi"""
-	upgrade_task = cp.tasks.Upgradecode()
+	import cheesepi.tasks
+	upgrade_task = cheesepi.tasks.Upgradecode()
 	upgrade_task.run()
-
 
 
 
@@ -269,22 +269,22 @@ def get_host_id():
 	import md5
 	return str(md5.new(get_MAC()).hexdigest())
 
-
 #get our currently used MAC address
 def getCurrMAC():
 	ret =':'.join(['{:02x}'.format((uuid.getnode() >> i) & 0xff) for i in range(0,8*6,8)][::-1])
 	return ret
 
-
 def resolve_if(interface):
-	import netifaces
 	"""Get the IP address of an interface"""
-	addr_type = 2 # 2=AF_INET, 30=AF_INET6
+	addr="127.0.0.1" # a bad default value (will only work locally)
 	try:
+		import netifaces
+		addr_type = 2 # 2=AF_INET, 30=AF_INET6
 		addr = netifaces.ifaddresses(interface)[addr_type][0]['addr']
-	except Exception:
-		# failed to resolve
-		return None
+	except Exception: # netifaces failed
+		import socket
+		# try to use the fully qualified domain name
+		addr = socket.getfqdn()
 	return addr
 
 def get_IP():
