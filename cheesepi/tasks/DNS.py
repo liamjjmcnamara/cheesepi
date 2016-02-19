@@ -4,12 +4,14 @@ import os
 # http://www.dnspython.org/examples.html
 import dns.query
 import dns.resolver
-from dns.exception import DNSException
+#from dns.exception import DNSException
 
-import cheesepi as cp
+#import cheesepi as cp
+import cheesepi.config as config
+import cheesepi.utils as utils
 import Task
 
-logger = cp.config.get_logger(__name__)
+logger = config.get_logger(__name__)
 
 class DNS(Task.Task):
 
@@ -28,7 +30,7 @@ class DNS(Task.Task):
 	def measure(self):
 		try:
 			op_output = self.query_authoritative_ns(self.spec['landmark'], log)
-			print op_output
+			#print op_output
 		except Exception as e:
 			logger.error("DNS query failed: %s" % e)
 			return
@@ -52,12 +54,12 @@ class DNS(Task.Task):
 		for i in xrange(len(n), 0, -1):
 			sub = '.'.join(n[i-1:])
 			log('Looking up %s on %s' % (sub, ns))
-			start_time = cp.utils.now()
+			start_time = utils.now()
 			query = dns.message.make_query(sub, dns.rdatatype.NS)
 			response = dns.query.udp(query, ns)
-			end_time = cp.utils.now()
+			end_time = utils.now()
 			delay = end_time - start_time
-			logger.info("time: %f" % (delay))
+			#logger.info("time: %f" % (delay))
 			delays.append(delay)
 
 			rcode = response.rcode()
@@ -88,7 +90,7 @@ class DNS(Task.Task):
 						authority = rr.target
 						ns = default.query(authority).rrset[0].to_text()
 						#log('%s [%s] is authoritative for %s; ttl %i' % (authority, ns, sub, rrset.ttl))
-						result = rrset
+						#result = rrset
 					else:
 						# IPv6 glue records etc
 						#log('Ignoring %s' % (rr))
@@ -104,7 +106,7 @@ def log (msg):
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc
-	dao = cp.config.get_dao()
+	dao = config.get_dao()
 
 	spec = {'landmark':"www.abc.net.au"}
 	dns_task = DNS(dao, spec)

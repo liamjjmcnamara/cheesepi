@@ -33,7 +33,6 @@ import time
 from subprocess import call
 
 import cheesepi as cp
-from cheesepi.tasks import *
 
 logger = cp.config.get_logger(__name__)
 
@@ -202,41 +201,42 @@ def build_json(dao, json_str):
 	return build_task(dao, spec)
 
 def build_task(dao, spec):
+	import cheesepi.tasks
 	if not 'taskname' in spec:
 		logger.error("No 'taskname' specified!")
 		return None
 
 	spec['taskname'] = spec['taskname'].lower()
 	if spec['taskname']=='ping':
-		return Ping(dao, spec)
+		return cheesepi.tasks.Ping(dao, spec)
 	elif spec['taskname']=='httping':
-		return Httping(dao, spec)
+		return cheesepi.tasks.Httping(dao, spec)
 	elif spec['taskname']=='traceroute':
-		return Traceroute(dao, spec)
+		return cheesepi.tasks.Traceroute(dao, spec)
 	elif spec['taskname']=='dash':
-		return Dash(dao, spec)
+		return cheesepi.tasks.Dash(dao, spec)
 	elif spec['taskname']=='dns':
-		return DNS(dao, spec)
+		return cheesepi.tasks.DNS(dao, spec)
 	elif spec['taskname']=='throughput':
-		return Throughput(dao, spec)
+		return cheesepi.tasks.Throughput(dao, spec)
 	elif spec['taskname']=='iperf':
-		return iPerf(dao, spec)
+		return cheesepi.tasks.iPerf(dao, spec)
 	elif spec['taskname']=='beacon':
-		return Beacon(dao, spec)
+		return cheesepi.tasks.Beacon(dao, spec)
 	elif spec['taskname']=='upload':
-		return Upload(dao, spec)
+		return cheesepi.tasks.Upload(dao, spec)
 	elif spec['taskname']=='status':
-		return Status(dao, spec)
+		return cheesepi.tasks.Status(dao, spec)
 	elif spec['taskname']=='wifi':
-		return Wifi(dao, spec)
+		return cheesepi.tasks.Wifi(dao, spec)
 	elif spec['taskname']=='dummy':
-		return Dummy(dao, spec)
+		return cheesepi.tasks.Dummy(dao, spec)
 	elif spec['taskname']=='upload':
-		return Upload(dao, spec)
+		return cheesepi.tasks.Upload(dao, spec)
 	elif spec['taskname']=='upgradecode':
-		return Upgradecode(dao, spec)
+		return cheesepi.tasks.Upgradecode(dao, spec)
 	elif spec['taskname']=='updatetasks':
-		return Updatetasks(dao, spec)
+		return cheesepi.tasks.Updatetasks(dao, spec)
 	else:
 		raise Exception('Task name not specified! '+str(spec))
 
@@ -282,7 +282,7 @@ def resolve_if(interface):
 	addr_type = 2 # 2=AF_INET, 30=AF_INET6
 	try:
 		addr = netifaces.ifaddresses(interface)[addr_type][0]['addr']
-	except Exception as e:
+	except Exception:
 		# failed to resolve
 		return None
 	return addr

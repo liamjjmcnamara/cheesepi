@@ -28,8 +28,8 @@ pool = None # pool must be global, yet instantiated in __main__
 pool_size = 5 # max number of concurrent tasks...
 
 # Task priority
-IMPORTANT  = 1
-NORMAL	   = 2
+IMPORTANT = 1
+NORMAL    = 2
 
 def log_result(result):
 	#logging.info("Task callback() result..."+str(result))
@@ -58,7 +58,7 @@ def async(task):
 # Perform a scheduled Task, and schedule the next
 def run(task, spec):
 	"""Run this task asychronously, and schedule the next period"""
-	logger.info("\nRunning %s @ %f" % (task.spec['taskname'], timestamp()))
+	#logger.info("Running %s @ %f" % (task.spec['taskname'], timestamp()))
 	pool.apply_async(async, args=[task], callback=log_result)
 	if repeat_schedule:
 		schedule_task(spec)
