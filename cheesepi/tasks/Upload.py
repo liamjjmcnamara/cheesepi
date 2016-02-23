@@ -29,9 +29,9 @@ class Upload(Task.Task):
 		"""Upload data server, may take some time..."""
 		logger.info("Uploading data... @ %f, PID: %d" % (time.time(), os.getpid()))
 
-		self.dump_db_tempfile()
+		self.dump_db()
 
-	def dump_db_tempfile(self, upload=True, store_file=False, last_dumped=None):
+	def dump_db(self, upload=True, store_file=False, last_dumped=None):
 		if last_dumped==None:
 			last_dumped = cp.config.get_last_dumped(self.dao)
 		if last_dumped==-1:
@@ -91,5 +91,5 @@ if __name__ == "__main__":
 
 	dao = cp.config.get_dao()
 	dump_task = Upload(dao)
-	dump_task.dump_db_tempfile(args.upload, args.store_file, args.since)
+	dump_task.dump_db(args.upload, args.store_file, args.since)
 

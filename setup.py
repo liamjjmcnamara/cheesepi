@@ -72,6 +72,7 @@ setup(
 		'dnspython',
 		'youtube_dl',
 		'speedtest-cli',
+		'pip',
 	],
 	extras_require = {
 		'extra' : ['txmsgpackrpc','twisted','netifaces','pymongo'],
