@@ -74,6 +74,9 @@ def show_status():
 	print "Log file:\t%s"      % cp.config.log_file
 	print "Config file:\t%s"   % cp.config.config_file
 	print "Schedule file:\t%s" % schedule_file
+	print ""
+	ip = cp.utils.get_IP()
+	print "Dashboard URL: http://"+ip
 
 def list_data(task="ping"):
 	dao = cp.config.get_dao()
