@@ -2,9 +2,9 @@ import sys
 import string
 import time
 import os
-import re
 import logging
 import socket
+import struct
 import requests
 import threading
 
@@ -17,6 +17,7 @@ import Task
 logger = cp.config.get_logger(__name__)
 
 protocols={socket.IPPROTO_TCP:'tcp',}
+KEY=0
 
 # TCP flags
 SYN = 0x02
@@ -56,30 +57,24 @@ class TcpTrace(threading.Thread):
 		""" @brief Capture each packet and return list of filtered information.
 		@param System Arguments: interface and port number to sniff on
 		@return List of packets' arrival time, time from first arrived packet and the type of packet. """
-		p = None
+		dev = "eth0"
 		p = pcap.pcapObject()
-		dev = sys.argv[1]
 		net, mask = pcap.lookupnet(dev)
-
 		try:
 			p.open_live(dev, 65535, 0, 100)
-			#p.dump_open('dumpfile')
 			p.setfilter(string.join(sys.argv[2:],' '), 0, 0)
 			logging.debug("Started packet capture module: Listening on %s: net=%s, mask=%s" % (dev, net, mask))
 		except Exception, e:
 			logging.error("Started packet capture module: open_live() failed for device='%s'. Error: %s" % (dev, str(e)))
 
-		if p:
-			# try-except block to catch keyboard interrupt.
-			try:
-				while (not self.terminated):
-					p.dispatch(1, self.filter_captured)
-			except KeyboardInterrupt:
-				print '%s' % sys.exc_type
-				print 'shutting down'
+		if not p: return
 
-			#self.terminated = False
-			print '%d packets received, %d packets dropped, %d packets dropped by interface' % p.stats()
+		# try-except block to catch keyboard interrupt.
+		try:
+			while (not self.terminated): p.dispatch(1, self.filter_captured)
+		except KeyboardInterrupt as e:
+			print 'Shutting down: %s' % e
+		print '%d packets received, %d packets dropped, %d packets dropped by interface' % p.stats()
 
 	def filter_captured(self,pktlen,data,timestamp):
 		""" @brief Filter packet and store epoch time, arrival time since first packet and packet type.
@@ -89,8 +84,8 @@ class TcpTrace(threading.Thread):
 		if not data: return
 		# Ensure packet type=IP and protocol=TCP
 		if (data[12:14]!='\x08\x00') or (data[23:24]!='\x06'): return
-		ip_parse = self.parse_IP_hdr(data[14:])
 
+		ip_parse = self.parse_IP_hdr(data[14:])
 		# If the source addr or destination addr are server addr, then packet is relevant
 		if (not self.is_intended_dst(ip_parse['src_address']) and not self.is_intended_dst(ip_parse['dst_address'])):
 			return
@@ -98,7 +93,7 @@ class TcpTrace(threading.Thread):
 		tcp_parse = self.parse_TCP_hdr(ip_parse['data'])
 		self.data_dic = {}
 		self.data_type = ""
-		self.data_dic['Epoch Time'] = timestamp
+		self.data_dic['time'] = timestamp
 
 		if tcp_parse['flags'] & SYN:
 			self.data_type += ' SYN'
@@ -158,7 +153,7 @@ class TcpTrace(threading.Thread):
 		""" @brief Filter packet's IP header fields.
 		@param Binary data representing the IP header
 		@return Parsed IP header fields' information. """
-		iph = unpack('!BBHHHBBH4s4s', pkt[0:20])
+		iph = struct.unpack('!BBHHHBBH4s4s', pkt[0:20])
 		hdr = {}
 		hdr['version'] =	iph[0] >> 4
 		hdr['header_len'] =		iph[0] & 0x0f
@@ -184,7 +179,7 @@ class TcpTrace(threading.Thread):
 		""" @brief Filter packet's TCP header fields.
 		@param Binary data representing the TCP header
 		@return Parsed TCP header fields' information. """
-		tcph = unpack('!HHLLBBHHH' , pkt[0:20])
+		tcph = struct.unpack('!HHLLBBHHH' , pkt[0:20])
 		hdr = {}
 		hdr['src_port'] =	tcph[0]
 		hdr['dst_port'] =	tcph[1]
@@ -202,6 +197,16 @@ class TcpTrace(threading.Thread):
 		hdr['data'] = pkt[2*hdr['dataOffset']:]
 		return hdr
 
+	def is_intended_dst(self, ip_addr):
+		""" @brief Determines if IP address in src/dst address fields is the same .
+		@param Binary data representing the IP header
+		@return Parsed IP header fields' information. """
+		try:
+			if ip_addr == socket.gethostbyname("www.google.se"):
+				return True
+			return False
+		except socket.gaierror, e:
+			print "Cannot resolve hostname: ", "www.google.se", e
 
 	def dumphex(self, s):
 		""" @brief Translates bytes into string
@@ -216,16 +221,6 @@ class TcpTrace(threading.Thread):
 			print 'Empty'
 
 
-	def is_intended_dst(self, ip_addr):
-		""" @brief Determines if IP address in src/dst address fields is the same .
-		@param Binary data representing the IP header
-		@return Parsed IP header fields' information. """
-		try:
-			if ip_addr == socket.gethostbyname("www.google.se"):
-				return True
-			return False
-		except socket.gaierror, e:
-			print "Cannot resolve hostname: ", "www.google.se", e
 
 
 
@@ -271,7 +266,8 @@ class TCP(Task.Task):
 		pkt_capture.setDaemon(True)
 		pkt_capture.start()
 		if pkt_capture.isAlive():
-		    r = requests.get(URL)
+			r = requests.get("http://"+self.spec['landmark'])
+			print r
 		pkt_capture.terminated = True
 		pkt_capture.join()
 
@@ -288,61 +284,6 @@ class TCP(Task.Task):
 		self.dao.write_op(self.spec['taskname'], self.spec)
 
 
-	#ping function
-	def perform(self, landmark, ping_count, packet_size):
-		packet_size -= 8 # change packet size to payload length!
-		command = "ping -c %s -s %s %s"%(ping_count, packet_size, landmark)
-		logging.info("Executing: "+command)
-		logger.info(command)
-		self.spec['return_code'], output = self.execute(command)
-
-		if self.spec['return_code']==0:
-			return output
-		elif self.spec['return_code']==68:
-			self.spec['error'] = "Unknown host"
-		elif self.spec['return_code']==2:
-			self.spec['error'] = "No response"
-		return None
-
-	#read the data from ping and reformat for database entry
-	def parse_output(self, data, landmark, start_time, end_time, packet_size, ping_count):
-		self.spec["start_time"]  = start_time
-		self.spec["end_time"]    = end_time
-		delays=[]
-
-		lines = data.split("\n")
-		first_line = lines.pop(0).split()
-		self.spec["destination_domain"]  = first_line[1]
-		self.spec["destination_address"] = re.sub("[()]", "", str(first_line[2]))
-
-		delays = [-1.0] * ping_count# initialise storage
-		for line in lines:
-			if "time=" in line: # is this a PING return line?
-				# does the following string wrangling always hold? what if not "X ms" ?
-				# also need to check whether we are on linux-like or BSD-like ping
-				if "icmp_req" in line: # BSD counts from 1
-					sequence_num = int(re.findall('icmp_.eq=[\d]+ ',line)[0][9:-1]) -1
-				elif "icmp_seq" in line: # Linux counts from 0
-					sequence_num = int(re.findall('icmp_.eq=[\d]+ ',line)[0][9:-1])
-				else:
-					logging.error("ping parse error:"+line)
-					exit(1)
-				delay = re.findall('time=.*? ms',line)[0][5:-3]
-				# only save returned pings!
-				delays[sequence_num-1]=float(delay)
-			elif "packet loss" in line:
-				loss = re.findall('[\d]+% packet loss',line)[0][:-13]
-				self.spec["packet_loss"] = float(loss)
-			elif "min/avg/max/" in line:
-				fields = line.split()[3].split("/")
-				self.spec["minimum_RTT"] = float(fields[0])
-				self.spec["average_RTT"] = float(fields[1])
-				self.spec["maximum_RTT"] = float(fields[2])
-				self.spec["stddev_RTT"]  = float(fields[3])
-
-		self.spec['delays']     = str(delays)
-		self.spec['uploaded']   = self.spec['packet_size'] * self.spec['ping_count']
-		self.spec['downloaded'] = 8 * self.spec['ping_count']
 
 if __name__ == "__main__":
 	#general logging here? unable to connect etc

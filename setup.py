@@ -64,6 +64,7 @@ setup(
 	# Runtime dependencies
 	install_requires=[
 		'setuptools',
+		'pip',
 		'future',
 		'argparse',
 		'influxdb',
@@ -72,7 +73,6 @@ setup(
 		'dnspython',
 		'youtube_dl',
 		'speedtest-cli',
-		'pip',
 	],
 	extras_require = {
 		'extra' : ['txmsgpackrpc','twisted','netifaces','pymongo'],
