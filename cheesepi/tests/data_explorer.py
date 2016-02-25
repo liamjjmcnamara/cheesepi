@@ -130,6 +130,8 @@ def setup_dist_plot(dist_data):
 	fig = plt.figure()
 	fig.suptitle("DIST: {}".format(dist_data._source))
 
+	plt.xlabel("delay (ms)")
+	plt.ylabel("probability")
 	#print(dist_data._samples)
 
 	# Boundaries and x values
@@ -185,6 +187,9 @@ def setup_delta_plot(delta_data):
 	fig = plt.figure()
 	fig.suptitle("MV (log): {}".format(delta_data._source))
 
+	plt.xlabel("iteration")
+	plt.ylabel("delta")
+
 	x_plot, y_plot = zip(*delta_data._delta_mean)
 	plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$mean')
 
@@ -198,6 +203,9 @@ def setup_delta_plot(delta_data):
 
 	fig = plt.figure()
 	fig.suptitle("MV (lin): {}".format(delta_data._source))
+
+	plt.xlabel("iteration")
+	plt.ylabel("delta")
 
 	x_plot, y_plot = zip(*delta_data._delta_mean)
 	plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$mean')
@@ -227,6 +235,9 @@ def setup_values_plot(values_data):
 	fig = plt.figure()
 	fig.suptitle("MV: {}".format(values_data._source))
 
+	plt.xlabel("iteration")
+	plt.ylabel("value")
+
 	x_plot, y_plot = zip(*values_data._mean_values)
 	plt.plot(x_plot, y_plot, linestyle='-', label=r'mean')
 
@@ -235,7 +246,7 @@ def setup_values_plot(values_data):
 	for i, rm in enumerate(reversed(values_data._real_means)):
 		x_min = float(rm[0])/scale
 		plt.axhline(y=rm[1], xmin=x_min, xmax=last_min, linestyle='-.',
-		    label="real mean {}".format(i))
+			label="real mean {}".format(i))
 		last_min = x_min
 
 	x_plot, y_plot = zip(*values_data._variance_values)
@@ -249,7 +260,7 @@ def setup_values_plot(values_data):
 	for i, rv in enumerate(reversed(values_data._real_variances)):
 		x_min = float(rv[0])/scale
 		plt.axhline(y=rv[1], xmin=x_min, xmax=last_min, linestyle=':',
-		    label="real variance {}".format(i))
+			label="real variance {}".format(i))
 		last_min = x_min
 
 	plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
@@ -258,6 +269,9 @@ def setup_values_plot(values_data):
 	# Plot CofV
 	fig = plt.figure()
 	fig.suptitle("CofV: {}".format(values_data._source))
+
+	plt.xlabel("iteration")
+	plt.ylabel("value")
 
 	x_plot, mean = zip(*values_data._mean_values)
 	_, var = zip(*values_data._variance_values)
