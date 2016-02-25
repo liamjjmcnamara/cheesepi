@@ -147,8 +147,10 @@ def update_stats_for_links(peer, iteration, old_stats, new_stats):
 		if new:
 			nd = new.get_delay()
 
-			m = nd._m1
-			v = nd._new_variance
+			m = nd._mean
+			v = nd._variance
+			#m = nd._m1
+			#v = nd._new_variance
 			s = nd._skew
 			k = nd._kurtosis
 
@@ -161,8 +163,10 @@ def update_stats_for_links(peer, iteration, old_stats, new_stats):
 				od = old.get_delay()
 
 				if (od._n < nd._n):
-					dm = math.fabs(od._m1 - m)
-					dv = math.fabs(od._new_variance - v)
+					dm = math.fabs(od._mean - m)
+					dv = math.fabs(od._variance - v)
+					#dm = math.fabs(od._m1 - m)
+					#dv = math.fabs(od._new_variance - v)
 					ds = math.fabs(od._skew - s)
 					dk = math.fabs(od._kurtosis - k)
 				else:
@@ -376,11 +380,11 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 			real_skews = []
 			real_kurtosiss = []
 			for d in link._dists:
-			    dist = d[1]
-			    real_means.append(dist.get_mean())
-			    real_variances.append(dist.get_variance())
-			    real_skews.append(dist.get_skew())
-			    real_kurtosiss.append(dist.get_kurtosis())
+				dist = d[1]
+				real_means.append((d[0], dist.get_mean()))
+				real_variances.append((d[0], dist.get_variance()))
+				real_skews.append((d[0], dist.get_skew()))
+				real_kurtosiss.append((d[0], dist.get_kurtosis()))
 
 			ds.ValuesData(peer_uuid, target_uuid, real_means,
 					real_variances, real_skews,

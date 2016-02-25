@@ -183,7 +183,7 @@ def setup_dist_plot(dist_data):
 
 def setup_delta_plot(delta_data):
 	fig = plt.figure()
-	fig.suptitle("MV: {}".format(delta_data._source))
+	fig.suptitle("MV (log): {}".format(delta_data._source))
 
 	x_plot, y_plot = zip(*delta_data._delta_mean)
 	plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$mean')
@@ -197,18 +197,31 @@ def setup_delta_plot(delta_data):
 	plt.grid(True)
 
 	fig = plt.figure()
-	fig.suptitle("SK: {}".format(delta_data._source))
+	fig.suptitle("MV (lin): {}".format(delta_data._source))
 
-	x_plot, y_plot = zip(*delta_data._delta_skew)
-	plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$skew')
+	x_plot, y_plot = zip(*delta_data._delta_mean)
+	plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$mean')
 
-	x_plot, y_plot = zip(*delta_data._delta_kurtosis)
-	plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$kurtosis')
+	x_plot, y_plot = zip(*delta_data._delta_variance)
+	plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$variance')
 
 	plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
 
 	plt.grid(True)
+	# fig = plt.figure()
+	# fig.suptitle("SK: {}".format(delta_data._source))
+
+	# x_plot, y_plot = zip(*delta_data._delta_skew)
+	# plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$skew')
+
+	# x_plot, y_plot = zip(*delta_data._delta_kurtosis)
+	# plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$kurtosis')
+
+	# plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':10})
+	# plt.legend(loc='upper right', ncol=1, fontsize=9)
+
+	# plt.grid(True)
 
 def setup_values_plot(values_data):
 	fig = plt.figure()
@@ -217,39 +230,70 @@ def setup_values_plot(values_data):
 	x_plot, y_plot = zip(*values_data._mean_values)
 	plt.plot(x_plot, y_plot, linestyle='-', label=r'mean')
 
-	for i, rm in enumerate(values_data._real_means):
-	    plt.axhline(y=rm, xmin=0, xmax=1, linestyle='-.',
+	last_min = 1.0
+	scale=len(x_plot)
+	for i, rm in enumerate(reversed(values_data._real_means)):
+		x_min = float(rm[0])/scale
+		plt.axhline(y=rm[1], xmin=x_min, xmax=last_min, linestyle='-.',
 		    label="real mean {}".format(i))
+		last_min = x_min
 
 	x_plot, y_plot = zip(*values_data._variance_values)
 	plt.plot(x_plot, y_plot, linestyle='-', label=r'variance')
 
-	for i, rv in enumerate(values_data._real_variances):
-	    plt.axhline(y=rv, xmin=0, xmax=1, linestyle=':',
+	x_plot, y_plot = zip(*values_data._variance_values)
+	plt.plot(x_plot, map(lambda x: math.sqrt(x), y_plot), linestyle='-', label=r'std_dev')
+
+	last_min = 1.0
+	scale=len(x_plot)
+	for i, rv in enumerate(reversed(values_data._real_variances)):
+		x_min = float(rv[0])/scale
+		plt.axhline(y=rv[1], xmin=x_min, xmax=last_min, linestyle=':',
 		    label="real variance {}".format(i))
+		last_min = x_min
 
 	plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
 
+	# Plot CofV
 	fig = plt.figure()
-	fig.suptitle("SK: {}".format(values_data._source))
+	fig.suptitle("CofV: {}".format(values_data._source))
 
-	x_plot, y_plot = zip(*values_data._skew_values)
-	plt.plot(x_plot, y_plot, linestyle='-', label=r'skew')
+	x_plot, mean = zip(*values_data._mean_values)
+	_, var = zip(*values_data._variance_values)
 
-	for i, rs in enumerate(values_data._real_skews):
-	    plt.axhline(y=rs, xmin=0, xmax=1, linestyle='-.',
-		    label="real skew {}".format(i))
+	y_plot = map(lambda tup: math.sqrt(tup[1])/tup[0], zip(mean, var))
 
-	x_plot, y_plot = zip(*values_data._kurtosis_values)
-	plt.plot(x_plot, y_plot, linestyle='-', label=r'kurtosis')
+	plt.plot(x_plot, y_plot, linestyle='-', label='cofv')
 
-	for i, rk in enumerate(values_data._real_kurtosiss):
-	    plt.axhline(y=rk, xmin=0, xmax=1, linestyle=':',
-		    label="real kurtosis {}".format(i))
+	#plt.plot(x_plot, map(lambda x: math.log(x), y_plot), linestyle='-', label='cofv^2')
+
+	y_plot = map(lambda tup: tup[1]/tup[0], zip(mean, var))
+
+	plt.plot(x_plot, y_plot, linestyle='-', label='iod')
 
 	plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
+
+	# fig = plt.figure()
+	# fig.suptitle("SK: {}".format(values_data._source))
+
+	# x_plot, y_plot = zip(*values_data._skew_values)
+	# plt.plot(x_plot, y_plot, linestyle='-', label=r'skew')
+
+	# for i, rs in enumerate(values_data._real_skews):
+	#     plt.axhline(y=rs, xmin=0, xmax=1, linestyle='-.',
+	# 	    label="real skew {}".format(i))
+
+	# x_plot, y_plot = zip(*values_data._kurtosis_values)
+	# plt.plot(x_plot, y_plot, linestyle='-', label=r'kurtosis')
+
+	# for i, rk in enumerate(values_data._real_kurtosiss):
+	#     plt.axhline(y=rk, xmin=0, xmax=1, linestyle=':',
+	# 	    label="real kurtosis {}".format(i))
+
+	# plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
+	# plt.legend(loc='upper right', ncol=1, fontsize=9)
 
 class DataExplorer(object):
 

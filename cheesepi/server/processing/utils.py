@@ -47,7 +47,7 @@ class DistributionModel(object):
 	"""
 	log = logging.getLogger("cheesepi.server.processing.DistributionModel")
 
-	_DEFAULT_ALPHA = 0.5
+	_DEFAULT_ALPHA = 0.001
 
 	@classmethod
 	def fromDict(cls, dct):
@@ -148,6 +148,25 @@ class DistributionModel(object):
 		self._variance = (1-alpha) * (self._variance + (delta * increment))
 		self._std_dev = math.sqrt(self._variance)
 
+	def add_data2(self, samples, alpha=_DEFAULT_ALPHA):
+		"""
+		Doesn't work....
+		"""
+
+		n = len(samples)
+		sample_sum = 0
+		for x in samples:
+			sample_sum = sample_sum + x
+
+		sample_mean = sample_sum/n
+
+		delta = sample_mean - self._mean
+		increment = alpha * delta
+
+		self._mean = self._mean + increment
+		self._variance = (1-alpha) * (self._variance + (delta * increment))
+		self._std_dev = math.sqrt(self._variance)
+
 	def add_data(self, samples, upload_index=0):
 		"""
 		Update the distribution model with the new samples
@@ -189,15 +208,15 @@ class DistributionModel(object):
 			m1 = m1 + norm_delta_m1
 
 		if n < 1:
-		    return # No information gained anyway....
+			return # No information gained anyway....
 		elif n == 1:
-		    # We need to avoid division by zero here
-		    div = 1
-		    # If we only got one sample, chances are that m2 is 0.0
-		    if m2 == 0.0:
-		        m2 = 1.0
+			# We need to avoid division by zero here
+			div = 1
+			# If we only got one sample, chances are that m2 is 0.0
+			if m2 == 0.0:
+				m2 = 1.0
 		else:
-		    div = n-1
+			div = n-1
 
 		# Normalized Variance (n-1 because for n=1 the second moment is 0)
 		new_variance = (m2 / div)
@@ -217,10 +236,10 @@ class DistributionModel(object):
 		#self.log.info("{}".format(pformat(self._dm1)))
 
 		# Deltas of the moments due to this pass
-		self._dm1.append((upload_index, math.fabs(self._m1 - m1)))
-		self._dm2.append((upload_index, math.fabs(self._new_variance - new_variance)))
-		self._dm3.append((upload_index, math.fabs(self._skew - skew)))
-		self._dm4.append((upload_index, math.fabs(self._kurtosis - kurtosis)))
+		#self._dm1.append((upload_index, math.fabs(self._m1 - m1)))
+		#self._dm2.append((upload_index, math.fabs(self._new_variance - new_variance)))
+		#self._dm3.append((upload_index, math.fabs(self._skew - skew)))
+		#self._dm4.append((upload_index, math.fabs(self._kurtosis - kurtosis)))
 
 		self._new_variance = new_variance
 		self._skew = skew

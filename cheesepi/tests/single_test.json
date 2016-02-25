@@ -1,0 +1,35 @@
+{
+    "sample_size":100,
+    "iterations":100,
+    "schedule_size":1,
+    "schedule_method":"random",
+    "full_coverage_start":"False",
+    "peers":[
+        {
+            "uuid":"54a7969d-8436-49a3-a242-937dcf7c2d36",
+            "links":[
+                {
+                    "uuid":"14db8b89-cbf7-431a-90f0-b6ccc6bc7afc",
+                    "dist":[
+                        {
+                            "shape":3
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "uuid":"14db8b89-cbf7-431a-90f0-b6ccc6bc7afc",
+            "links":[
+                {
+                    "uuid":"54a7969d-8436-49a3-a242-937dcf7c2d36",
+                    "dist":[
+                        {
+                            "loc":15
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

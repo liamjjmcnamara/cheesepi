@@ -87,6 +87,7 @@ class PingStatistics(Statistics):
 			if d > 0:
 				self._delay.add_datum(d)
 				pure_sequence.append(d)
+		#self._delay.add_data2(pure_sequence)
 		self._delay.add_data(pure_sequence, upload_index=upload_index)
 
 		sequence_median = median(pure_sequence)
