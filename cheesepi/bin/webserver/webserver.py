@@ -11,25 +11,19 @@ serveroot = os.path.dirname(os.path.realpath(__file__))
 confpath  = os.path.join(serveroot,'cherrypy.conf')
 
 def match_path(pathA, pathB):
-	if len(pathA)!=len(pathB):
-		return False
-	for i in xrange(len(pathA)):
+	"""Ensure each member of pathB is matched in pathA (not reflexive!)"""
+	if len(pathB)>len(pathA): return False
+	for i in xrange(len(pathB)):
 		if pathA[i]!=pathB[i]:
 			return False
 	return True
 
 
-class Root(object):
-	@cherrypy.expose
-	def index(self):
-		raise cherrypy.HTTPRedirect("/dashboard")
-		return
-
 class RestAPI(object):
 	exposed = True
 	def serve_config_js(self):
 		cherrypy.response.headers['Content-Type'] = "text/javascript"
-		with open(os.path.join(serveroot,"dashboard","config.js"), 'r') as f:
+		with open(os.path.join(serveroot,"config.js"), 'r') as f:
 			content = f.read()
 			ip = cp.utils.get_IP()
 			return content.replace("INFLUXDB_IP",ip)
@@ -37,7 +31,7 @@ class RestAPI(object):
 	def serve_default_json(self, **params):
 		"""Serve the dashboard file, replace the WiFi AP"""
 		cherrypy.response.headers['Content-Type'] = "application/json"
-		with open(os.path.join(serveroot,"dashboard","app","dashboards","default.json"), 'r') as f:
+		with open(os.path.join(serveroot,"app","dashboards","default.json"), 'r') as f:
 			content = f.read()
 			essid = cp.config.get('ap')
 			if essid==None: essid="ACCESSPOINTESSID"
@@ -45,7 +39,7 @@ class RestAPI(object):
 		return "Error: Can't read default.json file"
 
 	def serve_css(self,css):
-		return serve_file(os.path.join(serveroot,"dashboard","css",css))
+		return serve_file(os.path.join(serveroot,"css",css))
 
 	def GET(self, *vpath, **params):
 		if len(vpath)==2 and vpath[0]=="css": return self.serve_css(vpath[1])
@@ -59,7 +53,7 @@ class RestAPI(object):
 		filename="index.html"
 		if len(vpath)>0:
 			filename = "/".join(vpath)
-		serve_path = os.path.join(serveroot,"dashboard",filename)
+		serve_path = os.path.join(serveroot,filename)
 		#print "Serving: %s" % serve_path
 		return serve_file(serve_path)
 
@@ -74,10 +68,8 @@ def setup_server(port=8080):
 	})
 
 	restconf = {'/': {'request.dispatch': cherrypy.dispatch.MethodDispatcher()} }
-	cherrypy.tree.mount(Root())
-	cherrypy.tree.mount(RestAPI(), '/dashboard', restconf)
-	cherrypy.engine.start()
-	cherrypy.engine.block()
+	# start the cherrypy event loop
+	cherrypy.quickstart(RestAPI(), '/', restconf)
 
 if __name__ == "__main__":
 	setup_server()

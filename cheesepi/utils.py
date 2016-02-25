@@ -28,31 +28,28 @@ Testers:
 
 import os
 import sys
-import json
-import urllib2
 import uuid
 import time
-import md5
-import argparse
-import multiprocessing
-import platform
-import netifaces
 from subprocess import call
 
 import cheesepi as cp
-from cheesepi.tasks import *
 
 logger = cp.config.get_logger(__name__)
 
 
 def console_script():
 	"""Command line tool, installed through setup.py"""
+	import argparse
 	commands = ['start','stop','status','reset','upgrade']
 	options  = ['dispatcher','storage','influxdb','dashboard','all']
 
 	parser = argparse.ArgumentParser(prog='cheesepi')
-	parser.add_argument('command', metavar='COMMAND', choices=commands, nargs='?', help="'start' or 'stop' one of the CheesePi components")
-	parser.add_argument('option',  metavar='OPTION', choices=options, nargs='?', help='Options to the command')
+	parser.add_argument('command', metavar='COMMAND', choices=commands, nargs='?',
+		help="'start' or 'stop' one of the CheesePi components.\n"+
+			"status, reset or upgrade")
+	parser.add_argument('option',  metavar='OPTION', choices=options, nargs='?',
+		help='Options to the command. If starting or stopping, then name the component'+
+			'storage, dispatcher or dashboard')
 	args = parser.parse_args()
 
 	# single parameter commands
@@ -77,6 +74,9 @@ def show_status():
 	print "Log file:\t%s"      % cp.config.log_file
 	print "Config file:\t%s"   % cp.config.config_file
 	print "Schedule file:\t%s" % schedule_file
+	print ""
+	ip = cp.utils.get_IP()
+	print "Dashboard URL: http://"+ip
 
 def list_data(task="ping"):
 	dao = cp.config.get_dao()
@@ -113,17 +113,15 @@ def find_influx_exe():
 	"""See which influxdb we should use"""
 	config_path = cp.config.get("database_exe")
 	if config_path: # if database exectable was set in config file
-		print "set it configfile"
 		return config_path
 	elif (test_execute(["influxdb","-h"])):
-		print "system influx"
 		return "influxdb"
 	else:
 		if isARM():
-			print "cheesepi influx"
 			return cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb.arm"
 		else:
-			print "Error: Can't find InfluxDB binary, set 'database_exe' in the config file"
+			print "Error: Can't find a valid InfluxDB binary"
+			print "Install InfluxDB and then set the binary's path as 'database_exe' in cheesepi.conf"
 			sys.exit(1)
 
 def control_storage(action):
@@ -131,6 +129,13 @@ def control_storage(action):
 	storage_dir = "/var/lib/influxdb"
 	if not os.path.exists(storage_dir):
 		print "Warning: Default InfluxDB storage dir %s does not exist!" % storage_dir
+		print "Will try to make it..."
+		# try to make the dir
+		try:
+			os.mkdirs(storage_dir)
+		except Exception as e:
+			print "Tried to make the directory, but it failed: %s" % e
+			sys.exit(1)
 
 	if action=='start':
 		print "Starting InfluxDB..."
@@ -161,6 +166,7 @@ def control_dashboard(action):
 		print "Error: action not yet implemented!"
 
 def control_all(action):
+	import multiprocessing
 	pool = multiprocessing.Pool(processes=3)
 	pool.apply_async(control_storage,  [action])
 	time.sleep(3) # allow spoolup and config generation
@@ -178,9 +184,9 @@ def reset_install():
 
 def upgrade_install():
 	"""Try and pull new version of the code from PyPi"""
-	upgrade_task = cp.tasks.Upgradecode()
+	import cheesepi.tasks
+	upgrade_task = cheesepi.tasks.Upgradecode()
 	upgrade_task.run()
-
 
 
 
@@ -193,45 +199,47 @@ def make_series():
 
 def build_json(dao, json_str):
 	"""Build a Task object out of a JSON string spec"""
+	import json
 	spec = json.loads(json_str)
 	return build_task(dao, spec)
 
 def build_task(dao, spec):
+	import cheesepi.tasks
 	if not 'taskname' in spec:
 		logger.error("No 'taskname' specified!")
 		return None
 
 	spec['taskname'] = spec['taskname'].lower()
 	if spec['taskname']=='ping':
-		return Ping(dao, spec)
+		return cheesepi.tasks.Ping(dao, spec)
 	elif spec['taskname']=='httping':
-		return Httping(dao, spec)
+		return cheesepi.tasks.Httping(dao, spec)
 	elif spec['taskname']=='traceroute':
-		return Traceroute(dao, spec)
+		return cheesepi.tasks.Traceroute(dao, spec)
 	elif spec['taskname']=='dash':
-		return Dash(dao, spec)
+		return cheesepi.tasks.Dash(dao, spec)
 	elif spec['taskname']=='dns':
-		return DNS(dao, spec)
+		return cheesepi.tasks.DNS(dao, spec)
 	elif spec['taskname']=='throughput':
-		return Throughput(dao, spec)
+		return cheesepi.tasks.Throughput(dao, spec)
 	elif spec['taskname']=='iperf':
-		return iPerf(dao, spec)
+		return cheesepi.tasks.iPerf(dao, spec)
 	elif spec['taskname']=='beacon':
-		return Beacon(dao, spec)
+		return cheesepi.tasks.Beacon(dao, spec)
 	elif spec['taskname']=='upload':
-		return Upload(dao, spec)
+		return cheesepi.tasks.Upload(dao, spec)
 	elif spec['taskname']=='status':
-		return Status(dao, spec)
+		return cheesepi.tasks.Status(dao, spec)
 	elif spec['taskname']=='wifi':
-		return Wifi(dao, spec)
+		return cheesepi.tasks.Wifi(dao, spec)
 	elif spec['taskname']=='dummy':
-		return Dummy(dao, spec)
+		return cheesepi.tasks.Dummy(dao, spec)
 	elif spec['taskname']=='upload':
-		return Upload(dao, spec)
+		return cheesepi.tasks.Upload(dao, spec)
 	elif spec['taskname']=='upgradecode':
-		return Upgradecode(dao, spec)
+		return cheesepi.tasks.Upgradecode(dao, spec)
 	elif spec['taskname']=='updatetasks':
-		return Updatetasks(dao, spec)
+		return cheesepi.tasks.Updatetasks(dao, spec)
 	else:
 		raise Exception('Task name not specified! '+str(spec))
 
@@ -242,6 +250,7 @@ def now():
 	#return int(datetime.datetime.utcnow().strftime("%s"))
 
 def isARM():
+	import platform
 	if "arm" in platform.machine():
 		return True
 	return False
@@ -260,30 +269,31 @@ def get_MAC():
 
 def get_host_id():
 	"""Return this host's ID"""
+	import md5
 	return str(md5.new(get_MAC()).hexdigest())
-
 
 #get our currently used MAC address
 def getCurrMAC():
 	ret =':'.join(['{:02x}'.format((uuid.getnode() >> i) & 0xff) for i in range(0,8*6,8)][::-1])
 	return ret
 
-
 def resolve_if(interface):
 	"""Get the IP address of an interface"""
-	addr_type = 2 # 2=AF_INET, 30=AF_INET6
+	addr="127.0.0.1" # a bad default value (will only work locally)
 	try:
+		import netifaces
+		addr_type = 2 # 2=AF_INET, 30=AF_INET6
 		addr = netifaces.ifaddresses(interface)[addr_type][0]['addr']
-	except Exception as e:
-		# failed to resolve
-		return None
+	except Exception: # netifaces failed
+		import socket
+		# try to use the fully qualified domain name
+		addr = socket.getfqdn()
 	return addr
 
 def get_IP():
 	"""Try to get this host's active address"""
 	interfaces = ["eth0","en0","wlan0"]
 	# apppend all interfaces on this host
-	#interfaces.append(netifaces.interfaces())
 	for interface in interfaces:
 		ip = resolve_if(interface)
 		if ip!=None: # we have a valid IP
@@ -293,6 +303,7 @@ def get_IP():
 
 def get_SA():
 	"""get our percieved remote source address"""
+	import urllib2
 	try:
 		ret = urllib2.urlopen('http://ip.42.pl/raw').read()
 	except Exception as e: # We may be offline

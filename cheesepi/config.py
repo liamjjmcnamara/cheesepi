@@ -31,11 +31,7 @@ a local config file (if one does not exist, and initialising logging options
 
 import sys
 import os
-import re
-import uuid
 import logging
-import json
-import urllib2
 
 import cheesepi as cp
 
@@ -119,6 +115,7 @@ def get_dao():
 
 def generate_uuid():
 	"""Generate a uuid, to use for identification and data signing"""
+	import uuid
 	return str(uuid.uuid4())
 
 
@@ -161,6 +158,7 @@ def read_config():
 	return lines
 
 def get_config():
+	import re
 	config = {}
 	lines  = read_config()
 	for line in lines:
@@ -197,6 +195,7 @@ def create_default_schedule(schedule_filename):
 		sys.exit(1)
 
 def load_local_schedule():
+	import json
 	schedule_filename = os.path.join(cheesepi_dir, config['schedule'])
 	if not os.path.isfile(schedule_filename):
 		create_default_schedule(schedule_filename)
@@ -220,6 +219,7 @@ def load_local_schedule():
 def load_remote_schedule():
 	"""See if we can grab a schedule from the central server
 	this should (in future) include authentication"""
+	import urllib2
 	try:
 		url = 'http://cheesepi.sics.se/schedule.dat'
 		response = urllib2.urlopen(url)

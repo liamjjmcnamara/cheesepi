@@ -29,10 +29,11 @@ class Upload(Task.Task):
 		"""Upload data server, may take some time..."""
 		logger.info("Uploading data... @ %f, PID: %d" % (time.time(), os.getpid()))
 
-		self.dump_db_tempfile()
+		self.dump_db()
 
-	def dump_db_tempfile(self, upload=True, store_file=False):
-		last_dumped = cp.config.get_last_dumped(self.dao)
+	def dump_db(self, upload=True, store_file=False, last_dumped=None):
+		if last_dumped==None:
+			last_dumped = cp.config.get_last_dumped(self.dao)
 		if last_dumped==-1:
 			logger.info("Never dumped this DB...")
 		else:
@@ -81,13 +82,14 @@ class Upload(Task.Task):
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Dump CheesePi DB, to local file or remote server')
 
-	parser.add_argument('--no-upload', dest='upload', action='store_false')
+	parser.add_argument('--no-upload',  dest='upload', action='store_false')
 	parser.add_argument('--store-file', dest='store_file', action='store_true')
+	parser.add_argument('--since', metavar='s', type=int, nargs='?', default=None, help="Dump all data since time s")
 	parser.set_defaults(upload=True)
 	parser.set_defaults(store_file=False)
 	args = parser.parse_args()
 
 	dao = cp.config.get_dao()
 	dump_task = Upload(dao)
-	dump_task.dump_db_tempfile(args.upload, args.store_file)
+	dump_task.dump_db(args.upload, args.store_file, args.since)
 

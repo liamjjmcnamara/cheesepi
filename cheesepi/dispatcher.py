@@ -2,12 +2,10 @@
 
 import os
 import time
-import math
 import sys
-import sched
 import multiprocessing
-import signal
 import logging
+from sched import scheduler
 
 import cheesepi as cp
 
@@ -21,7 +19,7 @@ dao    = cp.config.get_dao()
 logger = cp.config.get_logger(__name__)
 
 # Create scheduler object, use 'real' time
-s = sched.scheduler(time.time, time.sleep)
+s = scheduler(time.time, time.sleep)
 repeat_schedule = True # keep rescheuling?
 # list of tasks to perform each schedule (populate later)
 schedule_list = []
@@ -30,8 +28,8 @@ pool = None # pool must be global, yet instantiated in __main__
 pool_size = 5 # max number of concurrent tasks...
 
 # Task priority
-IMPORTANT  = 1
-NORMAL	   = 2
+IMPORTANT = 1
+NORMAL    = 2
 
 def log_result(result):
 	#logging.info("Task callback() result..."+str(result))
@@ -60,7 +58,7 @@ def async(task):
 # Perform a scheduled Task, and schedule the next
 def run(task, spec):
 	"""Run this task asychronously, and schedule the next period"""
-	logger.info("\nRunning %s @ %f" % (task.spec['taskname'], timestamp()))
+	#logger.info("Running %s @ %f" % (task.spec['taskname'], timestamp()))
 	pool.apply_async(async, args=[task], callback=log_result)
 	if repeat_schedule:
 		schedule_task(spec)
@@ -68,6 +66,7 @@ def run(task, spec):
 
 def schedule_task(spec):
 	"""Ensure task defiend by specificaiton is executed"""
+	import math
 	task = cp.utils.build_task(dao, spec)
 	if task == None:
 		logger.error("Task specification not valid: "+str(spec))
@@ -99,7 +98,7 @@ def load_schedule():
 		# just use local
 		tasks = cp.config.load_local_schedule()
 	if cp.config.get("auto_upgrade"):
-		upgrade_period = 43200 # 24hrs
+		upgrade_period = 86400 # 24hrs
 		task_str = {'taskname':'upgradecode', 'period':upgrade_period, 'offset':'rand'}
 		tasks.append(task_str)
 	return tasks
@@ -136,6 +135,7 @@ def start():
 
 
 if __name__ == "__main__":
+	import signal
 	logger.info("Dispatcher PID: %d" % os.getpid())
 
 	# register HUP signal catcher

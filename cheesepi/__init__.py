@@ -29,8 +29,8 @@ Testers:
 import config
 import utils
 import storage
-import tasks
 import dispatcher
+#import tasks
 
 # poor form
 import bin

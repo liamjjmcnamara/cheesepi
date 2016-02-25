@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" Copyright (c) 2015, Swedish Institute of Computer Science
+""" Copyright (c) 2016, Swedish Institute of Computer Science
   All rights reserved.
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
@@ -64,26 +64,23 @@ setup(
 	# Runtime dependencies
 	install_requires=[
 		'setuptools',
+		'pip',
 		'future',
-		'txmsgpackrpc',
-		'twisted',
-		'youtube_dl',
-		'dnspython',
-		'influxdb',
-		'pymongo',
-		'uptime',
-		'cherrypy',
-		'speedtest-cli',
-		'netifaces',
 		'argparse',
+		'influxdb',
+		'cherrypy',
+		'uptime',
+		'dnspython',
+		'youtube_dl',
+		'speedtest-cli',
 	],
+	extras_require = {
+		'extra' : ['txmsgpackrpc','twisted','netifaces','pymongo'],
+	},
 
 	entry_points={
 		'console_scripts':[
 			'cheesepi = cheesepi.utils:console_script',
-			#'cheesepi_config = cheesepi.config:main',
-			#'cheesepi_control_server_start = cheesepi.server.utils:start_control_server',
-			#'cheesepi_upload_server_start = cheesepi.server.utils:start_upload_server',
 		]
 	},
 	include_package_data=True,
