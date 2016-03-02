@@ -7,7 +7,7 @@ import cheesepi as cp
 # To be subclassed by explicit measurement tasks
 class Task:
 
-	def __init__(self, dao, spec):
+	def __init__(self, dao=None, spec={}):
 		self.dao                = dao
 		self.spec               = {}
 		self.spec['taskname']   = "Superclass"

@@ -5,13 +5,14 @@ from builtins import str
 
 enabled = False
 try:
-	from txmsgpackrpc.client import connect
 	from twisted.internet import defer
 	from twisted.internet import reactor
+	from txmsgpackrpc.client import connect
 	enabled = True
-except ImportError:
+except ImportError as e:
 	# twisted import failed
-	print "Error: Can not import Twisted framework, beaconing disabled..."
+	print "Error: Can not import Twisted/messagepack framework, Beaconing disabled..."
+	raise # re-raise the problem
 
 import cheesepi as cp
 import Task

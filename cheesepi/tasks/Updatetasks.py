@@ -5,12 +5,13 @@ from builtins import str
 
 enabled = False
 try:
-	from txmsgpackrpc.client import connect
 	from twisted.internet import defer
 	from twisted.internet import reactor
+	from txmsgpackrpc.client import connect
 	enabled = True
 except ImportError:
 	print "Error: Can not import Twisted framework, updating disabled..."
+	raise
 
 import cheesepi as cp
 import Task

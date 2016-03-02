@@ -1,10 +1,8 @@
 
 from Task import Task
 from Dummy import Dummy
-from Beacon import Beacon
 from Upload import Upload
 from Upgradecode import Upgradecode
-from Updatetasks import Updatetasks
 from Status import Status
 from Ping import Ping
 from Httping import Httping
@@ -15,4 +13,9 @@ from Throughput import Throughput
 from iPerf import iPerf
 from Wifi import Wifi
 
+try:
+	from Updatetasks import Updatetasks
+	from Beacon import Beacon
+except:
+	print "Warning: twisted for python not installed."
 

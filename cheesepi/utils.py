@@ -204,42 +204,63 @@ def build_json(dao, json_str):
 	return build_task(dao, spec)
 
 def build_task(dao, spec):
-	import cheesepi.tasks
+	import cheesepi.tasks.Task
 	if not 'taskname' in spec:
 		logger.error("No 'taskname' specified!")
 		return None
 
 	spec['taskname'] = spec['taskname'].lower()
 	if spec['taskname']=='ping':
+		import cheesepi.tasks.Ping
 		return cheesepi.tasks.Ping(dao, spec)
 	elif spec['taskname']=='httping':
+		import cheesepi.tasks.Httping
 		return cheesepi.tasks.Httping(dao, spec)
 	elif spec['taskname']=='traceroute':
+		import cheesepi.tasks.Traceroute
 		return cheesepi.tasks.Traceroute(dao, spec)
 	elif spec['taskname']=='dash':
+		import cheesepi.tasks.Dash
 		return cheesepi.tasks.Dash(dao, spec)
 	elif spec['taskname']=='dns':
+		import cheesepi.tasks.DNS
 		return cheesepi.tasks.DNS(dao, spec)
 	elif spec['taskname']=='throughput':
+		import cheesepi.tasks.Throughput
 		return cheesepi.tasks.Throughput(dao, spec)
 	elif spec['taskname']=='iperf':
+		import cheesepi.tasks.iPerf
 		return cheesepi.tasks.iPerf(dao, spec)
-	elif spec['taskname']=='beacon':
-		return cheesepi.tasks.Beacon(dao, spec)
 	elif spec['taskname']=='upload':
+		import cheesepi.tasks.Upload
 		return cheesepi.tasks.Upload(dao, spec)
 	elif spec['taskname']=='status':
+		import cheesepi.tasks.Status
 		return cheesepi.tasks.Status(dao, spec)
 	elif spec['taskname']=='wifi':
+		import cheesepi.tasks.Wifi
 		return cheesepi.tasks.Wifi(dao, spec)
 	elif spec['taskname']=='dummy':
+		import cheesepi.tasks.Dummy
 		return cheesepi.tasks.Dummy(dao, spec)
 	elif spec['taskname']=='upload':
+		import cheesepi.tasks.Upload
 		return cheesepi.tasks.Upload(dao, spec)
 	elif spec['taskname']=='upgradecode':
+		import cheesepi.tasks.Upgradecode
 		return cheesepi.tasks.Upgradecode(dao, spec)
+	elif spec['taskname']=='beacon':
+		try:
+			import cheesepi.tasks.Beacon
+			return cheesepi.tasks.Beacon(dao, spec)
+		except:
+			return cheesepi.tasks.Task(dao)
 	elif spec['taskname']=='updatetasks':
-		return cheesepi.tasks.Updatetasks(dao, spec)
+		try:
+			import cheesepi.tasks.Updatetasks
+			return cheesepi.tasks.Updatetasks(dao, spec)
+		except:
+			return cheesepi.tasks.Task(dao)
 	else:
 		raise Exception('Task name not specified! '+str(spec))
 
