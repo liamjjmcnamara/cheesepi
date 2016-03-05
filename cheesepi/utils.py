@@ -76,7 +76,8 @@ def show_status():
 	print "Schedule file:\t%s" % schedule_file
 	print ""
 	ip = cp.utils.get_IP()
-	print "Dashboard URL: http://"+ip
+	port = cp.config.get_dashboard_port()
+	print "Dashboard URL: http://%s:%s" % (ip,port)
 
 def list_data(task="ping"):
 	dao = cp.config.get_dao()
@@ -96,6 +97,7 @@ def copy_influx_config(influx_config):
 	storage_dir = "/var/lib/influxdb"
 	if not os.path.exists(storage_dir):
 		print "Warning: Default InfluxDB storage dir %s does not exist!" % storage_dir
+		print "Make the directory and user editable:\n sudo mkdir %s && chown $USER %s" % (storage_dir, storage_dir)
 	influx_dir = cp.config.cheesepi_dir+"/bin/tools/influxdb"
 	default_config  = os.path.join(influx_dir,"config.toml")
 	print "Warning: copying from default config: %s" % default_config
@@ -231,6 +233,9 @@ def build_task(dao, spec):
 	elif spec['taskname']=='iperf':
 		import cheesepi.tasks.iPerf
 		return cheesepi.tasks.iPerf(dao, spec)
+	elif spec['taskname']=='mtr':
+		import cheesepi.tasks.MTR
+		return cheesepi.tasks.MTR(dao, spec)
 	elif spec['taskname']=='upload':
 		import cheesepi.tasks.Upload
 		return cheesepi.tasks.Upload(dao, spec)
@@ -253,7 +258,7 @@ def build_task(dao, spec):
 		try:
 			import cheesepi.tasks.Beacon
 			return cheesepi.tasks.Beacon(dao, spec)
-		except:
+		except: # return dummy Task
 			return cheesepi.tasks.Task(dao)
 	elif spec['taskname']=='updatetasks':
 		try:

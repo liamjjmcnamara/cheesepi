@@ -10,7 +10,7 @@ try:
 	from txmsgpackrpc.client import connect
 	enabled = True
 except ImportError:
-	print "Error: Can not import Twisted framework, updating disabled..."
+	print "Error: Can not import Twisted framework, CheesePi code updating is disabled..."
 	raise
 
 import cheesepi as cp

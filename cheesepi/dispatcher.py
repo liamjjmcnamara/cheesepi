@@ -72,6 +72,7 @@ def schedule_task(spec):
 		logger.error("Task specification not valid: "+str(spec))
 		return
 
+	if task.spec['period']==0: return # dummy task
 	next_period = 1 + math.floor(time.time() / task.spec['period'])
 	abs_start = (next_period*task.spec['period']) + task.spec['offset']
 	delay = abs_start-time.time()

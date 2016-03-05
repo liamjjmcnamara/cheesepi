@@ -332,6 +332,9 @@ def get_landmarks():
 	landmarks = landmark_string.split()
 	return landmarks
 
+def get_dashboard_port():
+	# TODO: should read from config file
+	return "8080"
 
 def config_defined(key):
 	"""Is the specified key defined and true in the config object?"""

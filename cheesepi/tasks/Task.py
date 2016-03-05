@@ -12,7 +12,7 @@ class Task:
 		self.spec               = {}
 		self.spec['taskname']   = "Superclass"
 		self.spec['inititator'] = cp.utils.get_host_id()
-		self.spec['period']     = 0
+		self.spec['period']     = 86400 # 24hrs
 		self.spec['offset']     = 0
 		self.spec['downloaded'] = 1 # bytes, placeholder
 		self.spec['uploaded']   = 1 # bytes, placeholder

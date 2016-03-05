@@ -10,14 +10,14 @@ logger = cp.config.get_logger(__name__)
 
 class Traceroute(Task.Task):
 
-	def __init__(self, dao, spec):
+	def __init__(self, dao, spec={}):
 		Task.Task.__init__(self, dao, spec)
 		self.spec['taskname'] = "traceroute"
-                if not 'landmark'    in self.spec: self.spec['landmark']    = "www.sics.se"
+		if not 'landmark' in self.spec: self.spec['landmark'] = "www.sics.se"
 
 	def run(self):
-		logger.info("Tracerouting %s @ %f PID: %d" % (self.landmark, time.time(), os.getpid()))
-		self.measure(self.landmark)
+		logger.info("Tracerouting %s @ %f PID: %d" % (self.spec['landmark'], time.time(), os.getpid()))
+		self.measure(self.spec['landmark'])
 
 	def measure(self, landmark):
 		#Extract the ethernet MAC address of the PI
@@ -27,9 +27,9 @@ class Traceroute(Task.Task):
 		#trc, hoplist = reformat(tracerouteResult, startTime, endTime)
 		logger.debug(output)
 		parsed = self.parse(output, startTime, endTime)
-		parsed['uploaded']= 8 * 3 * len(parsed['hoplist'])
+		parsed['uploaded']= 8 * 3 * len(parsed['hops'])
 		parsed['uploaded']= parsed['downloaded']
-		self.insertData(self.dao, parsed['traceroute'], parsed['hoplist'])
+		self.insertData(self.dao, parsed['traceroute'], parsed['hops'])
 
 	#Execute traceroute function
 	def perform(self, target):
@@ -138,7 +138,7 @@ class Traceroute(Task.Task):
 
 
 	#insert the tracetoute results into the database
-	def insertData(dao, traceroute, hoplist):
+	def insertData(self, dao, traceroute, hoplist):
 		logger.debug("Writting to the Traceroute table")
 		traceroute_id = dao.write_op("traceroute", traceroute)
 
@@ -146,7 +146,7 @@ class Traceroute(Task.Task):
 			logger.debug(hop)
 			#hop.traceroute = traceroute_id
 			hop['traceroute_id'] = traceroute_id
-			dao.write_op("traceroot_hop",hop)
+			dao.write_op("traceroute_hop",hop)
 
 
 #parses arguments
