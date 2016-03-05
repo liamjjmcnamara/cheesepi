@@ -134,7 +134,7 @@ def control_storage(action):
 		print "Will try to make it..."
 		# try to make the dir
 		try:
-			os.mkdirs(storage_dir)
+			os.makedirs(storage_dir)
 		except Exception as e:
 			print "Tried to make the directory, but it failed: %s" % e
 			sys.exit(1)
