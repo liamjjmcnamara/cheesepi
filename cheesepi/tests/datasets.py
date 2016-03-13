@@ -37,8 +37,8 @@ class DistData(Data):
 class ValuesData(Data):
 
 	def __init__(self, source, target, real_means, real_variances, real_skews,
-			real_kurtosiss, mean_values, variance_values, skew_values,
-			kurtosis_values):
+			real_kurtosiss, uni_mean_values, uni_variance_values, exp_mean_values,
+			exp_variance_values):
 
 		self._source = source
 		self._target = target
@@ -50,21 +50,21 @@ class ValuesData(Data):
 		self._real_kurtosiss = real_kurtosiss
 
 		# The values at given points in time, in arrays of tuples (index, value)
-		self._mean_values = mean_values
-		self._variance_values = variance_values
-		self._skew_values = skew_values
-		self._kurtosis_values = kurtosis_values
+		self._uni_mean_values = uni_mean_values
+		self._uni_variance_values = uni_variance_values
+		self._exp_mean_values = exp_mean_values
+		self._exp_variance_values = exp_variance_values
 
 class DeltaData(Data):
 
-	def __init__(self, source, target, delta_mean, delta_variance, delta_skew,
-			delta_kurtosis):
+	def __init__(self, source, target, delta_uni_mean, delta_uni_variance,
+	        delta_exp_mean, delta_exp_variance):
 
 		self._source = source
 		self._target = target
 
 		# Delta values in arrays of tuples (index, value)
-		self._delta_mean = delta_mean
-		self._delta_variance = delta_variance
-		self._delta_skew = delta_skew
-		self._delta_kurtosis = delta_kurtosis
+		self._delta_uni_mean = delta_uni_mean
+		self._delta_uni_variance = delta_uni_variance
+		self._delta_exp_mean = delta_exp_mean
+		self._delta_exp_variance = delta_exp_variance

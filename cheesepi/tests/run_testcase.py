@@ -147,40 +147,42 @@ def update_stats_for_links(peer, iteration, old_stats, new_stats):
 		if new:
 			nd = new.get_delay()
 
-			m = nd._mean
-			v = nd._variance
+			um = nd._uni_mean
+			uv = nd._uni_variance
+			em = nd._exp_mean
+			ev = nd._exp_variance
 			#m = nd._m1
 			#v = nd._new_variance
-			s = nd._skew
-			k = nd._kurtosis
+			# s = nd._skew
+			# k = nd._kurtosis
 
-			dm = None
-			dv = None
-			ds = None
-			dk = None
+			dum = None
+			duv = None
+			dem = None
+			dev = None
 
 			if old:
 				od = old.get_delay()
 
 				if (od._n < nd._n):
-					dm = math.fabs(od._mean - m)
-					dv = math.fabs(od._variance - v)
+					dum = math.fabs(od._uni_mean - um)
+					duv = math.fabs(od._uni_variance - uv)
 					#dm = math.fabs(od._m1 - m)
 					#dv = math.fabs(od._new_variance - v)
-					ds = math.fabs(od._skew - s)
-					dk = math.fabs(od._kurtosis - k)
+					dem = math.fabs(od._exp_mean - em)
+					dev = math.fabs(od._exp_variance - ev)
 				else:
 					# Nothing has changed, keep old values
 					#print("NOTHING HAPPENED")
 					pass
 			else:
 				# First iteration
-				dm = m
-				dv = v
-				ds = s
-				dk = k
+				dum = um
+				duv = uv
+				dem = em
+				dev = ev
 
-			link.add_historical_model_data(index, m, v, s, k, dm, dv, ds, dk)
+			link.add_historical_model_data(index, um, uv, em, ev, dum, duv, dem, dev)
 		#elif new:
 			# Deltas are now the same as the values since we start from 0
 			#d = new.get_delay()
@@ -333,8 +335,8 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 
 			# num_samples = delay_model._n
 
-			print("m={}, v={}, s={}, k={}".format(delay_model._m1,
-				delay_model._new_variance, delay_model._skew, delay_model._kurtosis))
+			# print("m={}, v={}, s={}, k={}".format(delay_model._m1,
+			# 	delay_model._new_variance, delay_model._skew, delay_model._kurtosis))
 
 			# pdf = pdf_mvsk([delay_model._m1, delay_model._new_variance,
 			# 		delay_model._skew, delay_model._kurtosis])
@@ -369,9 +371,9 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 			#print(link._historical_delta_variance)
 			#print(link._historical_delta_skew)
 			#print(link._historical_delta_kurtosis)
-			ds.DeltaData(peer_uuid, target_uuid, link._historical_delta_mean,
-					link._historical_delta_variance, link._historical_delta_skew,
-					link._historical_delta_kurtosis).pickle(os.path.join(DIRNAME,
+			ds.DeltaData(peer_uuid, target_uuid, link._historical_delta_uni_mean,
+					link._historical_delta_uni_variance, link._historical_delta_exp_mean,
+					link._historical_delta_exp_variance).pickle(os.path.join(DIRNAME,
 						"delta_{}_{}.pickle".format(peer_index, stat_index)))
 
 
@@ -389,9 +391,9 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 			ds.ValuesData(peer_uuid, target_uuid, real_means,
 					real_variances, real_skews,
 					real_kurtosiss,
-					link._historical_mean,
-					link._historical_variance, link._historical_skew,
-					link._historical_kurtosis).pickle(os.path.join(DIRNAME,
+					link._historical_uni_mean,
+					link._historical_uni_variance, link._historical_exp_mean,
+					link._historical_exp_variance).pickle(os.path.join(DIRNAME,
 						"values_{}_{}.pickle".format(peer_index, stat_index)))
 
 

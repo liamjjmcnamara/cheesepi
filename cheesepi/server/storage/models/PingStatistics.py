@@ -85,16 +85,18 @@ class PingStatistics(Statistics):
 		for d in result.get_delay_sequence():
 			# We need to ignore lost packets
 			if d > 0:
-				self._delay.add_datum(d)
+				#self._delay.add_datum(d)
 				pure_sequence.append(d)
 		#self._delay.add_data2(pure_sequence)
 		self._delay.add_data(pure_sequence, upload_index=upload_index)
 
 		sequence_median = median(pure_sequence)
 		#self.log.info("MEDIAN {}".format(sequence_median))
-		self._average_median_delay.add_datum(sequence_median)
+		self._average_median_delay.add_data(sequence_median, upload_index=upload_index)
 
-		self._average_delay.add_datum(result.get_avg_rtt())
+		self._average_delay.add_data(result.get_avg_rtt(), upload_index=upload_index)
 		#self.log.info("PACKET_LOSS {}".format(result.get_packet_loss()))
 		#self.log.info("PROBE_COUNT {}".format(result.get_probe_count()))
-		self._average_packet_loss.add_datum(float(result.get_packet_loss())/float(result.get_probe_count()))
+		self._average_packet_loss.add_data(
+		        float(result.get_packet_loss())/float(result.get_probe_count()),
+		        upload_index=upload_index)

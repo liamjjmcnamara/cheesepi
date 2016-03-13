@@ -2,7 +2,7 @@
     "sample_size":100,
     "iterations":100,
     "schedule_size":1,
-    "schedule_method":"random",
+    "schedule_method":"roundrobin",
     "full_coverage_start":"False",
     "peers":[
         {

@@ -159,15 +159,15 @@ class LinkMocker(object):
 		self._dists.sort(key=lambda tup: tup[0])
 
 		# Incremental stats of the generated model
-		self._historical_mean = []
-		self._historical_variance = []
-		self._historical_skew = []
-		self._historical_kurtosis = []
+		self._historical_uni_mean = []
+		self._historical_uni_variance = []
+		self._historical_exp_mean = []
+		self._historical_exp_variance = []
 
-		self._historical_delta_mean = []
-		self._historical_delta_variance = []
-		self._historical_delta_skew = []
-		self._historical_delta_kurtosis = []
+		self._historical_delta_uni_mean = []
+		self._historical_delta_uni_variance = []
+		self._historical_delta_exp_mean = []
+		self._historical_delta_exp_variance = []
 
 		self._all_samples = []
 
@@ -175,41 +175,42 @@ class LinkMocker(object):
 		return "LinkMocker({} -> {})\n\t{}".format(self._source_uuid,
 				self._target_uuid, str(self._dist))
 
-	def add_historical_model_data(self, index, m=None, v=None, s=None, k=None,
-			dm=None, dv=None, ds=None, dk=None):
+	def add_historical_model_data(self, index,
+	        um=None, uv=None, em=None, ev=None,
+			dum=None, duv=None, dem=None, dev=None):
 		"""
 		Adds historical data gathered at every iteration to lists.
 		Default everything to 0
 		"""
-		if m is not None:
-			self._historical_mean.append((index, m))
-		if v is not None:
-			self._historical_variance.append((index, v))
-		if s is not None:
-			self._historical_skew.append((index, s))
-		if k is not None:
-			self._historical_kurtosis.append((index, k))
+		if um is not None:
+			self._historical_uni_mean.append((index, um))
+		if uv is not None:
+			self._historical_uni_variance.append((index, uv))
+		if em is not None:
+			self._historical_exp_mean.append((index, em))
+		if ev is not None:
+			self._historical_exp_variance.append((index, ev))
 
 		#if dm is None:
 			#self._historical_delta_mean.append(self._historical_delta_mean[-1])
 		#else:
-		if dm is not None:
-			self._historical_delta_mean.append((index, dm))
+		if dum is not None:
+			self._historical_delta_uni_mean.append((index, dum))
 		#if dv is None:
 			#self._historical_delta_variance.append(self._historical_delta_variance[-1])
 		#else:
-		if dv is not None:
-			self._historical_delta_variance.append((index, dv))
+		if duv is not None:
+			self._historical_delta_uni_variance.append((index, duv))
 		#if ds is None:
 			#self._historical_delta_skew.append(self._historical_delta_skew[-1])
 		#else:
-		if ds is not None:
-			self._historical_delta_skew.append((index, ds))
+		if dem is not None:
+			self._historical_delta_exp_mean.append((index, dem))
 		#if dk is None:
 			#self._historical_delta_kurtosis.append(self._historical_delta_kurtosis[-1])
 		#else:
-		if dk is not None:
-			self._historical_delta_kurtosis.append((index, dk))
+		if dev is not None:
+			self._historical_delta_exp_variance.append((index, dev))
 
 	# TODO
 	def get_dist(self):

@@ -151,16 +151,16 @@ def setup_dist_plot(dist_data):
 		color='green', alpha=0.2, linewidth=0)
 
 	# Model distribution
-	model = dist_data._distribution_model
-	model_pdf = pdf_mvsk([model._m1, model._new_variance,
-			model._skew, model._kurtosis])
+	# model = dist_data._distribution_model
+	# model_pdf = pdf_mvsk([model._m1, model._new_variance,
+	# 		model._skew, model._kurtosis])
 
 	# Distribution y-values
-	y_model_plot = np.array([model_pdf(x) for x in x_plot])
+	# y_model_plot = np.array([model_pdf(x) for x in x_plot])
 
 	# Distribution plots
-	plt.plot(x_plot, y_model_plot, color='r',
-		label='Gram-Charlier Expansion (after last iteration)')
+	# plt.plot(x_plot, y_model_plot, color='r',
+		# label='Gram-Charlier Expansion (after last iteration)')
 
 	for i, d in enumerate(dist_data._original_distributions):
 		#print("{}, {}".format(i, d))
@@ -172,8 +172,10 @@ def setup_dist_plot(dist_data):
 		plt.plot(x_plot, y_plot,
 			label='Distribution {} (start at iteration {})'.format(i, start_time))
 
-	plt.axvline(x=dist_data._distribution_model._m1, ymin=0, ymax=1, linestyle=':',
-		label='Model Mean (after last iteration)')
+	plt.axvline(x=dist_data._distribution_model._uni_mean, ymin=0, ymax=1, linestyle=':',
+		label='Uniform Model Mean (after last iteration) = {}'.format(dist_data._distribution_model._uni_mean))
+	plt.axvline(x=dist_data._distribution_model._exp_mean, ymin=0, ymax=1, linestyle=':',
+		label='Exponential Model Mean (after last iteration) = {}'.format(dist_data._distribution_model._exp_mean))
 
 	plt.title("{}...".format(dist_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
@@ -190,11 +192,17 @@ def setup_delta_plot(delta_data):
 	plt.xlabel("iteration")
 	plt.ylabel("delta")
 
-	x_plot, y_plot = zip(*delta_data._delta_mean)
-	plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$mean')
+	x_plot, y_plot = zip(*delta_data._delta_uni_mean)
+	plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$uni mean')
 
-	x_plot, y_plot = zip(*delta_data._delta_variance)
-	plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$variance')
+	x_plot, y_plot = zip(*delta_data._delta_uni_variance)
+	plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$uni variance')
+
+	x_plot, y_plot = zip(*delta_data._delta_exp_mean)
+	plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$exp mean')
+
+	x_plot, y_plot = zip(*delta_data._delta_exp_variance)
+	plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$exp variance')
 
 	plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
@@ -207,11 +215,17 @@ def setup_delta_plot(delta_data):
 	plt.xlabel("iteration")
 	plt.ylabel("delta")
 
-	x_plot, y_plot = zip(*delta_data._delta_mean)
-	plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$mean')
+	x_plot, y_plot = zip(*delta_data._delta_uni_mean)
+	plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$uni mean')
 
-	x_plot, y_plot = zip(*delta_data._delta_variance)
-	plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$variance')
+	x_plot, y_plot = zip(*delta_data._delta_uni_variance)
+	plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$uni variance')
+
+	x_plot, y_plot = zip(*delta_data._delta_exp_mean)
+	plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$exp mean')
+
+	x_plot, y_plot = zip(*delta_data._delta_exp_variance)
+	plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$exp variance')
 
 	plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
@@ -238,8 +252,11 @@ def setup_values_plot(values_data):
 	plt.xlabel("iteration")
 	plt.ylabel("value")
 
-	x_plot, y_plot = zip(*values_data._mean_values)
-	plt.plot(x_plot, y_plot, linestyle='-', label=r'mean')
+	x_plot, y_plot = zip(*values_data._uni_mean_values)
+	plt.plot(x_plot, y_plot, linestyle='-', label=r'uni mean')
+
+	x_plot, y_plot = zip(*values_data._exp_mean_values)
+	plt.plot(x_plot, y_plot, linestyle='-', label=r'exp mean')
 
 	last_min = 1.0
 	scale=len(x_plot)
@@ -249,11 +266,17 @@ def setup_values_plot(values_data):
 			label="real mean {}".format(i))
 		last_min = x_min
 
-	x_plot, y_plot = zip(*values_data._variance_values)
-	plt.plot(x_plot, y_plot, linestyle='-', label=r'variance')
+	x_plot, y_plot = zip(*values_data._uni_variance_values)
+	plt.plot(x_plot, y_plot, linestyle='-', label=r'uni variance')
 
-	x_plot, y_plot = zip(*values_data._variance_values)
-	plt.plot(x_plot, map(lambda x: math.sqrt(x), y_plot), linestyle='-', label=r'std_dev')
+	x_plot, y_plot = zip(*values_data._exp_variance_values)
+	plt.plot(x_plot, y_plot, linestyle='-', label=r'exp variance')
+
+	x_plot, y_plot = zip(*values_data._uni_variance_values)
+	plt.plot(x_plot, map(lambda x: math.sqrt(x), y_plot), linestyle='-', label=r'uni std_dev')
+
+	x_plot, y_plot = zip(*values_data._exp_variance_values)
+	plt.plot(x_plot, map(lambda x: math.sqrt(x), y_plot), linestyle='-', label=r'exp std_dev')
 
 	last_min = 1.0
 	scale=len(x_plot)
@@ -273,18 +296,31 @@ def setup_values_plot(values_data):
 	plt.xlabel("iteration")
 	plt.ylabel("value")
 
-	x_plot, mean = zip(*values_data._mean_values)
-	_, var = zip(*values_data._variance_values)
+	x_plot, mean = zip(*values_data._uni_mean_values)
+	_, var = zip(*values_data._uni_variance_values)
 
 	y_plot = map(lambda tup: math.sqrt(tup[1])/tup[0], zip(mean, var))
 
-	plt.plot(x_plot, y_plot, linestyle='-', label='cofv')
+	plt.plot(x_plot, y_plot, linestyle='-', label='uni cofv')
 
 	#plt.plot(x_plot, map(lambda x: math.log(x), y_plot), linestyle='-', label='cofv^2')
 
 	y_plot = map(lambda tup: tup[1]/tup[0], zip(mean, var))
 
-	plt.plot(x_plot, y_plot, linestyle='-', label='iod')
+	plt.plot(x_plot, y_plot, linestyle='-', label='uni iod')
+
+	x_plot, mean = zip(*values_data._exp_mean_values)
+	_, var = zip(*values_data._exp_variance_values)
+
+	y_plot = map(lambda tup: math.sqrt(tup[1])/tup[0], zip(mean, var))
+
+	plt.plot(x_plot, y_plot, linestyle='-', label='exp cofv')
+
+	#plt.plot(x_plot, map(lambda x: math.log(x), y_plot), linestyle='-', label='cofv^2')
+
+	y_plot = map(lambda tup: tup[1]/tup[0], zip(mean, var))
+
+	plt.plot(x_plot, y_plot, linestyle='-', label='exp iod')
 
 	plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
