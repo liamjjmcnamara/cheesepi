@@ -25,7 +25,7 @@ from cheesepi.server.storage.mongo import MongoDAO
 from cheesepi.server.storage.models.statistics import StatisticsSet
 
 # Changes later
-DIRNAME="testcase_dir/"
+ROOTDIR="testcase_dir/"
 
 
 def md5_filehash(filepath):
@@ -63,7 +63,7 @@ def call_register(uuid):
 
 def full_coverage_pass(peers, sample_size, iteration):
 	print("Running full coverage pass")
-	start_dir = os.path.join(DIRNAME, "{}_full".format(str(iteration)))
+	start_dir = os.path.join(DUMPDIR, "{}_full".format(str(iteration)))
 	tar_dir = os.path.join(start_dir, "tar")
 
 	os.mkdir(start_dir)
@@ -299,7 +299,7 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 
 	for i in range(0, iterations):
 		# Create directory
-		ITER_DIR = os.path.join(DIRNAME, str(iteration_index))
+		ITER_DIR = os.path.join(DUMPDIR, str(iteration_index))
 
 		peers = measurement_pass(peers, ITER_DIR, iteration_index, schedule_method=schedule_method)
 		iteration_index = iteration_index + 1
@@ -364,7 +364,7 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 			# Save datasets
 			#dm = ds.DistributionModelData(delay_model)
 			ds.DistData(peer_uuid, target_uuid, orig_dists, delay_model,
-					link._all_samples).pickle(os.path.join(DIRNAME,
+					link._all_samples).pickle(os.path.join(ROOTDIR,
 						"dist_{}_{}.pickle".format(peer_index, stat_index)))
 
 			#print(link._historical_delta_mean)
@@ -373,7 +373,7 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 			#print(link._historical_delta_kurtosis)
 			ds.DeltaData(peer_uuid, target_uuid, link._historical_delta_uni_mean,
 					link._historical_delta_uni_variance, link._historical_delta_exp_mean,
-					link._historical_delta_exp_variance).pickle(os.path.join(DIRNAME,
+					link._historical_delta_exp_variance).pickle(os.path.join(ROOTDIR,
 						"delta_{}_{}.pickle".format(peer_index, stat_index)))
 
 
@@ -393,7 +393,7 @@ def main_loop(peers, iterations=1, sched_size=1, sample_size=10,
 					real_kurtosiss,
 					link._historical_uni_mean,
 					link._historical_uni_variance, link._historical_exp_mean,
-					link._historical_exp_variance).pickle(os.path.join(DIRNAME,
+					link._historical_exp_variance).pickle(os.path.join(ROOTDIR,
 						"values_{}_{}.pickle".format(peer_index, stat_index)))
 
 
@@ -413,8 +413,17 @@ if __name__ == "__main__":
 		with open(args.file) as fd:
 			json_obj = json.load(fd)
 
-		DIRNAME = os.path.abspath(args.file.split(".")[0])
-		os.mkdir(DIRNAME)
+		ROOTDIR = os.path.abspath(args.file.split(".")[0])
+		os.mkdir(ROOTDIR)
+
+		DUMPDIR = os.path.join(ROOTDIR, 'dump')
+		os.mkdir(DUMPDIR)
+
+		json_file = os.path.join(ROOTDIR, 'config.json')
+
+		with open(json_file, 'w') as outfile:
+			# Save the configuration so we know the parameters
+			json.dump(json_obj, outfile)
 
 		peers = []
 
