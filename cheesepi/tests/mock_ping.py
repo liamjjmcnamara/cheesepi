@@ -13,9 +13,6 @@ class GammaDist(object):
 
 	def __init__(self, shape=2, loc=10, scale=3, lossrate=0, seed=None):
 
-		if seed is not None:
-			np.random.seed(seed)
-
 		if shape is None:
 			shape = 2
 		if loc is None:
@@ -23,6 +20,7 @@ class GammaDist(object):
 		if scale is None:
 			scale = 3
 
+		self._rand = np.random.RandomState(seed)
 		self._shape = shape
 		self._loc = loc
 		self._scale = scale
@@ -56,7 +54,7 @@ class GammaDist(object):
 		self._dist = gamma(self._shape, loc=self._loc, scale=self._scale)
 
 	def sample_n(self, n):
-		samples = self._dist.rvs(size=n)
+		samples = self._dist.rvs(size=n, random_state=self._rand)
 		if self._lossrate != 0:
 			for i in range(0, len(samples)):
 				if random.uniform(0,1) < self._lossrate:
@@ -66,7 +64,7 @@ class GammaDist(object):
 
 
 	def set_seed(self, seed):
-		np.random.seed(seed)
+		self._rand = np.random.RandomState(seed)
 	def set_shape(self, shape):
 		self._shape = shape
 		self._generate_dist()

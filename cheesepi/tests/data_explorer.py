@@ -84,9 +84,9 @@ class Plotter(object):
 	def add_dataplot(self, data):
 		self._plot_data.append(data)
 
-	def plot(self, plot_uniform=True, plot_exponential=True):
+	def plot(self, options):
 		for data in self._plot_data:
-			setup_plot(data, plot_uniform, plot_exponential)
+			setup_plot(data, options)
 
 		plt.show()
 
@@ -117,18 +117,19 @@ def unpickle(filepath):
 
 	return obj
 
-def setup_plot(data, plot_uniform=True, plot_exponential=True):
+def setup_plot(data, options):
 
 	if isinstance(data, ds.DistData):
-		setup_dist_plot(data, plot_uniform, plot_exponential)
+		setup_dist_plot(data, options)
 	elif isinstance(data, ds.DeltaData):
-		setup_delta_plot(data, plot_uniform, plot_exponential)
+		setup_delta_plot(data, options)
 	elif isinstance(data, ds.ValuesData):
-		setup_values_plot(data, plot_uniform, plot_exponential)
+		setup_values_plot(data, options)
 
-def setup_dist_plot(dist_data, plot_uniform=True, plot_exponential=True):
+def setup_dist_plot(dist_data, options):
 	fig = plt.figure()
-	fig.suptitle("DIST: {}".format(dist_data._source))
+	if options['plot_title']:
+		fig.suptitle("DIST: {}".format(dist_data._source))
 
 	plt.xlabel("delay (ms)")
 	plt.ylabel("probability")
@@ -172,14 +173,15 @@ def setup_dist_plot(dist_data, plot_uniform=True, plot_exponential=True):
 		plt.plot(x_plot, y_plot,
 			label='Distribution {} (start at iteration {})'.format(i, start_time))
 
-	if plot_uniform:
+	if options['plot_uniform']:
 		plt.axvline(x=dist_data._distribution_model._uni_mean, ymin=0, ymax=1, linestyle=':',
 			label='Uniform Model Mean (after last iteration) = {}'.format(dist_data._distribution_model._uni_mean))
-	if plot_exponential:
+	if options['plot_exponential']:
 		plt.axvline(x=dist_data._distribution_model._exp_mean, ymin=0, ymax=1, linestyle=':',
 			label='Exponential Model Mean (after last iteration) = {}'.format(dist_data._distribution_model._exp_mean))
 
-	plt.title("{}...".format(dist_data._target[:20]), fontdict={'fontsize':10})
+	if options['plot_title']:
+		plt.title("{}...".format(dist_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
 
 	# Additional Text
@@ -187,53 +189,57 @@ def setup_dist_plot(dist_data, plot_uniform=True, plot_exponential=True):
 	plt.text(0.70, 0.70, "#samples={}".format(len(dist_data._samples)),
 			fontsize=8, transform=ax[0].transAxes)
 
-def setup_delta_plot(delta_data, plot_uniform=True, plot_exponential=True):
+def setup_delta_plot(delta_data, options):
 	fig = plt.figure()
-	fig.suptitle("MV (log): {}".format(delta_data._source))
+	if options['plot_title']:
+		fig.suptitle("MV (log): {}".format(delta_data._source))
 
 	plt.xlabel("iteration")
 	plt.ylabel("delta")
 
-	if plot_uniform:
+	if options['plot_uniform']:
 		x_plot, y_plot = zip(*delta_data._delta_uni_mean)
-		plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$uni mean')
+		plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$Uniform Mean')
 
 		x_plot, y_plot = zip(*delta_data._delta_uni_variance)
-		plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$uni variance')
+		plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$Uniform Variance')
 
-	if plot_exponential:
+	if options['plot_exponential']:
 		x_plot, y_plot = zip(*delta_data._delta_exp_mean)
-		plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$exp mean')
+		plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$Exponential Mean')
 
 		x_plot, y_plot = zip(*delta_data._delta_exp_variance)
-		plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$exp variance')
+		plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$Exponential Variance')
 
-	plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':10})
+	if options['plot_title']:
+		plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
 
 	plt.grid(True)
 
 	fig = plt.figure()
-	fig.suptitle("MV (lin): {}".format(delta_data._source))
+	if options['plot_title']:
+		fig.suptitle("MV (lin): {}".format(delta_data._source))
 
 	plt.xlabel("iteration")
 	plt.ylabel("delta")
 
-	if plot_uniform:
+	if options['plot_uniform']:
 		x_plot, y_plot = zip(*delta_data._delta_uni_mean)
-		plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$uni mean')
+		plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Uniform Mean')
 
 		x_plot, y_plot = zip(*delta_data._delta_uni_variance)
-		plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$uni variance')
+		plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Univorm Variance')
 
-	if plot_exponential:
+	if options['plot_exponential']:
 		x_plot, y_plot = zip(*delta_data._delta_exp_mean)
-		plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$exp mean')
+		plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Exponential Mean')
 
 		x_plot, y_plot = zip(*delta_data._delta_exp_variance)
-		plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$exp variance')
+		plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Exponential Variance')
 
-	plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':10})
+	if options['plot_title']:
+		plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
 
 	plt.grid(True)
@@ -251,40 +257,43 @@ def setup_delta_plot(delta_data, plot_uniform=True, plot_exponential=True):
 
 	# plt.grid(True)
 
-def setup_values_plot(values_data, plot_uniform=True, plot_exponential=True):
+def setup_values_plot(values_data, options):
 	fig = plt.figure()
-	fig.suptitle("MV: {}".format(values_data._source))
+	if options['plot_title']:
+		fig.suptitle("MV: {}".format(values_data._source))
 
 	plt.xlabel("iteration")
 	plt.ylabel("value")
 
 	x_plot = [0]
-	if plot_uniform:
+	if options['plot_uniform']:
 		x_plot, y_plot = zip(*values_data._uni_mean_values)
-		plt.plot(x_plot, y_plot, linestyle='-', label=r'uni mean')
+		plt.plot(x_plot, y_plot, linestyle='-', label=r'Uniform Mean')
 
 		x_plot, y_plot = zip(*values_data._uni_variance_values)
-		plt.plot(x_plot, y_plot, linestyle='-', label=r'uni variance')
+		plt.plot(x_plot, y_plot, linestyle='-', label=r'Uniform Variance')
 
-		x_plot, y_plot = zip(*values_data._uni_variance_values)
-		plt.plot(x_plot, map(lambda x: math.sqrt(x), y_plot), linestyle='-', label=r'uni std_dev')
+		if options['plot_std_dev']:
+			x_plot, y_plot = zip(*values_data._uni_variance_values)
+			plt.plot(x_plot, map(lambda x: math.sqrt(x), y_plot), linestyle='-', label=r'Uniform Standard Deviation')
 
-	if plot_exponential:
+	if options['plot_exponential']:
 		x_plot, y_plot = zip(*values_data._exp_mean_values)
-		plt.plot(x_plot, y_plot, linestyle='-', label=r'exp mean')
+		plt.plot(x_plot, y_plot, linestyle='-', label=r'Exponential Mean')
 
 		x_plot, y_plot = zip(*values_data._exp_variance_values)
-		plt.plot(x_plot, y_plot, linestyle='-', label=r'exp variance')
+		plt.plot(x_plot, y_plot, linestyle='-', label=r'Exponential Variance')
 
-		x_plot, y_plot = zip(*values_data._exp_variance_values)
-		plt.plot(x_plot, map(lambda x: math.sqrt(x), y_plot), linestyle='-', label=r'exp std_dev')
+		if options['plot_std_dev']:
+			x_plot, y_plot = zip(*values_data._exp_variance_values)
+			plt.plot(x_plot, map(lambda x: math.sqrt(x), y_plot), linestyle='-', label=r'Exponential Standard Deviation')
 
 	last_min = 1.0
 	scale=len(x_plot)
 	for i, rm in enumerate(reversed(values_data._real_means)):
 		x_min = float(rm[0])/scale
 		plt.axhline(y=rm[1], xmin=x_min, xmax=last_min, linestyle='-.',
-			label="real mean {}".format(i))
+			label="Real Mean {}".format(i))
 		last_min = x_min
 
 	last_min = 1.0
@@ -292,48 +301,51 @@ def setup_values_plot(values_data, plot_uniform=True, plot_exponential=True):
 	for i, rv in enumerate(reversed(values_data._real_variances)):
 		x_min = float(rv[0])/scale
 		plt.axhline(y=rv[1], xmin=x_min, xmax=last_min, linestyle=':',
-			label="real variance {}".format(i))
+			label="Real Variance {}".format(i))
 		last_min = x_min
 
-	plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
+	if options['plot_title']:
+		plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
 
 	# Plot CofV
 	fig = plt.figure()
-	fig.suptitle("CofV: {}".format(values_data._source))
+	if options['plot_title']:
+		fig.suptitle("CofV: {}".format(values_data._source))
 
 	plt.xlabel("iteration")
 	plt.ylabel("value")
 
-	if plot_uniform:
+	if options['plot_uniform']:
 		x_plot, mean = zip(*values_data._uni_mean_values)
 		_, var = zip(*values_data._uni_variance_values)
 
 		y_plot = map(lambda tup: math.sqrt(tup[1])/tup[0], zip(mean, var))
 
-		plt.plot(x_plot, y_plot, linestyle='-', label='uni cofv')
+		plt.plot(x_plot, y_plot, linestyle='-', label='Uniform cofv')
 
 		#plt.plot(x_plot, map(lambda x: math.log(x), y_plot), linestyle='-', label='cofv^2')
 
 		y_plot = map(lambda tup: tup[1]/tup[0], zip(mean, var))
 
-		plt.plot(x_plot, y_plot, linestyle='-', label='uni iod')
+		plt.plot(x_plot, y_plot, linestyle='-', label='Uniform iod')
 
-	if plot_exponential:
+	if options['plot_exponential']:
 		x_plot, mean = zip(*values_data._exp_mean_values)
 		_, var = zip(*values_data._exp_variance_values)
 
 		y_plot = map(lambda tup: math.sqrt(tup[1])/tup[0], zip(mean, var))
 
-		plt.plot(x_plot, y_plot, linestyle='-', label='exp cofv')
+		plt.plot(x_plot, y_plot, linestyle='-', label='Exponential cofv')
 
 		#plt.plot(x_plot, map(lambda x: math.log(x), y_plot), linestyle='-', label='cofv^2')
 
 		y_plot = map(lambda tup: tup[1]/tup[0], zip(mean, var))
 
-		plt.plot(x_plot, y_plot, linestyle='-', label='exp iod')
+		plt.plot(x_plot, y_plot, linestyle='-', label='Exponential iod')
 
-	plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
+	if options['plot_title']:
+		plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
 	plt.legend(loc='upper right', ncol=1, fontsize=9)
 
 	# fig = plt.figure()
@@ -397,10 +409,15 @@ class DataExplorer(object):
 		self._control_frame = ttk.Frame(self._content_frame)
 		self._control_frame.grid(row=1, pady=5, padx=5, sticky=(tk.W))
 
+		# OPTIONS
 		self._plot_uniform = tk.BooleanVar()
 		self._plot_uniform.set(True)
 		self._plot_exponential = tk.BooleanVar()
 		self._plot_exponential.set(True)
+		self._plot_std_dev = tk.BooleanVar()
+		self._plot_std_dev.set(True)
+		self._plot_title = tk.BooleanVar()
+		self._plot_title.set(True)
 
 		# LEGEND FRAME
 		self._legend_frame = ttk.Frame(self._content_frame)
@@ -443,6 +460,7 @@ class DataExplorer(object):
 		)
 		plot_button.grid()
 
+		# OPTION CHECKBOXES
 		uni_checkbox = ttk.Checkbutton(self._control_frame, text="Plot Uniform",
 			variable=self._plot_uniform, onvalue=True)
 		uni_checkbox.grid()
@@ -450,6 +468,14 @@ class DataExplorer(object):
 		exp_checkbox = ttk.Checkbutton(self._control_frame, text="Plot Exponential",
 			variable=self._plot_exponential, onvalue=True)
 		exp_checkbox.grid()
+
+		std_dev_checkbox = ttk.Checkbutton(self._control_frame, text="Plot Standard Deviation",
+			variable=self._plot_std_dev, onvalue=True)
+		std_dev_checkbox.grid()
+
+		title_checkbox = ttk.Checkbutton(self._control_frame, text="Plot Title",
+			variable=self._plot_title, onvalue=True)
+		title_checkbox.grid()
 
 		# Set up legend
 		legend_head = ttk.Label(self._legend_frame, text="Legend")
@@ -463,7 +489,14 @@ class DataExplorer(object):
 			if de.should_plot:
 				self._plotter.add_dataplot(de.data)
 
-		self._plotter.plot(self._plot_uniform.get(), self._plot_exponential.get())
+		options = {}
+
+		options['plot_uniform'] = self._plot_uniform.get()
+		options['plot_exponential'] = self._plot_exponential.get()
+		options['plot_std_dev'] = self._plot_std_dev.get()
+		options['plot_title'] = self._plot_title.get()
+
+		self._plotter.plot(options)
 		self._plotter.clear_plots()
 
 	def start(self):
