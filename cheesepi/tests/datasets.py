@@ -46,6 +46,7 @@ class ValuesData(Data):
 		# The actual values of the generating distributions
 		self._real_means = real_means
 		self._real_variances = real_variances
+		# DEPRECATED
 		self._real_skews = real_skews
 		self._real_kurtosiss = real_kurtosiss
 

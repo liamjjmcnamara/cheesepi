@@ -174,7 +174,7 @@ class LinkMocker(object):
 				self._target_uuid, str(self._dist))
 
 	def add_historical_model_data(self, index,
-	        um=None, uv=None, em=None, ev=None,
+			um=None, uv=None, em=None, ev=None,
 			dum=None, duv=None, dem=None, dev=None):
 		"""
 		Adds historical data gathered at every iteration to lists.
@@ -281,62 +281,62 @@ class PingUploadConstructor(object):
 
 
 		result = [
-		    self._peer_id,
-		    target_id,
-		    None,
-		    None,
-		    str(data),
-		    destination_address,
-		    None,
-		    None,
-		    None,
-		    None,
-		    max_rtt,
-		    min_rtt,
-		    None,
-		    packet_loss,
-		    None,
-		    None,
-		    ping_count,
-		    None,
-		    None,
-		    None,
-		    stddev_rtt,
-		    'ping',
-		    average_rtt,
-		    None,
-		    None,
+			self._peer_id,
+			target_id,
+			None,
+			None,
+			str(data),
+			destination_address,
+			None,
+			None,
+			None,
+			None,
+			max_rtt,
+			min_rtt,
+			None,
+			packet_loss,
+			None,
+			None,
+			ping_count,
+			None,
+			None,
+			None,
+			stddev_rtt,
+			'ping',
+			average_rtt,
+			None,
+			None,
 		]
 
 		self._results.append(result)
 
 	def construct(self):
 		columns = [
-		    "peer_id",
-		    "target_id",
-		    "time",
-		    "cycle",
-		    "delays",
-		    "destination_address",
-		    "destination_domain",
-		    "downloaded",
-		    "end_time",
-		    "landmark",
-		    "maximum_RTT",
-		    "minimum_RTT",
-		    "offset",
-		    "packet_loss",
-		    "packet_size",
-		    "period",
-		    "ping_count",
-		    "sign",
-		    "source",
-		    "start_time",
-		    "stddev_RTT",
-		    "taskname",
-		    "average_RTT",
-		    "uploaded",
-		    "version"
+			"peer_id",
+			"target_id",
+			"time",
+			"cycle",
+			"delays",
+			"destination_address",
+			"destination_domain",
+			"downloaded",
+			"end_time",
+			"landmark",
+			"maximum_RTT",
+			"minimum_RTT",
+			"offset",
+			"packet_loss",
+			"packet_size",
+			"period",
+			"ping_count",
+			"sign",
+			"source",
+			"start_time",
+			"stddev_RTT",
+			"taskname",
+			"average_RTT",
+			"uploaded",
+			"version"
 		]
 		values = []
 		for result in self._results:
@@ -351,13 +351,13 @@ if __name__ == "__main__":
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--peerid', type=str, default='1',
-	                    help='the peer id the results belong to')
+		help='the peer id the results belong to')
 	parser.add_argument('--samplesize', type=int, default=10,
-	                    help='number of samples for each result')
+		help='number of samples for each result')
 	parser.add_argument('--target', type=str, action='append',
-	        help='the targets on the form: "{\'id\':id,\'ip\':ip}" with optional arguments \'shape\', \'loc\', \'scale\' and \'lossrate\' to modify the distribution')
+		help='the targets on the form: "{\'id\':id,\'ip\':ip}" with optional arguments \'shape\', \'loc\', \'scale\' and \'lossrate\' to modify the distribution')
 	parser.add_argument('--seed', type=int, default=None,
-	                    help='a random number seed')
+		help='a random number seed')
 
 	args = parser.parse_args()
 
@@ -381,7 +381,7 @@ if __name__ == "__main__":
 			lossrate = dct['lossrate']
 
 		prm = GammaDist(shape=shape, loc=loc, scale=scale,
-		                       lossrate=lossrate, seed=seed)
+			lossrate=lossrate, seed=seed)
 		samples = prm.sample_n(args.samplesize)
 
 		proc.add_result(list(samples), dct['id'], dct['ip'])
