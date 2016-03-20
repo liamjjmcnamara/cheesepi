@@ -6,6 +6,7 @@ import re
 import math
 from fnmatch import fnmatch
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from statsmodels.sandbox.distributions.extras import pdf_mvsk
@@ -85,6 +86,13 @@ class Plotter(object):
 		self._plot_data.append(data)
 
 	def plot(self, options):
+		# Set font size
+		matplotlib.rcParams.update({'font.size': options['plot_font_size']})
+		matplotlib.rcParams.update({'axes.labelsize': options['plot_font_size']+2})
+		matplotlib.rcParams.update({'xtick.labelsize': options['plot_font_size']+1})
+		matplotlib.rcParams.update({'ytick.labelsize': options['plot_font_size']+1})
+		matplotlib.rcParams.update({'lines.linewidth': options['plot_line_width']})
+
 		for data in self._plot_data:
 			setup_plot(data, options)
 
@@ -195,15 +203,26 @@ def setup_dist_plot(dist_data, options):
 			label='Exponential Mean (after last iteration) = {}'.format(dist_data._distribution_model._exp_mean))
 
 	if options['plot_title']:
-		plt.title("{}...".format(dist_data._target[:20]), fontdict={'fontsize':10})
-	plt.legend(loc='upper right', ncol=1, fontsize=9)
+		plt.title("{}...".format(dist_data._target[:20]), fontdict={'fontsize':options['plot_font_size']+1})
+	plt.legend(loc='upper right', ncol=1)
 
 	# Additional Text
-	ax = fig.get_axes()
+	# ax = fig.get_axes()
 	# plt.text(0.70, 0.70, "#samples={}".format(len(dist_data._samples)),
 	# 		fontsize=8, transform=ax[0].transAxes)
 
+	axes = plt.gca()
+	xmin, xmax = axes.get_xlim()
+	xmin = max(xmin, options['plot_min_x'])
+	xmax = min(xmax, options['plot_max_x'])
+	axes.set_xlim([xmin, xmax])
+
+	if options['plot_tight_layout']:
+		fig.tight_layout()
+
 def setup_delta_plot(delta_data, options):
+
+	# LOGARITHMIC
 	fig = plt.figure()
 	if options['plot_title']:
 		fig.suptitle("MV (log): {}".format(delta_data._source))
@@ -230,11 +249,21 @@ def setup_delta_plot(delta_data, options):
 			plt.semilogy(x_plot, y_plot, basey=2, linestyle='-', label=r'$\Delta$Exponential Variance')
 
 	if options['plot_title']:
-		plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':10})
-	plt.legend(loc='upper right', ncol=1, fontsize=9)
+		plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':options['plot_font_size']+1})
+	plt.legend(loc='upper right', ncol=1)
 
 	plt.grid(True)
 
+	axes = plt.gca()
+	xmin, xmax = axes.get_xlim()
+	xmin = max(xmin, options['plot_min_x'])
+	xmax = min(xmax, options['plot_max_x'])
+	axes.set_xlim([xmin, xmax])
+
+	if options['plot_tight_layout']:
+		fig.tight_layout()
+
+	# LINEAR
 	fig = plt.figure()
 	if options['plot_title']:
 		fig.suptitle("MV (lin): {}".format(delta_data._source))
@@ -261,10 +290,20 @@ def setup_delta_plot(delta_data, options):
 			plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Exponential Variance')
 
 	if options['plot_title']:
-		plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':10})
-	plt.legend(loc='upper right', ncol=1, fontsize=9)
+		plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':options['plot_font_size']+1})
+	plt.legend(loc='upper right', ncol=1)
 
 	plt.grid(True)
+
+	axes = plt.gca()
+	xmin, xmax = axes.get_xlim()
+	xmin = max(xmin, options['plot_min_x'])
+	xmax = min(xmax, options['plot_max_x'])
+	axes.set_xlim([xmin, xmax])
+
+	if options['plot_tight_layout']:
+		fig.tight_layout()
+
 	# fig = plt.figure()
 	# fig.suptitle("SK: {}".format(delta_data._source))
 
@@ -343,8 +382,17 @@ def setup_values_plot(values_data, options):
 			last_min = x_min
 
 	if options['plot_title']:
-		plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
-	plt.legend(loc='upper right', ncol=1, fontsize=9)
+		plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':options['plot_font_size']})
+	plt.legend(loc='upper right', ncol=1)
+
+	axes = plt.gca()
+	xmin, xmax = axes.get_xlim()
+	xmin = max(xmin, options['plot_min_x'])
+	xmax = min(xmax, options['plot_max_x'])
+	axes.set_xlim([xmin, xmax])
+
+	if options['plot_tight_layout']:
+		fig.tight_layout()
 
 	# Plot CofV
 	fig = plt.figure()
@@ -383,8 +431,17 @@ def setup_values_plot(values_data, options):
 		plt.plot(x_plot, y_plot, linestyle='-', label='Exponential iod')
 
 	if options['plot_title']:
-		plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
-	plt.legend(loc='upper right', ncol=1, fontsize=9)
+		plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':options['plot_font_size']+1})
+	plt.legend(loc='upper right', ncol=1)
+
+	axes = plt.gca()
+	xmin, xmax = axes.get_xlim()
+	xmin = max(xmin, options['plot_min_x'])
+	xmax = min(xmax, options['plot_max_x'])
+	axes.set_xlim([xmin, xmax])
+
+	if options['plot_tight_layout']:
+		fig.tight_layout()
 
 	# fig = plt.figure()
 	# fig.suptitle("SK: {}".format(values_data._source))
@@ -460,6 +517,17 @@ class DataExplorer(object):
 		self._plot_std_dev.set(False)
 		self._plot_title = tk.BooleanVar()
 		self._plot_title.set(False)
+		self._plot_tight_layout = tk.BooleanVar()
+		self._plot_tight_layout.set(True)
+		self._plot_font_size = tk.StringVar()
+		self._plot_font_size.set("9")
+		self._plot_line_width = tk.StringVar()
+		self._plot_line_width.set("1")
+
+		self._plot_min_x = tk.StringVar()
+		self._plot_min_x.set("0")
+		self._plot_max_x = tk.StringVar()
+		self._plot_max_x.set("999999")
 
 		# LEGEND FRAME
 		self._legend_frame = ttk.Frame(self._content_frame)
@@ -527,6 +595,30 @@ class DataExplorer(object):
 			variable=self._plot_title, onvalue=True)
 		title_checkbox.grid()
 
+		tight_layout_checkbox = ttk.Checkbutton(self._control_frame, text="Tight Plot Layout",
+			variable=self._plot_tight_layout, onvalue=True)
+		tight_layout_checkbox.grid()
+
+		font_size_field_label = ttk.Label(self._control_frame, text="Font Size").grid()
+		font_size_field = ttk.Entry(self._control_frame,
+			textvariable=self._plot_font_size)
+		font_size_field.grid()
+
+		line_width_field_label = ttk.Label(self._control_frame, text="Line Width").grid()
+		line_width_field = ttk.Entry(self._control_frame,
+			textvariable=self._plot_line_width)
+		line_width_field.grid()
+
+		min_x_field_label = ttk.Label(self._control_frame, text="Min X").grid()
+		min_x_field = ttk.Entry(self._control_frame,
+			textvariable=self._plot_min_x)
+		min_x_field.grid()
+
+		max_x_field_label = ttk.Label(self._control_frame, text="Max X").grid()
+		max_x_field = ttk.Entry(self._control_frame,
+			textvariable=self._plot_max_x)
+		max_x_field.grid()
+
 		# Set up legend
 		legend_head = ttk.Label(self._legend_frame, text="Legend")
 		legend_head.grid(row=0, column=0, sticky=(tk.N, tk.W))
@@ -547,6 +639,11 @@ class DataExplorer(object):
 		options['plot_variance'] = self._plot_variance.get()
 		options['plot_std_dev'] = self._plot_std_dev.get()
 		options['plot_title'] = self._plot_title.get()
+		options['plot_tight_layout'] = self._plot_tight_layout.get()
+		options['plot_font_size'] = int(self._plot_font_size.get())
+		options['plot_line_width'] = int(self._plot_line_width.get())
+		options['plot_min_x'] = int(self._plot_min_x.get())
+		options['plot_max_x'] = int(self._plot_max_x.get())
 
 		self._plotter.plot(options)
 		self._plotter.clear_plots()
