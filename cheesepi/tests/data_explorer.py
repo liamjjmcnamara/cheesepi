@@ -87,6 +87,7 @@ class Plotter(object):
 
 	def plot(self, options):
 		# Set font size
+		matplotlib.rcParams.update({'figure.dpi': 100})
 		matplotlib.rcParams.update({'font.size': options['plot_font_size']})
 		matplotlib.rcParams.update({'axes.labelsize': options['plot_font_size']+2})
 		matplotlib.rcParams.update({'xtick.labelsize': options['plot_font_size']+1})
@@ -135,7 +136,7 @@ def setup_plot(data, options):
 		setup_values_plot(data, options)
 
 def setup_dist_plot(dist_data, options):
-	fig = plt.figure()
+	fig = plt.figure(figsize=options['plot_figsize'])
 	if options['plot_title']:
 		fig.suptitle("DIST: {}".format(dist_data._source))
 
@@ -189,7 +190,7 @@ def setup_dist_plot(dist_data, options):
 					label='Real Mean = {}'.format(m))
 		else:
 			plt.plot(x_plot, y_plot,
-				label='Distribution {} (start at iteration {})'.format(i, start_time))
+				label='Distribution {} (from iteration {})'.format(i, start_time))
 
 			if options['plot_mean']:
 				plt.axvline(x=m, ymin=0, ymax=1, linestyle='-.', linewidth=2,
@@ -197,14 +198,18 @@ def setup_dist_plot(dist_data, options):
 
 	if options['plot_uniform'] and options['plot_mean']:
 		plt.axvline(x=dist_data._distribution_model._uni_mean, ymin=0, ymax=1, linestyle=':', color='green', linewidth=2,
-			label='Uniform Mean (after last iteration) = {}'.format(dist_data._distribution_model._uni_mean))
+			label='Uniform Mean = {:.3f}'.format(dist_data._distribution_model._uni_mean))
 	if options['plot_exponential'] and options['plot_mean']:
 		plt.axvline(x=dist_data._distribution_model._exp_mean, ymin=0, ymax=1, linestyle=':', color='red', linewidth=2,
-			label='Exponential Mean (after last iteration) = {}'.format(dist_data._distribution_model._exp_mean))
+			label='Exponential Mean = {:.3f}'.format(dist_data._distribution_model._exp_mean))
 
 	if options['plot_title']:
 		plt.title("{}...".format(dist_data._target[:20]), fontdict={'fontsize':options['plot_font_size']+1})
-	plt.legend(loc='upper right', ncol=1)
+
+	if options['plot_legend_outside']:
+		plt.legend(loc='upper left', bbox_to_anchor=(1,1), ncol=1)
+	else:
+		plt.legend(loc='upper right', ncol=1)
 
 	# Additional Text
 	# ax = fig.get_axes()
@@ -218,12 +223,15 @@ def setup_dist_plot(dist_data, options):
 	axes.set_xlim([xmin, xmax])
 
 	if options['plot_tight_layout']:
-		fig.tight_layout()
+		rectangle = (0,0,1,1)
+		if options['plot_legend_outside']:
+			rectangle = (0,0,options['plot_legend_outside_ratio'],1)
+		fig.tight_layout(rect=rectangle)
 
 def setup_delta_plot(delta_data, options):
 
 	# LOGARITHMIC
-	fig = plt.figure()
+	fig = plt.figure(figsize=options['plot_figsize'])
 	if options['plot_title']:
 		fig.suptitle("MV (log): {}".format(delta_data._source))
 
@@ -250,7 +258,11 @@ def setup_delta_plot(delta_data, options):
 
 	if options['plot_title']:
 		plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':options['plot_font_size']+1})
-	plt.legend(loc='upper right', ncol=1)
+
+	if options['plot_legend_outside']:
+		plt.legend(loc='upper left', bbox_to_anchor=(1,1), ncol=1)
+	else:
+		plt.legend(loc='upper right', ncol=1)
 
 	plt.grid(True)
 
@@ -261,10 +273,13 @@ def setup_delta_plot(delta_data, options):
 	axes.set_xlim([xmin, xmax])
 
 	if options['plot_tight_layout']:
-		fig.tight_layout()
+		rectangle = (0,0,1,1)
+		if options['plot_legend_outside']:
+			rectangle = (0,0,options['plot_legend_outside_ratio'],1)
+		fig.tight_layout(rect=rectangle)
 
 	# LINEAR
-	fig = plt.figure()
+	fig = plt.figure(figsize=options['plot_figsize'])
 	if options['plot_title']:
 		fig.suptitle("MV (lin): {}".format(delta_data._source))
 
@@ -291,7 +306,11 @@ def setup_delta_plot(delta_data, options):
 
 	if options['plot_title']:
 		plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':options['plot_font_size']+1})
-	plt.legend(loc='upper right', ncol=1)
+
+	if options['plot_legend_outside']:
+		plt.legend(loc='upper left', bbox_to_anchor=(1,1), ncol=1)
+	else:
+		plt.legend(loc='upper right', ncol=1)
 
 	plt.grid(True)
 
@@ -302,7 +321,10 @@ def setup_delta_plot(delta_data, options):
 	axes.set_xlim([xmin, xmax])
 
 	if options['plot_tight_layout']:
-		fig.tight_layout()
+		rectangle = (0,0,1,1)
+		if options['plot_legend_outside']:
+			rectangle = (0,0,options['plot_legend_outside_ratio'],1)
+		fig.tight_layout(rect=rectangle)
 
 	# fig = plt.figure()
 	# fig.suptitle("SK: {}".format(delta_data._source))
@@ -319,7 +341,7 @@ def setup_delta_plot(delta_data, options):
 	# plt.grid(True)
 
 def setup_values_plot(values_data, options):
-	fig = plt.figure()
+	fig = plt.figure(figsize=options['plot_figsize'])
 	if options['plot_title']:
 		fig.suptitle("MV: {}".format(values_data._source))
 
@@ -381,21 +403,28 @@ def setup_values_plot(values_data, options):
 					label="Real Variance {}".format(i))
 			last_min = x_min
 
-	if options['plot_title']:
-		plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':options['plot_font_size']})
-	plt.legend(loc='upper right', ncol=1)
-
 	axes = plt.gca()
 	xmin, xmax = axes.get_xlim()
 	xmin = max(xmin, options['plot_min_x'])
 	xmax = min(xmax, options['plot_max_x'])
 	axes.set_xlim([xmin, xmax])
 
+	if options['plot_title']:
+		plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':options['plot_font_size']})
+
+	if options['plot_legend_outside']:
+		plt.legend(loc='upper left', bbox_to_anchor=(1,1), ncol=1)
+	else:
+		plt.legend(loc='upper right', ncol=1)
+
 	if options['plot_tight_layout']:
-		fig.tight_layout()
+		rectangle = (0,0,1,1)
+		if options['plot_legend_outside']:
+			rectangle = (0,0,options['plot_legend_outside_ratio'],1)
+		fig.tight_layout(rect=rectangle)
 
 	# Plot CofV
-	fig = plt.figure()
+	fig = plt.figure(figsize=options['plot_figsize'])
 	if options['plot_title']:
 		fig.suptitle("CofV: {}".format(values_data._source))
 
@@ -432,7 +461,11 @@ def setup_values_plot(values_data, options):
 
 	if options['plot_title']:
 		plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':options['plot_font_size']+1})
-	plt.legend(loc='upper right', ncol=1)
+
+	if options['plot_legend_outside']:
+		plt.legend(loc='upper left', bbox_to_anchor=(1,1), ncol=1)
+	else:
+		plt.legend(loc='upper right', ncol=1)
 
 	axes = plt.gca()
 	xmin, xmax = axes.get_xlim()
@@ -441,7 +474,10 @@ def setup_values_plot(values_data, options):
 	axes.set_xlim([xmin, xmax])
 
 	if options['plot_tight_layout']:
-		fig.tight_layout()
+		rectangle = (0,0,1,1)
+		if options['plot_legend_outside']:
+			rectangle = (0,0,options['plot_legend_outside_ratio'],1)
+		fig.tight_layout(rect=rectangle)
 
 	# fig = plt.figure()
 	# fig.suptitle("SK: {}".format(values_data._source))
@@ -519,10 +555,18 @@ class DataExplorer(object):
 		self._plot_title.set(False)
 		self._plot_tight_layout = tk.BooleanVar()
 		self._plot_tight_layout.set(True)
+		self._plot_legend_outside = tk.BooleanVar()
+		self._plot_legend_outside.set(False)
+		self._plot_outside_ratio = tk.StringVar()
+		self._plot_outside_ratio.set("0.2")
 		self._plot_font_size = tk.StringVar()
 		self._plot_font_size.set("9")
 		self._plot_line_width = tk.StringVar()
 		self._plot_line_width.set("1")
+		self._plot_width = tk.StringVar()
+		self._plot_width.set("8")
+		self._plot_height = tk.StringVar()
+		self._plot_height.set("6")
 
 		self._plot_min_x = tk.StringVar()
 		self._plot_min_x.set("0")
@@ -599,6 +643,15 @@ class DataExplorer(object):
 			variable=self._plot_tight_layout, onvalue=True)
 		tight_layout_checkbox.grid()
 
+		legend_outside_checkbox = ttk.Checkbutton(self._control_frame, text="Plot Legend Outside",
+			variable=self._plot_legend_outside, onvalue=True)
+		legend_outside_checkbox.grid()
+
+		outside_ratio_field_label = ttk.Label(self._control_frame, text="Outside Legend Ratio").grid()
+		outside_ratio_field = ttk.Entry(self._control_frame,
+			textvariable=self._plot_outside_ratio)
+		outside_ratio_field.grid()
+
 		font_size_field_label = ttk.Label(self._control_frame, text="Font Size").grid()
 		font_size_field = ttk.Entry(self._control_frame,
 			textvariable=self._plot_font_size)
@@ -618,6 +671,16 @@ class DataExplorer(object):
 		max_x_field = ttk.Entry(self._control_frame,
 			textvariable=self._plot_max_x)
 		max_x_field.grid()
+
+		width_field_label = ttk.Label(self._control_frame, text="Plot Width").grid()
+		width_field = ttk.Entry(self._control_frame,
+			textvariable=self._plot_width)
+		width_field.grid()
+
+		height_field_label = ttk.Label(self._control_frame, text="Plot Height").grid()
+		height_field = ttk.Entry(self._control_frame,
+			textvariable=self._plot_height)
+		height_field.grid()
 
 		# Set up legend
 		legend_head = ttk.Label(self._legend_frame, text="Legend")
@@ -640,10 +703,17 @@ class DataExplorer(object):
 		options['plot_std_dev'] = self._plot_std_dev.get()
 		options['plot_title'] = self._plot_title.get()
 		options['plot_tight_layout'] = self._plot_tight_layout.get()
+		options['plot_legend_outside'] = self._plot_legend_outside.get()
+		options['plot_legend_outside_ratio'] = (1.0 - float(self._plot_outside_ratio.get()))
 		options['plot_font_size'] = int(self._plot_font_size.get())
 		options['plot_line_width'] = int(self._plot_line_width.get())
 		options['plot_min_x'] = int(self._plot_min_x.get())
 		options['plot_max_x'] = int(self._plot_max_x.get())
+
+		_width = int(self._plot_width.get())
+		_height = int(self._plot_height.get())
+
+		options['plot_figsize'] = (_width, _height)
 
 		self._plotter.plot(options)
 		self._plotter.clear_plots()
