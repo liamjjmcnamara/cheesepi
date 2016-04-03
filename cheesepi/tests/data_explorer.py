@@ -279,52 +279,52 @@ def setup_delta_plot(delta_data, options):
 		fig.tight_layout(rect=rectangle)
 
 	# LINEAR
-	fig = plt.figure(figsize=options['plot_figsize'])
-	if options['plot_title']:
-		fig.suptitle("MV (lin): {}".format(delta_data._source))
+	# fig = plt.figure(figsize=options['plot_figsize'])
+	# if options['plot_title']:
+	# 	fig.suptitle("MV (lin): {}".format(delta_data._source))
 
-	plt.xlabel("iteration")
-	plt.ylabel("delta")
+	# plt.xlabel("iteration")
+	# plt.ylabel("delta")
 
-	if options['plot_uniform']:
-		if options['plot_mean']:
-			x_plot, y_plot = zip(*delta_data._delta_uni_mean)
-			plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Uniform Mean')
+	# if options['plot_uniform']:
+	# 	if options['plot_mean']:
+	# 		x_plot, y_plot = zip(*delta_data._delta_uni_mean)
+	# 		plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Uniform Mean')
 
-		if options['plot_variance']:
-			x_plot, y_plot = zip(*delta_data._delta_uni_variance)
-			plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Univorm Variance')
+	# 	if options['plot_variance']:
+	# 		x_plot, y_plot = zip(*delta_data._delta_uni_variance)
+	# 		plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Univorm Variance')
 
-	if options['plot_exponential']:
-		if options['plot_mean']:
-			x_plot, y_plot = zip(*delta_data._delta_exp_mean)
-			plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Exponential Mean')
+	# if options['plot_exponential']:
+	# 	if options['plot_mean']:
+	# 		x_plot, y_plot = zip(*delta_data._delta_exp_mean)
+	# 		plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Exponential Mean')
 
-		if options['plot_variance']:
-			x_plot, y_plot = zip(*delta_data._delta_exp_variance)
-			plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Exponential Variance')
+	# 	if options['plot_variance']:
+	# 		x_plot, y_plot = zip(*delta_data._delta_exp_variance)
+	# 		plt.plot(x_plot, y_plot, linestyle='-', label=r'$\Delta$Exponential Variance')
 
-	if options['plot_title']:
-		plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':options['plot_font_size']+1})
+	# if options['plot_title']:
+	# 	plt.title("{}...".format(delta_data._target[:20]), fontdict={'fontsize':options['plot_font_size']+1})
 
-	if options['plot_legend_outside']:
-		plt.legend(loc='upper left', bbox_to_anchor=(1,1), ncol=1)
-	else:
-		plt.legend(loc='upper right', ncol=1)
+	# if options['plot_legend_outside']:
+	# 	plt.legend(loc='upper left', bbox_to_anchor=(1,1), ncol=1)
+	# else:
+	# 	plt.legend(loc='upper right', ncol=1)
 
-	plt.grid(True)
+	# plt.grid(True)
 
-	axes = plt.gca()
-	xmin, xmax = axes.get_xlim()
-	xmin = max(xmin, options['plot_min_x'])
-	xmax = min(xmax, options['plot_max_x'])
-	axes.set_xlim([xmin, xmax])
+	# axes = plt.gca()
+	# xmin, xmax = axes.get_xlim()
+	# xmin = max(xmin, options['plot_min_x'])
+	# xmax = min(xmax, options['plot_max_x'])
+	# axes.set_xlim([xmin, xmax])
 
-	if options['plot_tight_layout']:
-		rectangle = (0,0,1,1)
-		if options['plot_legend_outside']:
-			rectangle = (0,0,options['plot_legend_outside_ratio'],1)
-		fig.tight_layout(rect=rectangle)
+	# if options['plot_tight_layout']:
+	# 	rectangle = (0,0,1,1)
+	# 	if options['plot_legend_outside']:
+	# 		rectangle = (0,0,options['plot_legend_outside_ratio'],1)
+	# 	fig.tight_layout(rect=rectangle)
 
 	# fig = plt.figure()
 	# fig.suptitle("SK: {}".format(delta_data._source))
@@ -424,60 +424,60 @@ def setup_values_plot(values_data, options):
 		fig.tight_layout(rect=rectangle)
 
 	# Plot CofV
-	fig = plt.figure(figsize=options['plot_figsize'])
-	if options['plot_title']:
-		fig.suptitle("CofV: {}".format(values_data._source))
+	# fig = plt.figure(figsize=options['plot_figsize'])
+	# if options['plot_title']:
+	# 	fig.suptitle("CofV: {}".format(values_data._source))
 
-	plt.xlabel("iteration")
-	plt.ylabel("value")
+	# plt.xlabel("iteration")
+	# plt.ylabel("value")
 
-	if options['plot_uniform']:
-		x_plot, mean = zip(*values_data._uni_mean_values)
-		_, var = zip(*values_data._uni_variance_values)
+	# if options['plot_uniform']:
+	# 	x_plot, mean = zip(*values_data._uni_mean_values)
+	# 	_, var = zip(*values_data._uni_variance_values)
 
-		y_plot = map(lambda tup: math.sqrt(tup[1])/tup[0], zip(mean, var))
+	# 	y_plot = map(lambda tup: math.sqrt(tup[1])/tup[0], zip(mean, var))
 
-		plt.plot(x_plot, y_plot, linestyle='-', label='Uniform cofv')
+	# 	plt.plot(x_plot, y_plot, linestyle='-', label='Uniform cofv')
 
-		#plt.plot(x_plot, map(lambda x: math.log(x), y_plot), linestyle='-', label='cofv^2')
+	# 	#plt.plot(x_plot, map(lambda x: math.log(x), y_plot), linestyle='-', label='cofv^2')
 
-		y_plot = map(lambda tup: tup[1]/tup[0], zip(mean, var))
+	# 	y_plot = map(lambda tup: tup[1]/tup[0], zip(mean, var))
 
-		plt.plot(x_plot, y_plot, linestyle='-', label='Uniform iod')
+	# 	plt.plot(x_plot, y_plot, linestyle='-', label='Uniform iod')
 
-	if options['plot_exponential']:
-		x_plot, mean = zip(*values_data._exp_mean_values)
-		_, var = zip(*values_data._exp_variance_values)
+	# if options['plot_exponential']:
+	# 	x_plot, mean = zip(*values_data._exp_mean_values)
+	# 	_, var = zip(*values_data._exp_variance_values)
 
-		y_plot = map(lambda tup: math.sqrt(tup[1])/tup[0], zip(mean, var))
+	# 	y_plot = map(lambda tup: math.sqrt(tup[1])/tup[0], zip(mean, var))
 
-		plt.plot(x_plot, y_plot, linestyle='-', label='Exponential cofv')
+	# 	plt.plot(x_plot, y_plot, linestyle='-', label='Exponential cofv')
 
-		#plt.plot(x_plot, map(lambda x: math.log(x), y_plot), linestyle='-', label='cofv^2')
+	# 	#plt.plot(x_plot, map(lambda x: math.log(x), y_plot), linestyle='-', label='cofv^2')
 
-		y_plot = map(lambda tup: tup[1]/tup[0], zip(mean, var))
+	# 	y_plot = map(lambda tup: tup[1]/tup[0], zip(mean, var))
 
-		plt.plot(x_plot, y_plot, linestyle='-', label='Exponential iod')
+	# 	plt.plot(x_plot, y_plot, linestyle='-', label='Exponential iod')
 
-	if options['plot_title']:
-		plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':options['plot_font_size']+1})
+	# if options['plot_title']:
+	# 	plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':options['plot_font_size']+1})
 
-	if options['plot_legend_outside']:
-		plt.legend(loc='upper left', bbox_to_anchor=(1,1), ncol=1)
-	else:
-		plt.legend(loc='upper right', ncol=1)
+	# if options['plot_legend_outside']:
+	# 	plt.legend(loc='upper left', bbox_to_anchor=(1,1), ncol=1)
+	# else:
+	# 	plt.legend(loc='upper right', ncol=1)
 
-	axes = plt.gca()
-	xmin, xmax = axes.get_xlim()
-	xmin = max(xmin, options['plot_min_x'])
-	xmax = min(xmax, options['plot_max_x'])
-	axes.set_xlim([xmin, xmax])
+	# axes = plt.gca()
+	# xmin, xmax = axes.get_xlim()
+	# xmin = max(xmin, options['plot_min_x'])
+	# xmax = min(xmax, options['plot_max_x'])
+	# axes.set_xlim([xmin, xmax])
 
-	if options['plot_tight_layout']:
-		rectangle = (0,0,1,1)
-		if options['plot_legend_outside']:
-			rectangle = (0,0,options['plot_legend_outside_ratio'],1)
-		fig.tight_layout(rect=rectangle)
+	# if options['plot_tight_layout']:
+	# 	rectangle = (0,0,1,1)
+	# 	if options['plot_legend_outside']:
+	# 		rectangle = (0,0,options['plot_legend_outside_ratio'],1)
+	# 	fig.tight_layout(rect=rectangle)
 
 	# fig = plt.figure()
 	# fig.suptitle("SK: {}".format(values_data._source))
@@ -498,6 +498,136 @@ def setup_values_plot(values_data, options):
 
 	# plt.title("{}...".format(values_data._target[:20]), fontdict={'fontsize':10})
 	# plt.legend(loc='upper right', ncol=1, fontsize=9)
+
+def plot_aggregate_errors(values_datasets, options):
+	if len(values_datasets) < 1:
+		print("No data")
+		return
+
+	# PREPARING THE DATA
+
+	iterations = len(values_datasets[0]._uni_mean_values)
+
+	# Initialize datastructures
+	aggregate_real_mean_values = [0] * iterations
+	aggregate_real_variance_values = [0] * iterations
+	aggregate_uni_mean_value_diffs = [0] * iterations
+	aggregate_uni_variance_value_diffs = [0] * iterations
+	aggregate_exp_mean_value_diffs = [0] * iterations
+	aggregate_exp_variance_value_diffs = [0] * iterations
+
+	# Pregather all the data
+	for dataset in values_datasets:
+
+		last_start = iterations
+
+		# These are done in reverse because the index is the start point
+		for rm in reversed(dataset._real_means):
+			start = rm[0]
+			value = rm[1]
+
+			for i in range(start, last_start):
+				aggregate_real_mean_values[i] = aggregate_real_mean_values[i] + value
+
+			last_start = start
+
+		last_start = iterations
+
+		for rv in reversed(dataset._real_variances):
+			start = rv[0]
+			value = rv[1]
+
+			for i in range(start, last_start):
+				aggregate_real_variance_values[i] = aggregate_real_variance_values[i] + value
+
+			last_start = start
+
+		last_index = iterations
+		for um in reversed(sorted(dataset._uni_mean_values)):
+			index = um[0]
+			value = um[1]
+
+			for i in range(index, last_index):
+				aggregate_uni_mean_value_diffs[i] = aggregate_uni_mean_value_diffs[i] + value
+
+			last_index = index
+		last_index = iterations
+		for uv in reversed(sorted(dataset._uni_variance_values)):
+			index = uv[0]
+			value = uv[1]
+
+			for i in range(index, last_index):
+				aggregate_uni_variance_value_diffs[i] = aggregate_uni_variance_value_diffs[i] + value
+
+			last_index = index
+		last_index = iterations
+		for em in reversed(sorted(dataset._exp_mean_values)):
+			index = em[0]
+			value = em[1]
+
+			for i in range(index, last_index):
+				aggregate_exp_mean_value_diffs[i] = aggregate_exp_mean_value_diffs[i] + value
+
+			last_index = index
+		for ev in reversed(sorted(dataset._exp_variance_values)):
+			index = ev[0]
+			value = ev[1]
+
+			for i in range(index, last_index):
+				aggregate_exp_variance_value_diffs[i] = aggregate_exp_variance_value_diffs[i] + value
+
+			last_index = index
+
+	# Zip together the difference between the real value and the calculated ones
+	aggregate_uni_mean_value_diffs = map(lambda tup: abs(tup[0]-tup[1]), zip(aggregate_uni_mean_value_diffs, aggregate_real_mean_values))
+	aggregate_uni_variance_value_diffs = map(lambda tup: abs(tup[0]-tup[1]), zip(aggregate_uni_variance_value_diffs, aggregate_real_variance_values))
+	aggregate_exp_mean_value_diffs = map(lambda tup: abs(tup[0]-tup[1]), zip(aggregate_exp_mean_value_diffs, aggregate_real_mean_values))
+	aggregate_exp_variance_value_diffs = map(lambda tup: abs(tup[0]-tup[1]), zip(aggregate_exp_variance_value_diffs, aggregate_real_variance_values))
+
+	# PLOTTING
+
+	# Set font size
+	matplotlib.rcParams.update({'figure.dpi': 100})
+	matplotlib.rcParams.update({'font.size': options['plot_font_size']})
+	matplotlib.rcParams.update({'axes.labelsize': options['plot_font_size']+2})
+	matplotlib.rcParams.update({'xtick.labelsize': options['plot_font_size']+1})
+	matplotlib.rcParams.update({'ytick.labelsize': options['plot_font_size']+1})
+	matplotlib.rcParams.update({'lines.linewidth': options['plot_line_width']})
+
+	fig = plt.figure(figsize=options['plot_figsize'])
+	if options['plot_title']:
+		fig.suptitle("Aggregate Error: {}".format(values_data._source))
+
+	plt.xlabel("iteration")
+	plt.ylabel("value")
+
+	if options['plot_uniform']:
+		plt.semilogy(aggregate_uni_mean_value_diffs, basey=2, label='Aggregate Uniform Mean Error')
+		plt.semilogy(aggregate_uni_variance_value_diffs, basey=2, label='Aggregate Uniform Variance Error')
+
+	if options['plot_exponential']:
+		plt.semilogy(aggregate_exp_mean_value_diffs, basey=2, label='Aggregate Exponential Mean Error')
+		plt.semilogy(aggregate_exp_variance_value_diffs, basey=2, label='Aggregate Exponential Variance Error')
+
+	if options['plot_legend_outside']:
+		plt.legend(loc='upper left', bbox_to_anchor=(1,1), ncol=1)
+	else:
+		plt.legend(loc='upper right', ncol=1)
+
+	axes = plt.gca()
+	xmin, xmax = axes.get_xlim()
+	xmin = max(xmin, options['plot_min_x'])
+	xmax = min(xmax, options['plot_max_x'])
+	axes.set_xlim([xmin, xmax])
+
+	if options['plot_tight_layout']:
+		rectangle = (0,0,1,1)
+		if options['plot_legend_outside']:
+			rectangle = (0,0,options['plot_legend_outside_ratio'],1)
+		fig.tight_layout(rect=rectangle)
+
+	plt.show()
+
 
 class DataExplorer(object):
 
@@ -614,6 +744,12 @@ class DataExplorer(object):
 		)
 		plot_button.grid()
 
+		plot_aggregate_button = ttk.Button(self._control_frame,
+			text="Plot aggregate",
+			command=self._plot_aggregate
+		)
+		plot_aggregate_button.grid(row=0, column=1)
+
 		# OPTION CHECKBOXES
 		uni_checkbox = ttk.Checkbutton(self._control_frame, text="Plot Uniform",
 			variable=self._plot_uniform, onvalue=True)
@@ -647,40 +783,40 @@ class DataExplorer(object):
 			variable=self._plot_legend_outside, onvalue=True)
 		legend_outside_checkbox.grid()
 
-		outside_ratio_field_label = ttk.Label(self._control_frame, text="Outside Legend Ratio").grid()
+		outside_ratio_field_label = ttk.Label(self._control_frame, text="Outside Legend Ratio").grid(row=1, column=1)
 		outside_ratio_field = ttk.Entry(self._control_frame,
 			textvariable=self._plot_outside_ratio)
-		outside_ratio_field.grid()
+		outside_ratio_field.grid(row=2, column=1)
 
-		font_size_field_label = ttk.Label(self._control_frame, text="Font Size").grid()
+		font_size_field_label = ttk.Label(self._control_frame, text="Font Size").grid(row=3, column=1)
 		font_size_field = ttk.Entry(self._control_frame,
 			textvariable=self._plot_font_size)
-		font_size_field.grid()
+		font_size_field.grid(row=4, column=1)
 
-		line_width_field_label = ttk.Label(self._control_frame, text="Line Width").grid()
+		line_width_field_label = ttk.Label(self._control_frame, text="Line Width").grid(row=5, column=1)
 		line_width_field = ttk.Entry(self._control_frame,
 			textvariable=self._plot_line_width)
-		line_width_field.grid()
+		line_width_field.grid(row=6, column=1)
 
-		min_x_field_label = ttk.Label(self._control_frame, text="Min X").grid()
+		min_x_field_label = ttk.Label(self._control_frame, text="Min X").grid(row=1, column=2)
 		min_x_field = ttk.Entry(self._control_frame,
 			textvariable=self._plot_min_x)
-		min_x_field.grid()
+		min_x_field.grid(row=2, column=2)
 
-		max_x_field_label = ttk.Label(self._control_frame, text="Max X").grid()
+		max_x_field_label = ttk.Label(self._control_frame, text="Max X").grid(row=3, column=2)
 		max_x_field = ttk.Entry(self._control_frame,
 			textvariable=self._plot_max_x)
-		max_x_field.grid()
+		max_x_field.grid(row=4, column=2)
 
-		width_field_label = ttk.Label(self._control_frame, text="Plot Width").grid()
+		width_field_label = ttk.Label(self._control_frame, text="Plot Width").grid(row=5, column=2)
 		width_field = ttk.Entry(self._control_frame,
 			textvariable=self._plot_width)
-		width_field.grid()
+		width_field.grid(row=6, column=2)
 
-		height_field_label = ttk.Label(self._control_frame, text="Plot Height").grid()
+		height_field_label = ttk.Label(self._control_frame, text="Plot Height").grid(row=7, column=2)
 		height_field = ttk.Entry(self._control_frame,
 			textvariable=self._plot_height)
-		height_field.grid()
+		height_field.grid(row=8, column=2)
 
 		# Set up legend
 		legend_head = ttk.Label(self._legend_frame, text="Legend")
@@ -689,11 +825,7 @@ class DataExplorer(object):
 		for i, ll in legend_labels.iteritems():
 			ll.grid(row=i+1, column=0, sticky=(tk.N, tk.W))
 
-	def _plot_selected(self):
-		for de in self._data_entries:
-			if de.should_plot:
-				self._plotter.add_dataplot(de.data)
-
+	def _prepare_options(self):
 		options = {}
 
 		options['plot_uniform'] = self._plot_uniform.get()
@@ -714,6 +846,25 @@ class DataExplorer(object):
 		_height = int(self._plot_height.get())
 
 		options['plot_figsize'] = (_width, _height)
+
+		return options
+
+	def _plot_aggregate(self):
+		datasets = []
+		for de in self._data_entries:
+			if isinstance(de.data, ds.ValuesData):
+				datasets.append(de.data)
+
+		options = self._prepare_options()
+
+		plot_aggregate_errors(datasets, options)
+
+	def _plot_selected(self):
+		for de in self._data_entries:
+			if de.should_plot:
+				self._plotter.add_dataplot(de.data)
+
+		options = self._prepare_options()
 
 		self._plotter.plot(options)
 		self._plotter.clear_plots()
