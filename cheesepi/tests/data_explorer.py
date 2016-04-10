@@ -212,9 +212,9 @@ def setup_dist_plot(dist_data, options):
 		plt.legend(loc='upper right', ncol=1)
 
 	# Additional Text
-	# ax = fig.get_axes()
-	# plt.text(0.70, 0.70, "#samples={}".format(len(dist_data._samples)),
-	# 		fontsize=8, transform=ax[0].transAxes)
+	ax = fig.get_axes()
+	plt.text(0.70, 0.70, "#samples={}".format(len(dist_data._samples)),
+			fontsize=8, transform=ax[0].transAxes)
 
 	axes = plt.gca()
 	xmin, xmax = axes.get_xlim()
@@ -506,7 +506,12 @@ def plot_aggregate_errors(values_datasets, options):
 
 	# PREPARING THE DATA
 
-	iterations = len(values_datasets[0]._uni_mean_values)
+	# Find the number of iterations by taking the max length of all the datasets
+	iterations = max(
+	        [
+	            len(ds._uni_mean_values) for ds in values_datasets
+	        ]
+	)
 
 	# Initialize datastructures
 	aggregate_real_mean_values = [0] * iterations
@@ -626,6 +631,10 @@ def plot_aggregate_errors(values_datasets, options):
 			rectangle = (0,0,options['plot_legend_outside_ratio'],1)
 		fig.tight_layout(rect=rectangle)
 
+	if options['plot_transparent']:
+	    fig.patch.set_alpha(0.0)
+	    axes.patch.set_alpha(0.0)
+
 	plt.show()
 
 
@@ -687,6 +696,8 @@ class DataExplorer(object):
 		self._plot_tight_layout.set(True)
 		self._plot_legend_outside = tk.BooleanVar()
 		self._plot_legend_outside.set(False)
+		self._plot_transparent = tk.BooleanVar()
+		self._plot_transparent.set(False)
 		self._plot_outside_ratio = tk.StringVar()
 		self._plot_outside_ratio.set("0.2")
 		self._plot_font_size = tk.StringVar()
@@ -783,6 +794,10 @@ class DataExplorer(object):
 			variable=self._plot_legend_outside, onvalue=True)
 		legend_outside_checkbox.grid()
 
+		transparent_checkbox = ttk.Checkbutton(self._control_frame, text="Plot Transparent Background",
+			variable=self._plot_transparent, onvalue=True)
+		transparent_checkbox.grid()
+
 		outside_ratio_field_label = ttk.Label(self._control_frame, text="Outside Legend Ratio").grid(row=1, column=1)
 		outside_ratio_field = ttk.Entry(self._control_frame,
 			textvariable=self._plot_outside_ratio)
@@ -836,6 +851,7 @@ class DataExplorer(object):
 		options['plot_title'] = self._plot_title.get()
 		options['plot_tight_layout'] = self._plot_tight_layout.get()
 		options['plot_legend_outside'] = self._plot_legend_outside.get()
+		options['plot_transparent'] = self._plot_transparent.get()
 		options['plot_legend_outside_ratio'] = (1.0 - float(self._plot_outside_ratio.get()))
 		options['plot_font_size'] = int(self._plot_font_size.get())
 		options['plot_line_width'] = int(self._plot_line_width.get())
