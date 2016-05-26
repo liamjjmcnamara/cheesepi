@@ -91,9 +91,12 @@ class PingScheduler(Scheduler):
 				# 	delay._dm1, delay._dm2, delay._dm3, delay._dm4,
 				# 	delay._dm1 + delay._dm2 + delay._dm3 + delay._dm4)
 				# )
-				delay_variance = delay.get_variance()
+
+				delay_variance = delay.get_exp_variance()
 				#print(target)
 				#print(delay_variance)
+
+				# Primitive bias towards variance
 				heapq.heappush(priority_sorted_targets, (-delay_variance, target))
 
 		#print(priority_sorted_targets)
