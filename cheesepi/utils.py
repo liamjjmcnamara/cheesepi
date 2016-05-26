@@ -30,6 +30,7 @@ import os
 import sys
 import uuid
 import time
+import random
 from subprocess import call
 
 import cheesepi as cp
@@ -347,6 +348,15 @@ def get_temperature():
 	except:
 		pass
 	return None
+
+def get_status():
+	status={}
+	status['time']      = time.time()
+	status['bandwidth'] = random.randint(0,100)
+	status['tcp']       = random.randint(0,100)
+	status['udp']       = random.randint(0,100)
+	status['jitter']    = -1
+	return status
 
 #
 # Simple statistics to avoid numpy

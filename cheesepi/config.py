@@ -47,6 +47,9 @@ config_file  = os.path.join(cheesepi_dir, "cheesepi.conf")
 
 # Store log in user's home directory
 log_file    = os.path.join(log_dir, ".cheesepi.log")
+if not os.access(log_file, os.W_OK):
+	print "Error: can not open log file %s" % log_file
+	sys.exit(1)
 log_level  = logging.ERROR
 log_stdout = False
 log_formatter = logging.Formatter("%(asctime)s-%(name)s:%(levelname)s; %(message)s")
