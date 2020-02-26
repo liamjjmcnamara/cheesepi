@@ -134,7 +134,7 @@ def update_stats_for_links(peer, iteration, old_stats, new_stats):
 	# In the data we don't want 0-indexing
 	index = iteration + 1
 
-	for target_uuid, link in peer._links.iteritems():
+	for target_uuid, link in peer._links.items():
 		old = old_stats.get_stats_for_target(target_uuid)
 		new = new_stats.get_stats_for_target(target_uuid)
 

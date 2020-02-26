@@ -34,7 +34,7 @@ import traceback
 from requests.exceptions import ConnectionError
 
 import cheesepi as cp
-import dao
+import cheesepi.storage.dao as dao
 
 logger = cp.config.get_logger(__name__)
 

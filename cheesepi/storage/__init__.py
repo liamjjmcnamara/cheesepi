@@ -1,26 +1,29 @@
-import dao
+import cheesepi.storage.dao
 
 try:
-	import dao_mongo
+	import cheesepi.storage.dao_mongo
 except ImportError as e:
-	print "Missing Mongo python module (and GridFS and bson), use 'pip install pymongo'"
-	print str(e)
+	print("\nProblem importing Mongo python module (or GridFS/bson)...")
+	print("Error: " + str(e))
+	print("Possibly try: 'pip install pymongo'")
 
 try:
-	import dao_influx08
+	import cheesepi.storage.dao_influx08
 except ImportError as e:
-	print "Missing InfluxDB python module, use 'pip install influxdb'"
-	print str(e)
+	print("\nProblem importing InfluxDB-08 python module...")
+	print("Error: " + str(e))
+	print("Possibly try: 'pip install influxdb'")
 
 try:
-	import dao_influx09
+	import cheesepi.storage.dao_influx09
 except ImportError as e:
-	print "Missing InfluxDB python module, use 'pip install influxdb'"
-	print str(e)
+	print("\nProblem importing InfluxDB-09 python module...")
+	print("Error: " + str(e))
+	print("Possibly try: 'pip install influxdb'")
 
 #try:
 #	import dao_mysql
 #except ImportError as e:
-#	print "Missing MySQL python module, use 'pip install MySQL-python'"
-#	print str(e)
+#	print("Problem importing MySQL python module, use 'pip install MySQL-python'"
+#	print(str(e)
 

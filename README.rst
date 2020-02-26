@@ -1,6 +1,7 @@
 
 Introduction to the internals of the CheesePi measurement platform.
 
+
 Install
 -------
 
@@ -12,7 +13,6 @@ This will download and install the modules and programs in your python module
 directory.
 
 
-
 Starting CheesePi
 -----------------
 
@@ -21,6 +21,7 @@ dispatcher and the dashboard. The influxdb server stores measurement results,
 the dispatcher regularly performs the measurement tasks and stores their
 results in the influxdb. To view the results, the dashboard can optionally be
 started.
+
 
 Start the storage server:
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -54,7 +55,6 @@ This command starts a webserver on the localhost that will display the
 collected data. Browse to http://HOSTNAME:8080 to view this dashboard.
 
 
-
 Customising behaviour
 ---------------------
 There are two main files for customising the behaviour of CheesePi, a main
@@ -69,6 +69,7 @@ your installation can be found with the following command:
 Local copies are these files are generated. Any change will stay local to your
 installation and not be overwritten by software upgrades. If you delete your
 local copy, a new default copy will be generated.
+
 
 Configuration
 ~~~~~~~~~~~~~
@@ -87,7 +88,6 @@ The schedule file format is a list of JSON strings (http://www.w3schools.com/jso
 Each JSON object represents a *measurement task*, the only required 
 field is *taskname*, all others are option parameters to the task. Lines can
 be commented out with a *#*.
-
 
 
 BUGS and problems

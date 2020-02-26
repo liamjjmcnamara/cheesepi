@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 start_time = time.time()
 
 config = cp.config.get_config()
-dao    = cp.config.get_dao()
+dao = cp.config.get_dao()
 logger = cp.config.get_logger(__name__)
 
 # Create scheduler object, use 'real' time
@@ -29,17 +29,21 @@ pool_size = 5 # max number of concurrent tasks...
 
 # Task priority
 IMPORTANT = 1
-NORMAL    = 2
+NORMAL = 2
 
 def log_result(result):
 	#logging.info("Task callback() result..."+str(result))
 	pass
-def timestamp(): return (time.time()-start_time)
-def print_queue(): logger.debug(s.queue)
+
+def timestamp():
+	return (time.time()-start_time)
+
+def print_queue():
+	logger.debug(s.queue)
 
 
 # Need to catch Ctrl+C, and so wrap the Interupt as an Exception
-def async(task):
+def asynchronous(task):
 	"""Wrapper around asynchronous task execution"""
 	try:
 		task.run()
@@ -51,15 +55,15 @@ def async(task):
 			raise # No worries, pass up the stack
 		# Need to wrap the exception with something multiprocessing will recognise
 		import traceback
-		print "Unhandled exception %s (%s):\n%s" % (cls.__name__, exc, traceback.format_exc())
-		logger.error("Unhandled exception %s (%s):\n%s" % (cls.__name__, exc, traceback.format_exc()))
-		raise Exception("Unhandled exception: %s (%s)" % (cls.__name__, exc))
+		print("Unhandled exception {} ({}):\n{}".format(cls.__name__, exc, traceback.format_exc()))
+		logger.error("Unhandled exception {} ({}):\n{}".format((cls.__name__, exc, traceback.format_exc())))
+		raise Exception("Unhandled exception: {} ({})".format((cls.__name__, exc)))
 
 # Perform a scheduled Task, and schedule the next
 def run(task, spec):
 	"""Run this task asychronously, and schedule the next period"""
 	#logger.info("Running %s @ %f" % (task.spec['taskname'], timestamp()))
-	pool.apply_async(async, args=[task], callback=log_result)
+	pool.apply_async(asynchronous, args=[task], callback=log_result)
 	if repeat_schedule:
 		schedule_task(spec)
 
@@ -105,14 +109,14 @@ def load_schedule():
 	return tasks
 
 def print_schedule(schedule_list):
-	print "Using the following schedule:"
+	print("Using the following schedule:")
 	for t in schedule_list:
-		print t
+		print(t)
 
 def HUP():
 	"""Reload config if we receive a HUP signal"""
 	global pool
-	print "Reloading..."
+	print("Reloading...")
 	pool.terminate()
 	start()
 
@@ -137,11 +141,10 @@ def start():
 
 if __name__ == "__main__":
 	import signal
-	logger.info("Dispatcher PID: %d" % os.getpid())
+	logger.info("Dispatcher PID: %d".format(os.getpid()))
 
 	# register HUP signal catcher
 	signal.signal(signal.SIGHUP, HUP)
 
 	start()
-
 

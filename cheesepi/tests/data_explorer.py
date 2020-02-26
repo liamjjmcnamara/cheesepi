@@ -837,7 +837,7 @@ class DataExplorer(object):
 		legend_head = ttk.Label(self._legend_frame, text="Legend")
 		legend_head.grid(row=0, column=0, sticky=(tk.N, tk.W))
 
-		for i, ll in legend_labels.iteritems():
+		for i, ll in legend_labels.items():
 			ll.grid(row=i+1, column=0, sticky=(tk.N, tk.W))
 
 	def _prepare_options(self):

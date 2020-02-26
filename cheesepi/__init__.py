@@ -26,10 +26,10 @@ Authors: ljjm@sics.se
 Testers:
 """
 
-import config
-import utils
-import storage
-import dispatcher
+import cheesepi.config
+import cheesepi.utils
+import cheesepi.storage
+import cheesepi.dispatcher
 #import tasks
 
 # poor form

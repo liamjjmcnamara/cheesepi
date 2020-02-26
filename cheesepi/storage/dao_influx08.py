@@ -32,7 +32,7 @@ import hashlib
 import json
 
 import cheesepi as cp
-import dao
+import cheesepi.storage.dao as dao
 
 logger = cp.config.get_logger(__name__)
 
@@ -45,7 +45,7 @@ except AttributeError as e:
 	msg += "Either due to this computer not having a timezone set.\n"
 	msg += "Use `raspi-config` > Internationalisation Options to set one.\n"
 	msg += "Alternatively, install 'pandas' through pip, rather than apt."
-	print msg
+	print(msg)
 	logger.error(msg)
 	sys.exit(1)
 
@@ -63,7 +63,7 @@ class DAO_influx(dao.DAO):
 		except Exception as e:
 			msg = "Error: Connection to Influx database failed! Ensure InfluxDB is running. "+str(e)
 			logging.error(msg)
-			print msg
+			print(msg)
 			cp.config.make_databases()
 			exit(1)
 
@@ -82,7 +82,7 @@ class DAO_influx(dao.DAO):
 			# raspberry pi version
 			return [s['name'] for s in dic]
 		else:
-			print "Error: parsing series list"
+			print("Error: parsing series list")
 
 
 	def dump(self, since=-1):
@@ -91,17 +91,17 @@ class DAO_influx(dao.DAO):
 			#series_list = self.conn.get_list_series()
 		except Exception as e:
 			msg = "Problem connecting to InfluxDB when listing series: "+str(e)
-			print msg
+			print(msg)
 			logging.error(msg)
 			exit(1)
 		series = self.extract_series(series_list)
-		#print series
+		#print(series)
 		# maybe prune series list?
 		dumped_db = {}
 		for series_name in series:
-			#print series_name
+			#print(series_name)
 			dumped_series = self.conn.query('select * from %s where time > %d ;' % (series_name,since*1000) )
-			#print dumped_series
+			#print(dumped_series)
 			dumped_db[series_name] = json.dumps(dumped_series)
 		return dumped_db
 
@@ -137,13 +137,13 @@ class DAO_influx(dao.DAO):
 		dic['sign']    = md5
 
 		json = self.format08(op_type, dic)
-		print "Saving %s Op: %s" % (op_type, json)
+		print("Saving %s Op: %s".format(op_type, json))
 		try:
 			return self.conn.write_points(json)
 		except Exception as e:
 			msg = "Database Influx "+op_type+" Op write failed! "+str(e)
 			logging.error(msg)
-			print msg
+			print(msg)
 			#cp.config.make_databases()
 			#exit(1)
 			raise IOError(msg)
@@ -166,24 +166,24 @@ class DAO_influx(dao.DAO):
 			value = result[0]['points'][0][column_index]
 		except InfluxDBClientError:
 			#msg = "Problem connecting to InfluxDB: "+str(e)
-			#print msg
+			#print(msg)
 			#logging.error(msg)
 			return -1
 		except Exception as e:
 			msg = "Problem connecting to InfluxDB: "+str(e)
-			print msg
+			print(msg)
 			exit(1)
 		return value
 
 	def write_user_attribute(self, attribute, value):
 		# check we dont already exist
 		try:
-			print "Saving user attribute: %s to %s " % (attribute, value)
+			print("Saving user attribute: %s to %s ".format(attribute, value))
 			json = self.format08("user", {attribute:value})
 			return self.conn.write_points(json)
 		except Exception as e:
 			msg = "Problem connecting to InfluxDB: "+str(e)
-			print msg
+			print(msg)
 			logging.error(msg)
 			exit(1)
 

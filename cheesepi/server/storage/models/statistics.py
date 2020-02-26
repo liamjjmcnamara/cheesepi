@@ -82,7 +82,7 @@ class StatisticsSet(object):
 
 	def toDict(self):
 		dct = {}
-		for target_stat, stat in self._statistics_set.iteritems():
+		for target_stat, stat in self._statistics_set.items():
 
 			key = target_stat.target
 			value = stat.toDict()

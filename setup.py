@@ -48,7 +48,7 @@ setup(
 	url='http://cheesepi.sics.se',
 	packages=['cheesepi'],
 	author='Liam McNamara',
-	author_email='ljjm@sics.se',
+	author_email='liamjjmcnamara@gmail.com',
 	license= 'Apache 2.0',
 	platforms = ["RaspberryPi"],
 	classifiers=[
@@ -62,6 +62,7 @@ setup(
 	],
 
 	# Runtime dependencies
+	python_requires='>=3.6',
 	install_requires=[
 		'setuptools',
 		'pip',

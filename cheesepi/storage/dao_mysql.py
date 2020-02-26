@@ -30,7 +30,7 @@ import logging
 # PyMongo
 import MySQLdb
 
-import dao
+import cheesepi.storage.dao as dao
 
 class DAO_mysql(dao.DAO):
 	def __init__(self):
@@ -77,7 +77,7 @@ class DAO_mysql(dao.DAO):
 	def write_op(self, op_type, dic, binary=None):
 		names = ""
 		values = ""
-		for key, value in dic.iteritems():
+		for key, value in dic.items():
 			names = names + key + ", "
 			values = values + str(value) + ", "
 

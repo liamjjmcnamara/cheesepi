@@ -42,20 +42,19 @@ if 'HOME' in os.environ:
 else:
 	home_dir = "/root"
 cheesepi_dir = os.path.dirname(os.path.realpath(__file__))
-log_dir      = home_dir
-config_file  = os.path.join(cheesepi_dir, "cheesepi.conf")
+config_file = os.path.join(cheesepi_dir, "cheesepi.conf")
+log_dir = "/tmp/"
 
 # Store log in user's home directory
-log_file    = os.path.join(log_dir, ".cheesepi.log")
-if not os.access(log_file, os.W_OK):
-	print "Error: can not open log file %s" % log_file
-	sys.exit(1)
-log_level  = logging.ERROR
+log_file = os.path.join(log_dir, ".cheesepi.log")
+# if not os.access(log_file, os.W_OK):
+	# print("Error: can not open log file {}".format(log_file))
+	# sys.exit(1)
+log_level = logging.ERROR
 log_stdout = False
 log_formatter = logging.Formatter("%(asctime)s-%(name)s:%(levelname)s; %(message)s")
 logging.basicConfig(filename=log_file, level=log_level, format=log_formatter)
 logger = logging.getLogger(__file__)
-
 
 
 def get_logger(source=""):
@@ -113,7 +112,7 @@ def get_dao():
 	# and so on for other database engines...
 
 	msg = "Fatal error: 'database' type not set to a valid value in config file, exiting."
-	logger.error("Database type: "+config['database']+"\n"+msg)
+	logger.error("Database type: " + str(config.get('database'))+"\n" + msg)
 	exit(1)
 
 def generate_uuid():
@@ -129,7 +128,7 @@ def ensure_default_config(clobber=False):
 	if os.path.isfile(config_file) and not clobber:
 		return
 
-	print "Warning: Copying cheesepi.default.conf file to a local version: %s" % config_file
+	print("Warning: Copying cheesepi.default.conf file to a local version: {}".format(config_file))
 	default_config = os.path.join(cheesepi_dir,"cheesepi.default.conf")
 	# Can we find the default config file?
 	if os.path.isfile(default_config):
@@ -142,7 +141,7 @@ def ensure_default_config(clobber=False):
 		try:
 			copyfile(default_config, config_file, replace=replace)
 		except Exception as e:
-			print "Error: Problem copying config file - check permissions of %s\n%s" % (cheesepi_dir,e)
+			print("Error: Problem copying config file - check permissions of {}\n{}".format(cheesepi_dir,e))
 			exit(1)
 	else:
 		logger.error("Can not find default config file!")
@@ -179,11 +178,10 @@ def get_config():
 	config['version']      = version()
 	return config
 
-
 def create_default_schedule(schedule_filename):
 	"""If schedule file does not exist, try to copy from default."""
 	# is there already a local schedule file?
-	print "Warning: Copying default schedule file to a local version"
+	print("Warning: Copying default schedule file to a local version")
 	default_schedule = os.path.join(cheesepi_dir,"schedule.default.dat")
 	# Can we find the default schedule file?
 	if os.path.isfile(default_schedule):
@@ -236,8 +234,6 @@ def load_remote_schedule():
 		logger.error("Unrecognised problem when downloading remote schedule...")
 	return None
 
-
-
 def set_last_updated(dao=None):
 	if dao==None:
 		dao = get_dao()
@@ -264,7 +260,6 @@ def should_update(dao=None):
 	if (last_updated < (cp.utils.now()-update_period)):
 		return True
 	return False
-
 
 def set_last_dumped(dao=None):
 	if dao==None:
@@ -297,10 +292,9 @@ def copyfile(from_file, to_file, replace={}):
 	logger.info(from_file+" "+to_file+" "+ str(replace))
 	with open(from_file, "rt") as fin, open(to_file, "wt") as fout:
 		for line in fin:
-			for occurence, replacement in replace.iteritems():
+			for occurence, replacement in replace.items():
 				line = line.replace(occurence, replacement)
 			fout.write(line)
-
 
 def get_controller():
 	if "controller" in config:
@@ -372,7 +366,6 @@ def main():
 	from pprint import PrettyPrinter
 	printer = PrettyPrinter(indent=4)
 	printer.pprint(config)
-
 
 
 # Some accounting to happen on every import (mostly for config file making)

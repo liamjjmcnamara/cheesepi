@@ -64,44 +64,44 @@ def console_script():
 		elif args.option=='dashboard':  control_dashboard(args.command)
 		elif args.option=='all':        control_all(args.command)
 		else:
-			print "Error: unknown OPTION: %s" % args.option
+			print("Error: unknown OPTION: {}".format(args.option))
 
 
 def show_status():
 	"""Just print the location of important CheesePi dirs/files"""
 	schedule_file = os.path.join(cp.config.cheesepi_dir, cp.config.get('schedule'))
-	print "Status of CheesePi install (version %s):" % cp.config.version()
-	print "Install dir:\t%s"   % cp.config.cheesepi_dir
-	print "Log file:\t%s"      % cp.config.log_file
-	print "Config file:\t%s"   % cp.config.config_file
-	print "Schedule file:\t%s" % schedule_file
-	print ""
+	print("Status of CheesePi install (version {}):".format(cp.config.version()))
+	print("Install dir:\t{}".format(cp.config.cheesepi_dir))
+	print("Log file:\t{}".format(cp.config.log_file))
+	print("Config file:\t{}".format(cp.config.config_file))
+	print("Schedule file:\t{}".format(schedule_file))
+	print("")
 	ip = cp.utils.get_IP()
 	port = cp.config.get_dashboard_port()
-	print "Dashboard URL: http://%s:%s" % (ip,port)
+	print("Dashboard URL: http://{}:{}" % (ip,port))
 
 def list_data(task="ping"):
 	dao = cp.config.get_dao()
-	print dao.read_op(task)
+	print(dao.read_op(task))
 
 def control_dispatcher(action):
 	"""Start or stop the dispatcher"""
 	if action=='start':
-		print "Starting the dispatcher..."
+		print("Starting the dispatcher...")
 		cp.dispatcher.start()
 	else:
-		print "Error: action not yet implemented!"
+		print("Error: action not yet implemented!")
 
 def copy_influx_config(influx_config):
 	"""Copy the default influx config to a local copt (probably in $HOME)"""
-	print "Warning: making local config: %s" % influx_config
+	print("Warning: making local config: {}".format(influx_config))
 	storage_dir = "/var/lib/influxdb"
 	if not os.path.exists(storage_dir):
-		print "Warning: Default InfluxDB storage dir %s does not exist!" % storage_dir
-		print "Make the directory and user editable:\n sudo mkdir %s && chown $USER %s" % (storage_dir, storage_dir)
+		print("Warning: Default InfluxDB storage dir {} does not exist!".format(storage_dir))
+		print("Make the directory and user editable:\n sudo mkdir {} && chown $USER {}".format(storage_dir, storage_dir))
 	influx_dir = cp.config.cheesepi_dir+"/bin/tools/influxdb"
 	default_config  = os.path.join(influx_dir,"config.toml")
-	print "Warning: copying from default config: %s" % default_config
+	print("Warning: copying from default config: {}".format(default_config))
 	cp.config.copyfile(default_config, influx_config, replace={"INFLUX_DIR":influx_dir} )
 
 def test_execute(cmd_array):
@@ -123,25 +123,25 @@ def find_influx_exe():
 		if isARM():
 			return cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb.arm"
 		else:
-			print "Error: Can't find a valid InfluxDB binary"
-			print "Install InfluxDB and then set the binary's path as 'database_exe' in cheesepi.conf"
+			print("Error: Can't find a valid InfluxDB binary")
+			print("Install InfluxDB and then set the binary's path as 'database_exe' in cheesepi.conf")
 			sys.exit(1)
 
 def control_storage(action):
 	"""Start or stop InfluxDB, either the bundled or the system version"""
 	storage_dir = "/var/lib/influxdb"
 	if not os.path.exists(storage_dir):
-		print "Warning: Default InfluxDB storage dir %s does not exist!" % storage_dir
-		print "Will try to make it..."
+		print("Warning: Default InfluxDB storage dir {} does not exist!".format(storage_dir))
+		print("Will try to make it...")
 		# try to make the dir
 		try:
 			os.makedirs(storage_dir)
 		except Exception as e:
-			print "Tried to make the directory, but it failed: %s" % e
+			print("Tried to make the directory, but it failed: {}".format(e))
 			sys.exit(1)
 
 	if action=='start':
-		print "Starting InfluxDB..."
+		print("Starting InfluxDB...")
 		home_dir = os.path.expanduser("~")
 		influx_config = os.path.join(home_dir,".influxconfig.toml")
 		# test if we have already made the local config file
@@ -149,24 +149,24 @@ def control_storage(action):
 			copy_influx_config(influx_config)
 		influx=find_influx_exe()
 		# start the influx server
-		print "Running: "+influx+" -config="+influx_config
+		print("Running: "+influx+" -config="+influx_config)
 		try:
 			call([influx, "-config="+influx_config])
 		except Exception as e:
-			msg = "Problem executing influxdb command %s -config=%s: %s" % (influx,influx_config,e)
+			msg = "Problem executing influxdb command {} -config={}: {}".format(influx,influx_config,e)
 			msg += "\nCheck PATH inclusion of system and python 'bin' directories"
-			print msg
+			print(msg)
 			logger.error(msg)
 	else:
-		print "Error: action not yet implemented!"
+		print("Error: action not yet implemented!")
 
 def control_dashboard(action):
 	"""Start or stop the webserver that hosts the dashboard"""
 	if action=='start':
-		print "Starting the dashboard..."
+		print("Starting the dashboard...")
 		cp.bin.webserver.webserver.setup_server()
 	else:
-		print "Error: action not yet implemented!"
+		print("Error: action not yet implemented!")
 
 def control_all(action):
 	import multiprocessing
@@ -274,7 +274,7 @@ def build_task(dao, spec):
 # time functions
 def now():
 	return time.time()
-	#return int(datetime.datetime.utcnow().strftime("%s"))
+	#return int(datetime.datetime.utcnow().strftime("{}"))
 
 def isARM():
 	import platform
@@ -334,7 +334,7 @@ def get_SA():
 	try:
 		ret = urllib2.urlopen('http://ip.42.pl/raw').read()
 	except Exception as e: # We may be offline
-		logger.error("Unable to request ip.42.pl server's view of our IP, we may be offline: %s" % e)
+		logger.error("Unable to request ip.42.pl server's view of our IP, we may be offline: {}" % e)
 		return "0.0.0.0"
 	return ret
 
