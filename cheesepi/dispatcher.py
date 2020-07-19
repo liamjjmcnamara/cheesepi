@@ -9,14 +9,13 @@ from sched import scheduler
 
 import cheesepi as cp
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 start_time = time.time()
 
+logging.basicConfig(level=logging.INFO)
+#logger = logging.getLogger(__name__)
+logger = cp.config.get_logger(__name__)
 config = cp.config.get_config()
 dao = cp.config.get_dao()
-logger = cp.config.get_logger(__name__)
 
 # Create scheduler object, use 'real' time
 s = scheduler(time.time, time.sleep)
@@ -62,7 +61,6 @@ def asynchronous(task):
 # Perform a scheduled Task, and schedule the next
 def run(task, spec):
 	"""Run this task asychronously, and schedule the next period"""
-	#logger.info("Running %s @ %f" % (task.spec['taskname'], timestamp()))
 	pool.apply_async(asynchronous, args=[task], callback=log_result)
 	if repeat_schedule:
 		schedule_task(spec)
@@ -80,7 +78,6 @@ def schedule_task(spec):
 	next_period = 1 + math.floor(time.time() / task.spec['period'])
 	abs_start = (next_period*task.spec['period']) + task.spec['offset']
 	delay = abs_start-time.time()
-	#logger.debug("Time calculations: %d\t%f\t%f" % (next_period,abs_start,delay))
 	# queue up a task, include spec for next period
 	s.enter(delay, NORMAL, run, [task, spec])
 

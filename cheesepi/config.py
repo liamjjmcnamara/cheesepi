@@ -113,6 +113,7 @@ def get_dao():
 
 	msg = "Fatal error: 'database' type not set to a valid value in config file, exiting."
 	logger.error("Database type: " + str(config.get('database'))+"\n" + msg)
+	print(msg)
 	exit(1)
 
 def generate_uuid():
@@ -124,7 +125,6 @@ def generate_uuid():
 def ensure_default_config(clobber=False):
 	"""If config file does not exist, try to copy from default.
 	   Also add a local secret to the file."""
-	# is there already a local config file?
 	if os.path.isfile(config_file) and not clobber:
 		return
 

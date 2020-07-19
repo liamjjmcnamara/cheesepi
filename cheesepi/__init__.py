@@ -33,4 +33,4 @@ import cheesepi.dispatcher
 #import tasks
 
 # poor form
-import bin
+import cheesepi.bin

@@ -78,7 +78,7 @@ def show_status():
 	print("")
 	ip = cp.utils.get_IP()
 	port = cp.config.get_dashboard_port()
-	print("Dashboard URL: http://{}:{}" % (ip,port))
+	print("Dashboard URL: http://{}:{}".format(ip, port))
 
 def list_data(task="ping"):
 	dao = cp.config.get_dao()
@@ -125,7 +125,7 @@ def find_influx_exe():
 		else:
 			print("Error: Can't find a valid InfluxDB binary")
 			print("Install InfluxDB and then set the binary's path as 'database_exe' in cheesepi.conf")
-			sys.exit(1)
+			sys.exit(2)
 
 def control_storage(action):
 	"""Start or stop InfluxDB, either the bundled or the system version"""
@@ -138,7 +138,7 @@ def control_storage(action):
 			os.makedirs(storage_dir)
 		except Exception as e:
 			print("Tried to make the directory, but it failed: {}".format(e))
-			sys.exit(1)
+			sys.exit(3)
 
 	if action=='start':
 		print("Starting InfluxDB...")
@@ -384,5 +384,4 @@ def stdev(data):
 	ss = sumsq(data)
 	pvar = ss/n # the population variance
 	return pvar**0.5
-
 

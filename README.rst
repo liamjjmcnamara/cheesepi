@@ -90,15 +90,5 @@ field is *taskname*, all others are option parameters to the task. Lines can
 be commented out with a *#*.
 
 
-BUGS and problems
------------------
-
-
-* If your install fails fails with --single-version-externally-managed* it may
-  be caused by problems with python version 2.7.11 To solve try the following:
-
-``$ sudo conda install python=2.7.10``
-
-
 * If you find other issues, please email cheesepi@sics.se
 
