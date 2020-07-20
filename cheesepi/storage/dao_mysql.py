@@ -84,7 +84,7 @@ class DAO_mysql(dao.DAO):
 		names = names[:-2]
 		values = values[:-2]
 
-		query = """INSERT INTO %s (%s) VALUES (%s)""" % (op_type, names, values)
+		query = """INSERT INTO {} ({}) VALUES ({})""".format(op_type, names, values)
 		with self.conn:
 			cursor = self.conn.cursor();
 			cursor.execute(query)

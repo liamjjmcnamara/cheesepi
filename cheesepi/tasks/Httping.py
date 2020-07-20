@@ -27,7 +27,7 @@ class Httping(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info("HTTPinging: %s @ %f, PID: %d" % (self.spec['landmark'], time.time(), os.getpid()))
+		logger.info("HTTPinging: {} @ {}, PID: {}".format(self.spec['landmark'], time.time(), os.getpid()))
 		self.measure(self.spec['landmark'], self.spec['ping_count'])
 
 
@@ -43,10 +43,9 @@ class Httping(Task.Task):
 
 	#ping function
 	def perform(self, landmark, ping_count):
-		command = "httping -S -c %s %s" % (ping_count, landmark)
+		command = "httping -S -c {} {}".format(ping_count, landmark)
 		logging.info("Executing: "+command)
 		self.spec['return_code'], output = self.execute(command)
-		#print self.spec['return_code'], output
 		if self.spec['return_code']==0:
 			return output
 		return None

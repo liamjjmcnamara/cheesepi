@@ -54,7 +54,7 @@ def save_file(fileitem, ip, user=None):
         	chunk = fileitem.file.read(100000)
         	if not chunk: break
         	fd.write (chunk)
-	return 'The file "%s" was uploaded successfully from  %s' % (filepath, ip)
+	return 'The file "{}" was uploaded successfully from  {}'.format(filepath, ip)
 
 def ensure_dir(path):
 	if not os.path.exists(path):

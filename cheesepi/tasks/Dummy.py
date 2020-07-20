@@ -16,7 +16,7 @@ class Dummy(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info("Dummy: %s @ %f, PID: %d" % (self.spec['message'], time.time(), os.getpid()))
+		logger.info("Dummy: {} @ {}, PID: {}".format(self.spec['message'], time.time(), os.getpid()))
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ class Wifi(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info("Wifi scan @ %f, PID: %d" % (time.time(), os.getpid()))
+		logger.info("Wifi scan @ {}, PID: {}".format(time.time(), os.getpid()))
 		self.measure()
 
 	def measure(self):

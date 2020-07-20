@@ -19,7 +19,7 @@ class Dash(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info("Dash download: %s @ %f, PID: %d" % (self.spec['source'], time.time(), os.getpid()))
+		logger.info("Dash download: {} @ {}, PID: {}".format(self.spec['source'], time.time(), os.getpid()))
 		self.measure()
 
 	# measure and record funtion
@@ -27,7 +27,6 @@ class Dash(Task.Task):
 		self.spec['start_time'] = cp.utils.now()
 		self.perform()
 		self.spec['end_time'] = cp.utils.now()
-		#print "Output: %s" % op_output
 		#logger.debug(op_output)
 		if not 'download_speed' in self.spec:
 			self.spec['download_speed'] = self.spec['downloaded'] /(self.spec['end_time']-self.spec['start_time'])
@@ -55,7 +54,6 @@ class Dash(Task.Task):
 	def callback(self, stats):
 		#logger.info(stats)
 		if stats['status'] == 'finished':
-			#print stats
 			if 'downloaded_bytes' in stats:
 				self.spec['downloaded'] = stats['downloaded_bytes']
 			else:
@@ -69,7 +67,7 @@ class Dash(Task.Task):
 				os.remove(stats['filename'])
 				pass
 			except Exception as e:
-				logger.error("Problem removing Dash.py Youtube file %s: %s" % (stats['filename'], str(e)))
+				logger.error("Problem removing Dash.py Youtube file {}: {}".format(stats['filename'], str(e)))
 
 
 if __name__ == "__main__":

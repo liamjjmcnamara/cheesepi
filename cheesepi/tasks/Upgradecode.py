@@ -18,7 +18,7 @@ class Upgradecode(Task.Task):
 		self.spec['taskname'] = "upgradecode"
 
 	def run(self):
-		logger.info("Updating pip and cheesepi, @ %d PID: %d" % (time(), os.getpid()))
+		logger.info("Updating pip and cheesepi, @ {} PID: {}".format(time(), os.getpid()))
 		pip.main(['install', '--upgrade', "cheesepi"])
 
 	def pip_upgrade(self):

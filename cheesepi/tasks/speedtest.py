@@ -62,8 +62,8 @@ except ImportError:
         e_http_py3 = sys.exc_info()
         raise SystemExit('Your python installation is missing required HTTP '
                          'client classes:\n\n'
-                         'Python 2: %s\n'
-                         'Python 3: %s' % (e_http_py2[1], e_http_py3[1]))
+                         'Python 2: {}\n'
+                         'Python 3: {}'.format(e_http_py2[1], e_http_py3[1]))
 
 try:
     from Queue import Queue
@@ -201,10 +201,10 @@ def build_user_agent():
 
     ua_tuple = (
         'Mozilla/5.0',
-        '(%s; U; %s; en-us)' % (platform.system(), platform.architecture()[0]),
-        'Python/%s' % platform.python_version(),
+        '({}; U; {}; en-us)'.format(platform.system(), platform.architecture()[0]),
+        'Python/{}'.format(platform.python_version()),
         '(KHTML, like Gecko)',
-        'speedtest-cli/%s' % __version__
+        'speedtest-cli/{}'.format(__version__)
     )
     user_agent = ' '.join(ua_tuple)
     return user_agent
@@ -218,7 +218,7 @@ def build_request(url, data=None, headers={}):
     """
 
     if url[0] == ':':
-        schemed_url = '%s%s' % (scheme, url)
+        schemed_url = '{}{}'.format(scheme, url)
     else:
         schemed_url = url
 
@@ -308,7 +308,7 @@ class FilePutter(threading.Thread):
         self.url = url
         chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         data = chars * (int(round(int(size) / 36.0)))
-        self.data = ('content1=%s' % data[0:int(size) - 9]).encode()
+        self.data = ('content1={}'.format(data[0:int(size) - 9]).encode())
         del data
         self.result = None
         self.starttime = start
@@ -385,7 +385,7 @@ def getConfig():
     request = build_request('://www.speedtest.net/speedtest-config.php')
     uh, e = catch_request(request)
     if e:
-        print_('Could not retrieve speedtest.net configuration: %s' % e)
+        print_('Could not retrieve speedtest.net configuration: {}'.format(e))
         sys.exit(1)
     configxml = []
     while 1:
@@ -436,7 +436,7 @@ def closestServers(client, all=False):
             request = build_request(url)
             uh, e = catch_request(request)
             if e:
-                errors.append('%s' % e)
+                errors.append('{}'.format(e))
                 raise SpeedtestCliServerListError
             serversxml = []
             while 1:
@@ -481,8 +481,8 @@ def closestServers(client, all=False):
             break
 
     if not servers:
-        print_('Failed to retrieve list of speedtest.net servers:\n\n %s' %
-               '\n'.join(errors))
+        print_('Failed to retrieve list of speedtest.net servers:\n\n {}'.format(
+               '\n'.join(errors)))
         sys.exit(1)
 
     closest = []
@@ -507,7 +507,7 @@ def getBestServer(servers):
     results = {}
     for server in servers:
         cum = []
-        url = '%s/latency.txt' % os.path.dirname(server['url'])
+        url = '{}/latency.txt'.format(os.path.dirname(server['url']))
         urlparts = urlparse(url)
         for i in range(0, 3):
             try:
@@ -645,8 +645,8 @@ def speedtest():
         if args.list:
             serverList = []
             for server in servers:
-                line = ('%(id)4s) %(sponsor)s (%(name)s, %(country)s) '
-                        '[%(d)0.2f km]' % server)
+                line = ('{id}4s) {sponsor}s ({name}s, {country}s) '
+                        '[{d} km]'.format(server))
                 serverList.append(line)
             print_('\n'.join(serverList).encode('utf-8', 'ignore'))
             sys.exit(0)
@@ -654,7 +654,7 @@ def speedtest():
         servers = closestServers(config['client'])
 
     if not args.simple:
-        print_('Testing from %(isp)s (%(ip)s)...' % config['client'])
+        print_('Testing from {isp}s ({ip}s)...'.format(config['client']))
 
     if args.server:
         try:
@@ -683,8 +683,8 @@ def speedtest():
         if not extension:
             for ext in ['php', 'asp', 'aspx', 'jsp']:
                 try:
-                    request = build_request('%s/speedtest/upload.%s' %
-                                            (args.mini, ext))
+                    request = build_request('{}/speedtest/upload.{}'.format(
+                                            (args.mini, ext)))
                     f = urlopen(request)
                 except:
                     pass
@@ -702,7 +702,7 @@ def speedtest():
             'sponsor': 'Speedtest Mini',
             'name': urlparts[1],
             'd': 0,
-            'url': '%s/speedtest/upload.%s' % (url.rstrip('/'), extension[0]),
+            'url': '{}/speedtest/upload.{}'.format((url.rstrip('/'), extension[0])),
             'latency': 0,
             'id': 0
         }]
@@ -716,24 +716,24 @@ def speedtest():
         best = getBestServer(servers)
 
     if not args.simple:
-        print_(('Hosted by %(sponsor)s (%(name)s) [%(d)0.2f km]: '
-               '%(latency)s ms' % best).encode('utf-8', 'ignore'))
+        print_(('Hosted by {sponsor}s ({name}s) [{d} km]: '
+               '{latency}s ms'.format(best)).encode('utf-8', 'ignore'))
     else:
-        print_('Ping: %(latency)s ms' % best)
+        print_('Ping: {latency}s ms'.format(best))
 
     sizes = [350, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000]
     urls = []
     for size in sizes:
         for i in range(0, 4):
-            urls.append('%s/random%sx%s.jpg' %
-                        (os.path.dirname(best['url']), size, size))
+            urls.append('{}/random{}x{}.jpg'.format(
+                        (os.path.dirname(best['url']), size, size)))
     if not args.simple:
         print_('Testing download speed', end='')
     dlspeed = downloadSpeed(urls, args.simple)
     if not args.simple:
         print_()
-    print_('Download: %0.2f M%s/s' %
-           ((dlspeed / 1000 / 1000) * args.units[1], args.units[0]))
+    print_('Download:.format(0.2f M{}/s'.format(
+           ((dlspeed / 1000 / 1000) * args.units[1], args.units[0])))
 
     sizesizes = [int(.25 * 1000 * 1000), int(.5 * 1000 * 1000)]
     sizes = []
@@ -745,8 +745,8 @@ def speedtest():
     ulspeed = uploadSpeed(best['url'], sizes, args.simple)
     if not args.simple:
         print_()
-    print_('Upload: %0.2f M%s/s' %
-           ((ulspeed / 1000 / 1000) * args.units[1], args.units[0]))
+    print_('Upload:.format(0.2f M{}/s'.format(
+           ((ulspeed / 1000 / 1000) * args.units[1], args.units[0])))
 
     if args.share and args.mini:
         print_('Cannot generate a speedtest.net share results image while '
@@ -755,22 +755,20 @@ def speedtest():
         dlspeedk = int(round((dlspeed / 1000) * 8, 0))
         ping = int(round(best['latency'], 0))
         ulspeedk = int(round((ulspeed / 1000) * 8, 0))
-
+        tohash = '{}-{}-{}-{}'.format(ping, ulspeedk, dlspeedk, '297aae72')
         # Build the request to send results back to speedtest.net
         # We use a list instead of a dict because the API expects parameters
         # in a certain order
         apiData = [
-            'download=%s' % dlspeedk,
-            'ping=%s' % ping,
-            'upload=%s' % ulspeedk,
+            'download={}'.format(dlspeedk,
+            'ping={}'.format(ping,
+            'upload={}'.format(ulspeedk,
             'promo=',
-            'startmode=%s' % 'pingselect',
-            'recommendedserverid=%s' % best['id'],
-            'accuracy=%s' % 1,
-            'serverid=%s' % best['id'],
-            'hash=%s' % md5(('%s-%s-%s-%s' %
-                             (ping, ulspeedk, dlspeedk, '297aae72'))
-                            .encode()).hexdigest()]
+            'startmode={}'.format('pingselect',
+            'recommendedserverid={}'.format(best['id'],
+            'accuracy={}'.format(1,
+            'serverid={}'.format(best['id'],
+            'hash={}'.format(md5(toHash).encode().hexdigest())]
 
         headers = {'Referer': 'http://c.speedtest.net/flash/speedtest.swf'}
         request = build_request('://www.speedtest.net/api/api.php',
@@ -778,7 +776,7 @@ def speedtest():
                                 headers=headers)
         f, e = catch_request(request)
         if e:
-            print_('Could not submit results to speedtest.net: %s' % e)
+            print_('Could not submit results to speedtest.net: {}'.format(e)
             sys.exit(1)
         response = f.read()
         code = f.code
@@ -794,8 +792,8 @@ def speedtest():
             print_('Could not submit results to speedtest.net')
             sys.exit(1)
 
-        print_('Share results: %s://www.speedtest.net/result/%s.png' %
-               (scheme, resultid[0]))
+        print_('Share results: {}://www.speedtest.net/result/{}.png'.format(
+               (scheme, resultid[0])))
     data = {
         'download': dlspeed,
         'ping'    : best['latency'],

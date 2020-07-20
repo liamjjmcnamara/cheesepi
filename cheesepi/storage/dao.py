@@ -70,7 +70,7 @@ class DAO:
 	def to_json(self, table, dic):
 		for k in dic.keys():
 			dic[k]=dic[k]
-		json_str = '[{"measurement":"%s", "fields":%s} "database":"cheesepi"]' % (table,dic)
+		json_str = '[{"measurement":"{}", "fields":{}} "database":"cheesepi"]'.format(table,dic)
 		return json_str
 
 # The following need not be reimplemented in subclasses

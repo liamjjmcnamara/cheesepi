@@ -25,7 +25,7 @@ class Ping(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info("Pinging: %s @ %f, PID: %d" % (self.spec['landmark'], time.time(), os.getpid()))
+		logger.info("Pinging: {} @ {}, PID: {}".format(self.spec['landmark'], time.time(), os.getpid()))
 		self.measure()
 
 	# measure and record funtion
@@ -44,7 +44,7 @@ class Ping(Task.Task):
 	#ping function
 	def perform(self, landmark, ping_count, packet_size):
 		packet_size -= 8 # change packet size to payload length!
-		command = "ping -c %s -s %s %s"%(ping_count, packet_size, landmark)
+		command = "ping -c {} -s {} {}".format(ping_count, packet_size, landmark)
 		logging.info("Executing: "+command)
 		logger.info(command)
 		self.spec['return_code'], output = self.execute(command)

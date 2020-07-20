@@ -4,7 +4,7 @@ import logging
 from subprocess import Popen, PIPE
 
 import cheesepi as cp
-import Task
+import cheesepi.task.Task
 
 logger = cp.config.get_logger(__name__)
 
@@ -20,7 +20,7 @@ class iPerf(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info("iPerfing: %s:%d @ %f, PID: %d" % (self.spec['landmark'], self.spec['port'], time.time(), os.getpid()))
+		logger.info("iPerfing: {}:{} @ {}, PID: {}".format(self.spec['landmark'], self.spec['port'], time.time(), os.getpid()))
 		self.measure()
 
 	# measure and record funtion
@@ -35,8 +35,8 @@ class iPerf(Task.Task):
 	#ping function
 	def perform(self, landmark, port):
 		# an ARM version of this is located at 'client/tools/iperf3'
-		execute = "iperf3 -yc -f k -p %d -c %s"%(port, landmark)
-		print execute
+		execute = "iperf3 -yc -f k -p {} -c {}".format(port, landmark)
+		print(execute)
 		logging.info("Executing: "+execute)
 		logger.debug(execute)
 		result = Popen(execute ,stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)

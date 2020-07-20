@@ -34,8 +34,6 @@ class PingResultParser(ResultParser):
 		result_objects = []
 
 		columns = inp[0]['series'][0]['columns']
-		#from pprint import pformat
-		#self.log.info("\n{}".format(pformat(columns)))
 
 		entries = [entry for entry in inp[0]['series'][0]['values']]
 		for entry in entries:
@@ -90,8 +88,6 @@ class PingResultParser(ResultParser):
 
 			r = Result.fromDict(db_entry)
 			result_objects.append(r)
-			#from pprint import pformat
-			#self.log.info(pformat(r.toDict()))
 
 		self._result_objects = result_objects
 

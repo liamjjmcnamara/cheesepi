@@ -23,7 +23,7 @@ class Throughput(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info("Speedtest throughput: @ %f, PID: %d" % (time.time(), os.getpid()))
+		logger.info("Speedtest throughput: @ {}, PID: {}".format((time.time(), os.getpid())))
 		self.measure()
 
 	# measure and record funtion
@@ -32,9 +32,9 @@ class Throughput(Task.Task):
 		self.spec['start_time'] = cp.utils.now()
 		try:
 			op_output = speedtest.speedtest()
-			print op_output
+			print(op_output)
 		except Exception as e:
-			logger.error("speedtest_cli failed: %s" % e)
+			logger.error("speedtest_cli failed: {}".format(e))
 			return
 		self.spec['end_time']= cp.utils.now()
 		logger.debug(op_output)

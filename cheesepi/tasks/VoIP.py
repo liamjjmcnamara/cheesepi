@@ -17,7 +17,7 @@ class VoIP(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info("Ringing: %s @ %f, PID: %d" % (self.spec['landmark'], time.time(), os.getpid()))
+		logger.info("Ringing: {} @ {}, PID: {}".format(self.spec['landmark'], time.time(), os.getpid()))
 		self.measure()
 
 	# measure and record funtion
@@ -44,5 +44,5 @@ if __name__ == "__main__":
 	spec = {}
 	voip_task = VoIP(dao, spec)
 	voip_task.run()
-	print voip_task.spec
+	print(voip_task.spec)
 

@@ -14,7 +14,7 @@ class PingB(Task.Task):
 		if not 'landmark' in self.spec: self.spec['landmark'] = "www.sics.se"
 
 	def run(self):
-		logger.info("PingBing %s @ %f PID: %d" % (self.spec['landmark'], time.time(), os.getpid()))
+		logger.info("PingBing {} @ {} PID: {}".format(self.spec['landmark'], time.time(), os.getpid()))
 		self.measure(self.spec['landmark'])
 
 	def measure(self, landmark):
@@ -39,11 +39,9 @@ class PingB(Task.Task):
 	def parse(self, data, start_time, end_time):
 		self.spec['start'] = start_time
 		self.spec['end']   = end_time
-		#print data
 		lines = data.split("\n")
 		hops=[]
 		for line in lines[2:-1]:
-			#print line
 			fields = line.split()
 			hops.append(self.parse_hop(fields))
 		#logger.debug("hops: ",hops)

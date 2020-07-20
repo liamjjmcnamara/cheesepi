@@ -60,7 +60,7 @@ def start_control_server():
 	control_server = CheeseRPCServer(dao).getStreamFactory(CheeseRPCServerFactory)
 
 	reactor.listenTCP(args.port, control_server)
-	log.info("Starting control server on port %d..." % args.port)
+	log.info("Starting control server on port {}...".format(args.port))
 	reactor.run()
 
 def start_upload_server():
@@ -92,5 +92,5 @@ def start_upload_server():
 	upload_server = Site(root)
 
 	reactor.listenTCP(args.port, upload_server)
-	log.info("Starting upload server on port %d..." % args.port)
+	log.info("Starting upload server on port {}...".format(args.port))
 	reactor.run()

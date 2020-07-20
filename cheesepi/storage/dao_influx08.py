@@ -57,7 +57,7 @@ database = "cheesepi"
 
 class DAO_influx(dao.DAO):
 	def __init__(self):
-		#logging.info("Connecting to influx: %s %s %s" % (username,password,database))
+		#logging.info("Connecting to influx: {} {} {}".format(username,password,database))
 		try: # Get a hold of a Influx connection
 			self.conn = InfluxDBClient(host, port, username, password, database)
 		except Exception as e:
@@ -100,13 +100,12 @@ class DAO_influx(dao.DAO):
 		dumped_db = {}
 		for series_name in series:
 			#print(series_name)
-			dumped_series = self.conn.query('select * from %s where time > %d ;' % (series_name,since*1000) )
+			dumped_series = self.conn.query('select * from {} where time > {} ;'.format(series_name,since*1000) )
 			#print(dumped_series)
 			dumped_db[series_name] = json.dumps(dumped_series)
 		return dumped_db
 
 	def format09(self,table,dic):
-		#print [{"measurement":table,"fields":dic}]
 		return [{'measurement':table,"database": "cheesepi","fields":dic,"tags": {"source":"dao"} }]
 		#return json_body
 
@@ -114,7 +113,7 @@ class DAO_influx(dao.DAO):
 		for k in dic.keys():
 				dic[k]=dic[k]
 		#json_dic = [{"name":table, "columns":dic.keys(), "points":[dic.values()]}]
-		json_str = '[{"name":"%s", "columns":%s, "points":[%s]}]' % (table,json.dumps(dic.keys()),json.dumps(dic.values()))
+		json_str = '[{"name":"{}", "columns":{}, "points":[{}]}]'.format(table,json.dumps(dic.keys()),json.dumps(dic.values()))
 		#json_str = '[{"name":"ping", "columns":["test"], "points":["value"]}]'
 		return json_str
 
@@ -126,7 +125,7 @@ class DAO_influx(dao.DAO):
 	# Operator interactions
 	def write_op(self, op_type, dic, binary=None):
 		if not self.validate_op(op_type):
-			logging.warning("Operation of type %s not valid: " % (op_type, str(dic)))
+			logging.warning("Operation of type {} not valid: ".format(op_type, str(dic)))
 			return
 		#if binary!=None:
 		#	 # save binary, check its not too big
@@ -137,7 +136,7 @@ class DAO_influx(dao.DAO):
 		dic['sign']    = md5
 
 		json = self.format08(op_type, dic)
-		print("Saving %s Op: %s".format(op_type, json))
+		print("Saving {} Op: {}".format(op_type, json))
 		try:
 			return self.conn.write_points(json)
 		except Exception as e:
@@ -159,7 +158,7 @@ class DAO_influx(dao.DAO):
 	# is always returned
 	def read_user_attribute(self, attribute):
 		try:
-			result = self.conn.query('select %s from user limit 1;' % attribute)
+			result = self.conn.query('select {} from user limit 1;'.format(attribute))
 			if result==[]:
 				return -1
 			column_index = result[0]['columns'].index(attribute)
@@ -178,7 +177,7 @@ class DAO_influx(dao.DAO):
 	def write_user_attribute(self, attribute, value):
 		# check we dont already exist
 		try:
-			print("Saving user attribute: %s to %s ".format(attribute, value))
+			print("Saving user attribute: {} to {} ".format(attribute, value))
 			json = self.format08("user", {attribute:value})
 			return self.conn.write_points(json)
 		except Exception as e:

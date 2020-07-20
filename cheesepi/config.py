@@ -188,7 +188,7 @@ def create_default_schedule(schedule_filename):
 		#try:
 		copyfile(default_schedule, schedule_filename)
 		#except Exception as e:
-		#	msg = "Problem copying schedule file - check permissions of %s: %s" % (cheesepi_dir, str(e))
+		#	msg = "Problem copying schedule file - check permissions of {}: {}".format((cheesepi_dir, str(e))
 		#	logger.error(msg)
 		#	exit(1)
 	else:
@@ -227,7 +227,7 @@ def load_remote_schedule():
 		schedule = response.read()
 		return schedule
 	except urllib2.HTTPError as e:
-		logger.error("The CheesePi controller server '%s' couldn\'t fulfill the request. Code: %s" % (url, str(e.code)))
+		logger.error("The CheesePi controller server '{}' couldn\'t fulfill the request. Code: {}".format(url, str(e.code)))
 	except urllib2.URLError as e:
 		logger.error('We failed to reach the central server: '+e.reason)
 	except:

@@ -39,4 +39,4 @@ class Task:
 
 	# this will be overridden by subclasses
 	def run(self):
-		print "Task not doing anything..."
+		print("Task not doing anything...")

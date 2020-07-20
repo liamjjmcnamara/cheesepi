@@ -23,16 +23,16 @@ class DNS(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info("DNS: @ %f, PID: %d" % (time.time(), os.getpid()))
+		logger.info("DNS: @ %f, PID: %d".format(time.time(), os.getpid()))
 		self.measure()
 
 	# measure and record funtion
 	def measure(self):
 		try:
 			op_output = self.query_authoritative_ns(self.spec['landmark'], log)
-			#print op_output
+			#print(op_output)
 		except Exception as e:
-			logger.error("DNS query failed: %s" % e)
+			logger.error("DNS query failed: {}".format(e))
 			return
 		logger.debug(op_output)
 		parsed_output = self.parse_output(op_output, self.spec['landmark'])
@@ -53,21 +53,21 @@ class DNS(Task.Task):
 
 		for i in xrange(len(n), 0, -1):
 			sub = '.'.join(n[i-1:])
-			log('Looking up %s on %s' % (sub, ns))
+			log('Looking up {} on {}'.format(sub, ns))
 			start_time = utils.now()
 			query = dns.message.make_query(sub, dns.rdatatype.NS)
 			response = dns.query.udp(query, ns)
 			end_time = utils.now()
 			delay = end_time - start_time
-			#logger.info("time: %f" % (delay))
+			#logger.info("time: %f".format(delay))
 			delays.append(delay)
 
 			rcode = response.rcode()
 			if rcode != dns.rcode.NOERROR:
 				if rcode == dns.rcode.NXDOMAIN:
-					raise Exception('%s does not exist.' % (sub))
+					raise Exception('{} does not exist.'.format(sub))
 				else:
-					raise Exception('Error %s' % (dns.rcode.to_text(rcode)))
+					raise Exception('Error {}'.format(dns.rcode.to_text(rcode)))
 
 			if len(response.authority) > 0:
 				rrsets = response.authority
@@ -78,22 +78,21 @@ class DNS(Task.Task):
 
 			# Handle all RRsets, not just the first one
 			for rrset in rrsets:
-				#print rrset
 				for rr in rrset:
 					if rr.rdtype == dns.rdatatype.SOA:
-						#log('Same server is authoritative for %s' % (sub))
+						#log('Same server is authoritative for {}'.format(sub))
 						pass
 					elif rr.rdtype == dns.rdatatype.A:
 						ns = rr.items[0].address
-						#log('Glue record for %s: %s' % (rr.name, ns))
+						#log('Glue record for {}: {}'.format(rr.name, ns))
 					elif rr.rdtype == dns.rdatatype.NS:
 						authority = rr.target
 						ns = default.query(authority).rrset[0].to_text()
-						#log('%s [%s] is authoritative for %s; ttl %i' % (authority, ns, sub, rrset.ttl))
+						#log('{} [{}] is authoritative for {}; ttl %i'.format(authority, ns, sub, rrset.ttl))
 						#result = rrset
 					else:
 						# IPv6 glue records etc
-						#log('Ignoring %s' % (rr))
+						#log('Ignoring {}'.format(rr))
 						pass
 		#return result
 		return delays

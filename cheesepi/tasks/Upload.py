@@ -27,7 +27,7 @@ class Upload(Task.Task):
 
 	def run(self):
 		"""Upload data server, may take some time..."""
-		logger.info("Uploading data... @ %f, PID: %d" % (time.time(), os.getpid()))
+		logger.info("Uploading data... @ {}, PID: {}".format(time.time(), os.getpid()))
 
 		self.dump_db()
 
@@ -38,7 +38,7 @@ class Upload(Task.Task):
 			logger.info("Never dumped this DB...")
 		else:
 			logger.info("Last dumped DB: "+str(last_dumped))
-		print "Last dumped DB: "+str(last_dumped)
+		print("Last dumped DB: "+str(last_dumped))
 
 		dumped_tables = self.dao.dump(last_dumped)
 		logger.debug(dumped_tables)
@@ -57,7 +57,6 @@ class Upload(Task.Task):
 		tar = tarfile.open(fileobj=fd, mode="w:gz")
 
 		for table in dumped_tables.keys():
-			#print table
 			table_info = tarfile.TarInfo(name=table+".json")
 			table_info.size=len(dumped_tables[table])
 			tar.addfile(table_info, StringIO.StringIO(dumped_tables[table]))
@@ -70,7 +69,7 @@ class Upload(Task.Task):
 			try:
 				r = requests.post("http://"+self.spec['collector'], data=parameters, files=files)
 				logger.debug("Uploaded, with response: "+r.text)
-				print "Uploaded, with response: "+r.text
+				print("Uploaded, with response: " + r.text)
 				cp.config.set_last_dumped() # record that we successfully dumped
 				return r.text
 			except:

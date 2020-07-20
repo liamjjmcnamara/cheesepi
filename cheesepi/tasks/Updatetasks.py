@@ -10,7 +10,7 @@ try:
 	from txmsgpackrpc.client import connect
 	enabled = True
 except ImportError:
-	print "Error: Can not import Twisted framework, CheesePi code updating is disabled..."
+	print("Error: Can not import Twisted framework, CheesePi code updating is disabled...")
 	raise
 
 import cheesepi as cp
@@ -31,7 +31,7 @@ class Updatetasks(Task.Task):
 		if not 'server' in spec: self.spec['server'] = cp.config.get_controller()
 
 	def run(self):
-		logger.info("Getting tasks for ID:%d from %s @ %f, PID: %d" % (self.spec['peer_id'], self.spec['server'], time(), os.getpid()))
+		logger.info("Getting tasks for ID:{} from {} @ {}, PID: {}".format(self.spec['peer_id'], self.spec['server'], time(), os.getpid()))
 		tasks = self.get_tasks(self.spec['peer_id'])
 		tasks.addCallback(self.act)
 
@@ -60,13 +60,13 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	if args.id is None:
-		print "Error: missing --id"
+		print("Error: missing --id")
 		exit()
 	if enabled:
 		reactor.callWhenRunning(main, args.id)
 		reactor.run()
 	else:
-		print "Error: Can not import Twisted framework, updating disabled..."
+		print("Error: Can not import Twisted framework, updating disabled...")
 
 
 

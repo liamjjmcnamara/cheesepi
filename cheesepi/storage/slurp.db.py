@@ -17,14 +17,14 @@ def slurp_database(dao, filename):
 	tar = tarfile.open(filename)
 	for member in tar.getmembers():
 		series_name = member.name[:-5] # trim '.json'
-		print series_name
+		print(series_name)
 		fd=tar.extractfile(member)
 		slurp_file(dao, series_name, fd)
 
 	tar.close()
 
 def usage():
-	print "Usage: %s <Dump .tgz file>" % sys.argv[0]
+	print("Usage: {} <Dump .tgz file>".format(sys.argv[0]))
 	sys.exit(1)
 
 if __name__ == "__main__":

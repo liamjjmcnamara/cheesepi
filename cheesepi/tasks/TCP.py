@@ -51,15 +51,15 @@ class Capturer(threading.Thread):
 		try:
 			p.open_live(dev, 65535, 0, 100)
 			p.setfilter(string.join(sys.argv[2:],' '), 0, 0)
-			logging.debug("Started packet capture module: Listening on %s: net=%s, mask=%s" % (dev, net, mask))
+			logging.debug("Started packet capture module: Listening on {}: net={}, mask={}".format(dev, net, mask))
 		except Exception, e:
-			print "Started packet capture module: open_live() failed for device='%s'. Error: %s" % (dev, str(e))
+			print("Started packet capture module: open_live() failed for device='{}'. Error: {}".format(dev, str(e)))
 
 		try:
 			while (not self.terminated): p.dispatch(1, self.filter_captured)
 		except KeyboardInterrupt as e:
-			print 'Shutting down: %s' % e
-		print '%d packets received, %d packets dropped, %d packets dropped by interface' % p.stats()
+			print('Shutting down: {}'.format(e))
+		print('{} packets received, {} packets dropped, {} packets dropped by interface'.format(p.stats()))
 
 	def filter_captured(self, pktlen, data, timestamp):
 		""" @brief Filter packet and store epoch time, arrival time since first packet and packet type.
@@ -68,13 +68,13 @@ class Capturer(threading.Thread):
 		# ensure we have a TCP IP data packet
 		#if not data: return
 		if (data[12:14]!='\x08\x00') or (data[23:24]!='\x06'):
-			#print "wrong packet type"
+			#print("wrong packet type")
 			return
 
 		ip_headers = self.parse_IP_hdr(data[14:])
 		# If the source addr or destination addr are server addr, then packet is relevant
 		if (not self.is_intended_dst(ip_headers['src_address']) and not self.is_intended_dst(ip_headers['dst_address'])):
-			#print "wrong dest"
+			#print("wrong dest")
 			return
 		tcp_headers = self.parse_TCP_hdr(ip_headers['data'])
 
@@ -91,7 +91,7 @@ class Capturer(threading.Thread):
 		summary['time'] = timestamp
 		if self.start_timestamp==-1: self.start_timestamp=timestamp
 		summary['delay'] = timestamp - self.start_timestamp
-		print summary
+		print(summary)
 		self.captured_pkts.append(summary)
 
 
@@ -159,12 +159,12 @@ class Capturer(threading.Thread):
 		@param Binary data
 		@return String of data. """
 		if s:
-			bytes = map(lambda x: '%.2x' % x, map(ord, s))
+			bytes = map(lambda x: '%.2x'.format(x, map(ord, s)))
 			for i in xrange(0,len(bytes)/16):
-				print '		   %s' % string.join(bytes[i*16:(i+1)*16],' ')
-			print '		   %s' % string.join(bytes[(i+1)*16:],' ')
+				print('		   {}'.format(string.join(bytes[i*16:(i+1)*16],' ')))
+			print('		   {}'.format(string.join(bytes[(i+1)*16:],' ')))
 		else:
-			print 'Empty'
+			print('Empty')
 
 
 	def print_packet(self, pktlen, data, timestamp):
@@ -176,22 +176,20 @@ class Capturer(threading.Thread):
 		if (data[12:14]=='\x08\x00') and (data[23:24]=='\x06'):
 
 			ip_parse = self.parse_IP_hdr(data[14:])
-			print '\n%s.%f %s > %s' % (time.strftime('%H:%M',
+			print('\n{}.%f {} > {}'.format(time.strftime('%H:%M',
 						time.localtime(timestamp)),
-						timestamp % 60,
-						ip_parse['src_address'],
-						ip_parse['dst_address'])
+						timestamp.format(60, ip_parse['src_address'], ip_parse['dst_address'])))
 			for key in ['version', 'header_len', 'tos', 'total_len', 'id',
 						'flags', 'fragment_offset', 'ttl']:
-				print '    %s: %d' % (key, ip_parse[key])
-			print '    protocol: %s' % protocols[ip_parse['protocol']]
-			print '    header checksum: %d' % ip_parse['checksum']
-			#print '	data:'
+				print('    {}: {}'.format(key, ip_parse[key]))
+			print('    protocol: {}'.formatprotocols[ip_parse['protocol']])
+			print('    header checksum: {}'.formatip_parse['checksum'])
+			#print('	data:'
 			#dumphex(ip_parse['data'])
 			tcp_parse = self.parse_TCP_hdr(ip_parse['data'])
 			for key in ['src_port', 'dst_port', 'seq', 'ack', 'dataOffset', 'flags', 'window', 'urg']:
-				print '    %s: %d' % (key, tcp_parse[key])
-			print '    data:'
+				print('    {}: {}'.format(key, tcp_parse[key]))
+			print('    data:')
 			self.dumphex(tcp_parse['data'])
 
 
@@ -204,7 +202,7 @@ class TCP(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		print "TCP capture: %s @ %f, PID: %d" % (self.spec['landmark'], time.time(), os.getpid())
+		print("TCP capture: {} @ %f, PID: {}".format(self.spec['landmark'], time.time(), os.getpid()))
 		pkt_capture = Capturer(self.spec['landmark'])
 		pkt_capture.setDaemon(True)
 		pkt_capture.start()
@@ -212,10 +210,10 @@ class TCP(Task.Task):
 			time.sleep(3)
 			requests.get("http://"+self.spec['landmark'])
 		else:
-			print "Error HTTP problem"
+			print("Error HTTP problem")
 		pkt_capture.terminated = True
 		pkt_capture.join()
-		print pkt_capture.captured_pkts
+		print(pkt_capture.captured_pkts)
 
 	# measure and record funtion
 	def measure(self):

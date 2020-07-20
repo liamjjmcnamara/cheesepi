@@ -21,7 +21,7 @@ class Status(Task.Task):
 
 	# actually perform the measurements, no arguments required
 	def run(self):
-		logger.info("Status @ %f, PID: %d" % (time.time(), os.getpid()))
+		logger.info("Status @ {}, PID: {}".format(time.time(), os.getpid()))
 		self.measure()
 
 	#main measure funtion

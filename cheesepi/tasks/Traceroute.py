@@ -16,7 +16,7 @@ class Traceroute(Task.Task):
 		if not 'landmark' in self.spec: self.spec['landmark'] = "www.sics.se"
 
 	def run(self):
-		logger.info("Tracerouting %s @ %f PID: %d" % (self.spec['landmark'], time.time(), os.getpid()))
+		logger.info("Tracerouting {} @ {} PID: {}".format(self.spec['landmark'], time.time(), os.getpid()))
 		self.measure(self.spec['landmark'])
 
 	def measure(self, landmark):
@@ -34,7 +34,7 @@ class Traceroute(Task.Task):
 	#Execute traceroute function
 	def perform(self, target):
 		#traceroute command"
-		command = "traceroute %s"%(target)
+		command = "traceroute {}".format(target)
 		self.spec['return_code'], output = self.execute(command)
 		if self.spec['return_code']==0:
 			return output
@@ -152,7 +152,7 @@ class Traceroute(Task.Task):
 #parses arguments
 if __name__ == "__main__":
 	if platform.system()=="Darwin":
-		print "Seems to be Darwin OS (Mac), exiting..."
+		print("Seems to be Darwin OS (Mac), exiting...")
 		exit(0)
 
 	#general logging here? unable to connect etc

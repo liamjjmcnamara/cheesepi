@@ -14,7 +14,7 @@ class MTR(Task.Task):
 		if not 'landmark' in self.spec: self.spec['landmark'] = "www.sics.se"
 
 	def run(self):
-		logger.info("MTRing %s @ %f PID: %d" % (self.spec['landmark'], time.time(), os.getpid()))
+		logger.info("MTRing %s @ {} PID: {}".format(self.spec['landmark'], time.time(), os.getpid()))
 		self.measure(self.spec['landmark'])
 
 	def measure(self, landmark):
@@ -30,7 +30,7 @@ class MTR(Task.Task):
 	#Execute traceroute function
 	def perform(self, target, count=10):
 		#traceroute command"
-		command = "mtr  --report-wide -c%d %s"%(count,target)
+		command = "mtr  --report-wide -c{} %s"%(count,target)
 		self.spec['return_code'], output = self.execute(command)
 		if self.spec['return_code']==0:
 			return output
@@ -39,14 +39,11 @@ class MTR(Task.Task):
 	def parse(self, data, start_time, end_time):
 		self.spec['start'] = start_time
 		self.spec['end']   = end_time
-		#print data
 		lines = data.split("\n")
 		hops=[]
 		for line in lines[2:-1]:
-			#print line
 			fields = line.split()
 			hops.append(self.parse_hop(fields))
-		#logger.debug("hops: ",hops)
 		self.spec['hopcount']=len(hops)
 		self.spec['uploaded']= 64*8 * self.spec['hopcount']
 		return hops

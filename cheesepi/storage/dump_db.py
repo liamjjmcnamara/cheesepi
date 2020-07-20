@@ -13,12 +13,12 @@ dump_url = "http://cheesepi.sics.se/upload.py"
 def perform_database_dump(since=None):
 	dao = cp.config.get_dao()
 	# make a temp file that dies on running out of scope
-	filename = "cheesepi-%d.tgz" % int(time.time())
-	print filename
+	filename = "cheesepi-{}.tgz".format(int(time.time()))
+	print(filename)
 
 	if since==None:
 		since = cp.config.get_last_dumped(dao)
-		print "Last dumped: "+str(since)
+		print("Last dumped: "+str(since))
 
 	dumped_tables = dao.dump(since)
 	ethmac = cp.utils.getCurrMAC()
@@ -28,7 +28,7 @@ def perform_database_dump(since=None):
 	# make a zipfile object with this file handle
 	tar = tarfile.open(fileobj=fd, mode="w:gz")
 	for table in dumped_tables.keys():
-		print table
+		print(table)
 		table_info = tarfile.TarInfo(name=table+".json")
 		table_info.size=len(dumped_tables[table])
 		tar.addfile(table_info, StringIO.StringIO(dumped_tables[table]))
@@ -40,7 +40,7 @@ def perform_database_dump(since=None):
 	if (upload):
 		files = {'file': ('archive.tgz', fd), }
 		r = requests.post(dump_url, data=parameters, files=files)
-		print r.text
+		print(r.text)
 		fd.close()
 		# remember when we last successfully dumped our data
 		cp.config.set_last_dumped()

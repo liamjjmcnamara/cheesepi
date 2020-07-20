@@ -61,7 +61,7 @@ class RestAPI(object):
 		if len(vpath)>0:
 			filename = "/".join(vpath)
 		serve_path = os.path.join(serveroot,filename)
-		print "Serving: %s" % serve_path
+		print("Serving: {}".format(serve_path))
 		return serve_file(serve_path)
 
 
