@@ -30,6 +30,7 @@ import cheesepi.config
 import cheesepi.utils
 import cheesepi.storage
 import cheesepi.dispatcher
+import cheesepi.log
 #import tasks
 
 # poor form

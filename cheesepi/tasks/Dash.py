@@ -1,10 +1,9 @@
 import time
 import os
 
-import youtube_dl
-
 import cheesepi as cp
-import Task
+import cheesepi.tasks.Task
+import cheesepi.tasks.youtube_dl
 
 logger = cp.config.get_logger(__name__)
 

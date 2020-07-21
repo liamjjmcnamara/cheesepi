@@ -15,7 +15,7 @@ except ImportError as e:
 	raise # re-raise the problem
 
 import cheesepi as cp
-import Task
+import cheesepi.task.Task
 
 logger = cp.config.get_logger(__name__)
 

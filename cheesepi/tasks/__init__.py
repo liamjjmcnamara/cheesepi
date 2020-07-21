@@ -19,4 +19,3 @@ try:
 	from cheesepi.tasks.Beacon import Beacon
 except Exception as e:
 	print("Warning: Problems importing Beacon/Updatetasks, python Twisted probably not installed. {}".format(e))
-

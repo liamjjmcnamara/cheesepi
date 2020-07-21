@@ -6,10 +6,10 @@ import os
 # slightly modified to return collected data
 # It also requires a newer argparse, 1.4 works
 # https://pypi.python.org/pypi/speedtest-cli/
-import speedtest
 
 import cheesepi as cp
-import Task
+import cheesepi.tasks.Task
+import cheesepi.tasks.speedtest
 
 logger = cp.config.get_logger(__name__)
 

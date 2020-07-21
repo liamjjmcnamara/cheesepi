@@ -8,7 +8,7 @@ import sys
 import argparse
 
 import cheesepi as cp
-import Task
+import cheesepi.tasks.Task
 
 logger = cp.config.get_logger(__name__)
 

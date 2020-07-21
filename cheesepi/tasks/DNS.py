@@ -1,15 +1,14 @@
 import time
 import os
 
-# http://www.dnspython.org/examples.html
-import dns.query
-import dns.resolver
-#from dns.exception import DNSException
-
 #import cheesepi as cp
 import cheesepi.config as config
 import cheesepi.utils as utils
-import Task
+import cheesepi.tasks.Task
+
+# http://www.dnspython.org/examples.html
+import cheesepi.tasks.dns.query
+import cheesepi.tasks.dns.resolver
 
 logger = config.get_logger(__name__)
 

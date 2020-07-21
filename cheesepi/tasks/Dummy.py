@@ -2,9 +2,9 @@ import time
 import os
 
 import cheesepi as cp
-import Task
+import cheesepi.tasks.Task
 
-logger = cp.config.get_logger(__name__)
+logger = cp.log.get_logger(__name__)
 
 class Dummy(Task.Task):
 
@@ -26,4 +26,3 @@ if __name__ == "__main__":
 	spec = {}
 	dummy_task = Dummy(dao, spec)
 	dummy_task.run()
-

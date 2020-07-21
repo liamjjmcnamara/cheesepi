@@ -33,7 +33,6 @@ source = None
 shutdown_event = None
 scheme = 'http'
 
-
 # Used for bound_interface
 socket_socket = socket.socket
 

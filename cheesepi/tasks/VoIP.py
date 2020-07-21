@@ -3,7 +3,7 @@ import os
 from subprocess import Popen, PIPE
 
 import cheesepi as cp
-import Task
+import cheesepi.tasks.Task
 
 logger = cp.config.get_logger(__name__)
 

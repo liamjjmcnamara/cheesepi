@@ -4,8 +4,8 @@ import re
 import logging
 import socket
 
-import Task
 import cheesepi as cp
+import cheesepi.tasks.Task
 
 logger = cp.config.get_logger(__name__)
 
