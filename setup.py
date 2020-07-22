@@ -3,14 +3,14 @@
   All rights reserved.
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
-	  * Redistributions of source code must retain the above copyright
-		notice, this list of conditions and the following disclaimer.
-	  * Redistributions in binary form must reproduce the above copyright
-		notice, this list of conditions and the following disclaimer in the
-		documentation and/or other materials provided with the distribution.
-	  * Neither the name of The Swedish Institute of Computer Science nor the
-		names of its contributors may be used to endorse or promote products
-		derived from this software without specific prior written permission.
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+  * Neither the name of The Swedish Institute of Computer Science nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -33,56 +33,56 @@ import os
 from setuptools import setup
 
 def readme():
-	with open('README.rst') as f:
-		return f.read()
+    with open('README.rst') as f:
+        return f.read()
 
 def version():
-	with open(os.path.join('cheesepi','VERSION')) as f:
-		return f.read().strip()
+    with open(os.path.join('cheesepi','VERSION')) as f:
+        return f.read().strip()
 
 setup(
-	name='cheesepi',
-	description='CheesePi Library',
-	long_description=readme(),
-	version=version(),
-	url='http://cheesepi.sics.se',
-	packages=['cheesepi'],
-	author='Liam McNamara',
-	author_email='liamjjmcnamara@gmail.com',
-	license= 'Apache 2.0',
-	platforms = ["RaspberryPi"],
-	classifiers=[
-		'Development Status :: 4 - Beta',
-		'License :: OSI Approved :: Apache Software License',
-		'Operating System :: POSIX',
-		'Programming Language :: Python :: 3',
-		'Topic :: Internet',
-		'Topic :: System :: Logging',
-	],
+    name='cheesepi',
+    description='CheesePi Library',
+    long_description=readme(),
+    version=version(),
+    url='http://cheesepi.sics.se',
+    packages=['cheesepi'],
+    author='Liam McNamara',
+    author_email='liamjjmcnamara@gmail.com',
+    license= 'Apache 2.0',
+    platforms = ["RaspberryPi"],
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'License :: OSI Approved :: Apache Software License',
+        'Operating System :: POSIX',
+        'Programming Language :: Python :: 3',
+        'Topic :: Internet',
+        'Topic :: System :: Logging',
+    ],
 
-	# Runtime dependencies
-	python_requires='>=3.6',
-	install_requires=[
-		'setuptools',
-		'pip',
-		'future',
-		'argparse',
-		'influxdb',
-		'cherrypy',
-		'uptime',
-		'dnspython',
-		'youtube_dl',
-		'speedtest-cli',
-	],
-	extras_require = {
-		'extra' : ['txmsgpackrpc','twisted','netifaces','pymongo'],
-	},
+    # Runtime dependencies
+    python_requires='>=3.6',
+    install_requires=[
+        'setuptools',
+        'pip',
+        'future',
+        'argparse',
+        'influxdb',
+        'cherrypy',
+        'uptime',
+        'dnspython',
+        'youtube_dl',
+        'speedtest-cli',
+    ],
+    extras_require={
+        'extra': ['txmsgpackrpc', 'twisted', 'netifaces', 'pymongo'],
+    },
 
-	entry_points={
-		'console_scripts':[
-			'cheesepi = cheesepi.utils:console_script',
-		]
-	},
-	include_package_data=True,
-	zip_safe=False,
+    entry_points={
+        'console_scripts':[
+            'cheesepi = cheesepi.utils:console_script',
+        ]
+    },
+    include_package_data=True,
+    zip_safe=False,
 )

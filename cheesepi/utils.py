@@ -34,14 +34,13 @@ import time
 import random
 import urllib
 import argparse
-import multiprocessing
 from subprocess import call
 
 import cheesepi as cp
-from cheesepi.tasks import *
+import cheesepi.dispatcher as dispatcher
+#from cheesepi.tasks import *
 
 logger = cp.config.get_logger(__name__)
-
 
 def console_script():
     """Command line tool, installed through setup.py"""
@@ -52,19 +51,27 @@ def console_script():
                         help="Perform one of the following commands: " + str(commands))
     args = parser.parse_args()
 
-    if args.command == "status": show_status()
-    elif args.command == "reset": reset_install()
-    elif args.command == "upgrade": upgrade_install()
-    elif args.command == "list": list_data(args.option)
+    if args.command == "status":
+        show_status()
+    elif args.command == "start":
+        start_dispatcher()
+    elif args.command == "stop":
+        stop_dispatcher()
+    elif args.command == "reset":
+        reset_install()
+    elif args.command == "upgrade":
+        upgrade_install()
+    elif args.command == "list":
+        list_data(args.option)
     else:
         parser.error("Unknown COMMAND")
 
 def show_status():
     """Just print the location of important CheesePi dirs/files"""
     schedule_file = os.path.join(cp.config.cheesepi_dir, cp.config.get('schedule'))
-    print("Status of CheesePi install (version {}):".format(cp.config.version()))
+    print("Status of CheesePi install (version {})\n--".format(cp.config.version()))
     print("Install dir:\t{}".format(cp.config.cheesepi_dir))
-    print("Log file:\t{}".format(cp.config.log_file))
+    #print("Log file:\t{}".format(cp.config.log_file))
     print("Config file:\t{}".format(cp.config.config_file))
     print("Schedule file:\t{}".format(schedule_file))
     print("")
@@ -73,16 +80,17 @@ def show_status():
     print("Dashboard URL: http://{}:{}".format(ip, port))
 
 def list_data(task="ping"):
-    dao = cp.config.get_dao()
+    dao = cp.storage.get_dao()
     print(dao.read_op(task))
 
-def control_dispatcher(action):
-    """Start or stop the dispatcher"""
-    if action == 'start':
-        print("Starting the dispatcher...")
-        cp.dispatcher.start()
-    else:
-        print("Error: action not yet implemented!")
+def start_dispatcher():
+    print("Starting the dispatcher...")
+    dispatcher.start()
+
+def stop_dispatcher():
+    print("Stoping the dispatcher...")
+    dispatcher.stop()
+    sys.exit(1)
 
 # def copy_influx_config(influx_config):
     # """Copy the default influx config to a local copy (probably in $HOME)"""
@@ -259,7 +267,6 @@ def write_file(ret, start_time, ethmac):
     fd = open(filename, 'w')
     fd.write(ret)
     fd.close()
-
 
 def get_MAC():
     """Return the MAC of this device's first NIC"""

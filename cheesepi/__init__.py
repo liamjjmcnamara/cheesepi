@@ -26,12 +26,12 @@ Authors: ljjm@sics.se
 Testers:
 """
 
+import cheesepi.log
 import cheesepi.config
 import cheesepi.utils
-import cheesepi.storage
-import cheesepi.dispatcher
-import cheesepi.log
+#import cheesepi.storage
+#import cheesepi.dispatcher
 #import tasks
 
 # poor form
-import cheesepi.bin
+#import cheesepi.bin

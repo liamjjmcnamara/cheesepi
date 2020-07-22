@@ -3,14 +3,14 @@
   All rights reserved.
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
-      * Redistributions of source code must retain the above copyright
-        notice, this list of conditions and the following disclaimer.
-      * Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
-      * Neither the name of The Swedish Institute of Computer Science nor the
-        names of its contributors may be used to endorse or promote products
-        derived from this software without specific prior written permission.
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+  * Neither the name of The Swedish Institute of Computer Science nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -34,16 +34,15 @@ import os
 import uuid
 import urllib
 import logging
+from pprint import PrettyPrinter
 
-import cheesepi as cp
+import cheesepi.log
 
 # Globals
-if 'HOME' in os.environ:
-    HOME_DIR = os.environ['HOME']
-else:
-    HOME_DIR = "/root"
 cheesepi_dir = os.path.dirname(os.path.realpath(__file__))
 config_file = os.path.join(cheesepi_dir, "cheesepi.conf")
+
+logger = cheesepi.log.get_logger()
 
 # Store log in user's home directory
 # if not os.access(log_file, os.W_OK):
@@ -59,6 +58,11 @@ config_file = os.path.join(cheesepi_dir, "cheesepi.conf")
 def get_logger(source=""):
     """Return logger for the specific file"""
     return logging.getLogger(source)
+
+def get_home():
+    if 'HOME' in os.environ:
+        return os.environ['HOME']
+    return "/root"
 
 def update_logging():
     global log_file
@@ -97,29 +101,6 @@ def update_logging():
         out_handler.setFormatter(log_formatter)
         root_logger.addHandler(out_handler)
 
-def get_dao():
-    if config_equal('database', "mongo"):
-        return cp.storage.dao_mongo.DAO_mongo()
-    elif config_equal('database', "influx08"):
-        return cp.storage.dao_influx08.DAO_influx()
-    elif config_equal('database', "influx09"):
-        return cp.storage.dao_influx09.DAO_influx()
-    elif config_equal('database', "mysql"):
-        return cp.storage.dao_mysql.DAO_mysql()
-    elif config_equal('database', "null"):
-        return cp.storage.dao.DAO()
-    # and so on for other database engines...
-
-    msg = "Fatal error: 'database' type not set to a valid value in config file, exiting."
-    logger.error("Database type: " + str(config.get('database')) + "\n" + msg)
-    print(msg)
-    exit(1)
-
-def generate_uuid():
-    """Generate a uuid, to use for identification and data signing"""
-    return str(uuid.uuid4())
-
-
 def ensure_default_config(clobber=False):
     """If config file does not exist, try to copy from default.
        Also add a local secret to the file."""
@@ -143,6 +124,10 @@ def ensure_default_config(clobber=False):
             exit(1)
     else:
         logger.error("Can not find default config file!")
+
+def generate_uuid():
+    """Generate a uuid, to use for identification and data signing"""
+    return str(uuid.uuid4())
 
 def read_config():
     # ensure we have a config file to read
@@ -283,7 +268,6 @@ def should_dump(dao=None):
         return True
     return False
 
-
 def copyfile(from_file, to_file, replace={}):
     """Copy a file <from_file> to <to_file> replacing all occurrences"""
     logger.info(from_file + " " + to_file + " " + str(replace))
@@ -350,24 +334,22 @@ def config_true(key):
     """Is the specified key defined and true in the config object?"""
     key = clean(key)
     if key in config:
-        if config[key]=="true":
+        if config[key] == "true":
             return True
     return False
-
 
 # clean the identifiers
 def clean(id):
     return id.strip().lower()
 
 def main():
-    from pprint import PrettyPrinter
     printer = PrettyPrinter(indent=4)
     printer.pprint(config)
 
 
 # Some accounting to happen on every import (mostly for config file making)
 config = get_config()
-update_logging()
+#update_logging()
 
 if __name__ == "__main__":
     main()

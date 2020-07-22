@@ -1,5 +1,5 @@
 
-from cheesepi.tasks.Task import Task
+from cheesepi.tasks.task import Task
 from cheesepi.tasks.Dummy import Dummy
 from cheesepi.tasks.Upload import Upload
 from cheesepi.tasks.Upgradecode import Upgradecode
@@ -15,7 +15,8 @@ from cheesepi.tasks.iPerf import iPerf
 from cheesepi.tasks.Wifi import Wifi
 
 try:
-	from cheesepi.tasks.Updatetasks import Updatetasks
-	from cheesepi.tasks.Beacon import Beacon
-except Exception as e:
-	print("Warning: Problems importing Beacon/Updatetasks, python Twisted probably not installed. {}".format(e))
+    from cheesepi.tasks.Updatetasks import Updatetasks
+    from cheesepi.tasks.Beacon import Beacon
+except ImportError as exception:
+    print("Warning: Problems importing Beacon/Updatetasks, " +
+          "python Twisted probably not installed. {}".format(exception))

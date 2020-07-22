@@ -2,27 +2,28 @@ import time
 import os
 
 import cheesepi as cp
-import cheesepi.tasks.Task
+#import cheesepi.tasks.Task
 
 logger = cp.log.get_logger(__name__)
 
-class Dummy(Task.Task):
+class Dummy(cp.tasks.task.Task):
 
-	# construct the process and perform pre-work
-	def __init__(self, dao, spec):
-		Task.Task.__init__(self, dao, spec)
-		self.spec['taskname']    = "dummy"
-		if not 'message' in self.spec: self.spec['message'] = "This is not a test"
+    # construct the process and perform pre-work
+    def __init__(self, dao, spec):
+        Task.Task.__init__(self, dao, spec)
+        self.spec['taskname']    = "dummy"
+        if not 'message' in self.spec:
+            self.spec['message'] = "This is not a test"
 
-	# actually perform the measurements, no arguments required
-	def run(self):
-		logger.info("Dummy: {} @ {}, PID: {}".format(self.spec['message'], time.time(), os.getpid()))
+    # actually perform the measurements, no arguments required
+    def run(self):
+        logger.info("Dummy: {} @{}, PID: {}".format(self.spec['message'], time.time(), os.getpid()))
 
 
 if __name__ == "__main__":
-	#general logging here? unable to connect etc
-	dao = cp.config.get_dao()
+    #general logging here? unable to connect etc
+    dao = cp.storage.get_dao()
 
-	spec = {}
-	dummy_task = Dummy(dao, spec)
-	dummy_task.run()
+    spec = {}
+    dummy_task = Dummy(dao, spec)
+    dummy_task.run()

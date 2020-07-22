@@ -23,21 +23,12 @@ results in the influxdb. To view the results, the dashboard can optionally be
 started.
 
 
-Start the storage server:
-~~~~~~~~~~~~~~~~~~~~~~~~~
-``$ cheesepi start storage``
-
-This will try to run the ARM version of influxdb from the CheesePi
-distribution. Alternatively, you can run the system version via its normal
-command.
-
-
 Start measuring
 ~~~~~~~~~~~~~~~
 
 To start the measurement tasks being dipsatched run the following the command:
 
-``$ cheesepi start dispatcher``
+``$ cheesepi start``
 
 The tasks specified in the schedule (described below), will be executing
 according to their timing information. The InfluxDB needs to be running in
