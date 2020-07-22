@@ -49,12 +49,12 @@ config_file = os.path.join(cheesepi_dir, "cheesepi.conf")
 # if not os.access(log_file, os.W_OK):
     # print("Error: can not open log file {}".format(log_file))
     # sys.exit(1)
-LOG_LEVEL = logging.ERROR
-LOG_STDOUT = False
-LOG_FORMAT = "%(asctime)s-%(name)s:%(levelname)s; %(message)s"
-logging.basicConfig(filename=log_file, level=LOG_LEVEL, format=LOG_FORMAT)
-logger = logging.getLogger(__file__)
-
+# LOG_LEVEL = logging.ERROR
+# LOG_STDOUT = False
+# LOG_FORMAT = "%(asctime)s-%(name)s:%(levelname)s; %(message)s"
+# log_file = os.path.join(LOG_DIR, ".cheesepi.log")
+# logging.basicConfig(filename=log_file, level=LOG_LEVEL, format=LOG_FORMAT)
+# logger = logging.getLogger(__file__)
 
 def get_logger(source=""):
     """Return logger for the specific file"""
