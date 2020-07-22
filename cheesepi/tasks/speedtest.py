@@ -22,6 +22,7 @@ import math
 import signal
 import socket
 import timeit
+import hashlib
 import platform
 import threading
 
@@ -755,19 +756,20 @@ def speedtest():
         ping = int(round(best['latency'], 0))
         ulspeedk = int(round((ulspeed / 1000) * 8, 0))
         tohash = '{}-{}-{}-{}'.format(ping, ulspeedk, dlspeedk, '297aae72')
+        digest = hashlib.md5(toHash).encode().hexdigest()
         # Build the request to send results back to speedtest.net
         # We use a list instead of a dict because the API expects parameters
         # in a certain order
         apiData = [
-            'download={}'.format(dlspeedk,
-            'ping={}'.format(ping,
-            'upload={}'.format(ulspeedk,
+            'download={}'.format(dlspeedk),
+            'ping={}'.format(ping),
+            'upload={}'.format(ulspeedk),
             'promo=',
-            'startmode={}'.format('pingselect',
-            'recommendedserverid={}'.format(best['id'],
-            'accuracy={}'.format(1,
-            'serverid={}'.format(best['id'],
-            'hash={}'.format(md5(toHash).encode().hexdigest())]
+            'startmode={}'.format('pingselect'),
+            'recommendedserverid={}'.format(best['id']),
+            'accuracy={}'.format(1),
+            'serverid={}'.format(best['id']),
+            'hash={}'.format(digest)]
 
         headers = {'Referer': 'http://c.speedtest.net/flash/speedtest.swf'}
         request = build_request('://www.speedtest.net/api/api.php',
@@ -775,7 +777,7 @@ def speedtest():
                                 headers=headers)
         f, e = catch_request(request)
         if e:
-            print_('Could not submit results to speedtest.net: {}'.format(e)
+            print('Could not submit results to speedtest.net: {}'.format(e))
             sys.exit(1)
         response = f.read()
         code = f.code

@@ -31,7 +31,7 @@ import cheesepi.config
 import cheesepi.utils
 #import cheesepi.storage
 #import cheesepi.dispatcher
-#import tasks
+import cheesepi.tasks
 
 # poor form
 #import cheesepi.bin

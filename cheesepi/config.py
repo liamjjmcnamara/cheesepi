@@ -29,8 +29,9 @@ Description: Handles all configuration file duties, including initialising
 a local config file (if one does not exist, and initialising logging options
 """
 
-import sys
 import os
+import sys
+import json
 import uuid
 import urllib
 import logging
@@ -119,9 +120,10 @@ def ensure_default_config(clobber=False):
         }
         try:
             copyfile(default_config, config_file, replace=replace)
-        except Exception as e:
-            print("Error: Problem copying config file - check permissions of {}\n{}".format(cheesepi_dir, e))
-            exit(1)
+        except Exception as exception:
+            print("Error: Problem copying config file - check permissions of {}\n{}".format(
+                cheesepi_dir, exception))
+            sys.exit(1)
     else:
         logger.error("Can not find default config file!")
 
@@ -136,8 +138,8 @@ def read_config():
         fd = open(config_file)
         lines = fd.readlines()
         fd.close()
-    except Exception as e:
-        logger.error("Error: can not read config file: "+str(e))
+    except Exception as exception:
+        logger.error("Error: can not read config file: "+str(exception))
         # should copy from default location!
         sys.exit(1)
     return lines
@@ -145,20 +147,22 @@ def read_config():
 def get_config():
     import re
     config = {}
-    lines  = read_config()
+    lines = read_config()
     for line in lines:
         # strip comment and badly formed lines
-        if re.match('^\s*#', line) or not re.search('=', line):
+        if re.match(r'^\s*#', line) or not re.search('=', line):
             continue
         # logger.debug(line)
         (key, value_string) = line.split("=", 1)
         value = value_string.strip()
-        if value=="true":  value=True
-        if value=="false": value=False
+        if value == "true":
+            value = True
+        if value == "false":
+            value = False
         config[clean(key)] = value
     config['cheesepi_dir'] = cheesepi_dir
-    config['config_file']  = config_file
-    config['version']      = version()
+    config['config_file'] = config_file
+    config['version'] = version()
     return config
 
 def create_default_schedule(schedule_filename):
@@ -171,15 +175,15 @@ def create_default_schedule(schedule_filename):
         #try:
         copyfile(default_schedule, schedule_filename)
         #except Exception as e:
-        #	msg = "Problem copying schedule file - check permissions of {}: {}".format((cheesepi_dir, str(e))
+        #	msg = "Problem copying schedule file - check permissions of {}: {}".format(
+        # (cheesepi_dir, str(e))
         #	logger.error(msg)
-        #	exit(1)
+        #	sys.exit(1)
     else:
         logger.error("Can not find default schedule file schedule.default.conf!")
         sys.exit(1)
 
 def load_local_schedule():
-    import json
     schedule_filename = os.path.join(cheesepi_dir, config['schedule'])
     if not os.path.isfile(schedule_filename):
         create_default_schedule(schedule_filename)
@@ -189,42 +193,42 @@ def load_local_schedule():
         lines = f.readlines()
 
     schedule = []
-    for l in lines:
-        if l.strip()=="" or l.strip().startswith("#"):
+    for line in lines:
+        if line.strip() == "" or line.strip().startswith("#"):
             continue # skip this comment line
         try:
-            spec = json.loads(l)
+            spec = json.loads(line)
             schedule.append(spec)
-        except:
-            logger.error("JSON task spec not parsed: "+l)
-            pass
+        except Exception as exception:
+            logger.error("JSON task spec not parsed: " + line)
     return schedule
 
 def load_remote_schedule():
     """See if we can grab a schedule from the central server
     this should (in future) include authentication"""
-    try:
-        url = 'http://cheesepi.sics.se/schedule.dat'
-        response = urllib2.urlopen(url)
-        schedule = response.read()
-        return schedule
-    except urllib2.HTTPError as e:
-        logger.error("The CheesePi controller server '{}' couldn\'t fulfill the request. Code: {}".format(url, str(e.code)))
-    except urllib2.URLError as e:
-        logger.error('We failed to reach the central server: ' + e.reason)
-    except:
-        logger.error("Unrecognised problem when downloading remote schedule...")
+    # try:
+        # url = 'http://cheesepi.sics.se/schedule.dat'
+        # response = urllib.urlopen(url)
+        # schedule = response.read()
+        # return schedule
+    # except urllib.HTTPError as exception:
+        # message = "The CheesePi controller server '{}' couldn\'t fulfill the request. Code: {}"
+        # logger.error(message.format(url, str(exception.code)))
+    # except urllib.URLError as exception:
+        # logger.error('We failed to reach the central server: ' + exception.reason)
+    # except:
+        # logger.error("Unrecognised problem when downloading remote schedule...")
     return None
 
 def set_last_updated(dao=None):
     if dao is None:
-        dao = get_dao()
-    dao.write_user_attribute("last_updated", cp.utils.now())
+        dao = cheesepi.storage.get_dao()
+    dao.write_user_attribute("last_updated", cheesepi.utils.now())
 
 def get_last_updated(dao=None):
     """When did we last update our code from the central server?"""
     if dao is None:
-        dao = get_dao()
+        dao = cheesepi.storage.get_dao()
     last_updated = dao.read_user_attribute("last_updated")
     # convert to seconds
     return last_updated
@@ -239,19 +243,19 @@ def should_update(dao=None):
         return False
     last_updated = get_last_updated(dao)
     update_period = get_update_period()
-    if last_updated < (cp.utils.now() - update_period):
+    if last_updated < (cheesepi.utils.now() - update_period):
         return True
     return False
 
 def set_last_dumped(dao=None):
     if dao is None:
-        dao = get_dao()
-    dao.write_user_attribute("last_dumped", cp.utils.now())
+        dao = cheesepi.storage.get_dao()
+    dao.write_user_attribute("last_dumped", cheesepi.utils.now())
 
 def get_last_dumped(dao=None):
     """When did we last dump our data to the central server?"""
     if dao is None:
-        dao = get_dao()
+        dao = cheesepi.storage.get_dao()
     last_dumped = dao.read_user_attribute("last_dumped")
     # convert to seconds
     return last_dumped
@@ -264,7 +268,7 @@ def should_dump(dao=None):
     """Should we update our code?"""
     last_dumped = get_last_dumped(dao)
     dump_period = get_dump_period()
-    if (last_dumped < (cp.utils.now()-dump_period)):
+    if last_dumped < (cheesepi.utils.now()-dump_period):
         return True
     return False
 
@@ -274,21 +278,20 @@ def copyfile(from_file, to_file, replace={}):
     with open(from_file, "rt") as fin, open(to_file, "wt") as fout:
         for line in fin:
             for occurence, replacement in replace.items():
-            	line = line.replace(occurence, replacement)
+                line = line.replace(occurence, replacement)
             fout.write(line)
 
 def get_controller():
     if "controller" in config:
         return config['controller']
-    else:
-        return "http://cheesepi.sics.se"
+    return "http://cheesepi.sics.se"
 
 def get_cheesepi_dir():
     return config['cheesepi_dir']
 
 def make_databases():
     cmd = get_cheesepi_dir()+"/install/make_influx_DBs.sh"
-    logger.warn("Making databases: " + cmd)
+    logger.warning("Making databases: " + cmd)
     os.system(cmd)
 
 def version():
@@ -339,8 +342,8 @@ def config_true(key):
     return False
 
 # clean the identifiers
-def clean(id):
-    return id.strip().lower()
+def clean(identifier):
+    return identifier.strip().lower()
 
 def main():
     printer = PrettyPrinter(indent=4)

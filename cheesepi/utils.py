@@ -36,11 +36,11 @@ import urllib
 import argparse
 from subprocess import call
 
-import cheesepi as cp
+import cheesepi
 import cheesepi.dispatcher as dispatcher
 #from cheesepi.tasks import *
 
-logger = cp.config.get_logger(__name__)
+logger = cheesepi.config.get_logger(__name__)
 
 def console_script():
     """Command line tool, installed through setup.py"""
@@ -68,19 +68,19 @@ def console_script():
 
 def show_status():
     """Just print the location of important CheesePi dirs/files"""
-    schedule_file = os.path.join(cp.config.cheesepi_dir, cp.config.get('schedule'))
-    print("Status of CheesePi install (version {})\n--".format(cp.config.version()))
-    print("Install dir:\t{}".format(cp.config.cheesepi_dir))
-    #print("Log file:\t{}".format(cp.config.log_file))
-    print("Config file:\t{}".format(cp.config.config_file))
+    schedule_file = os.path.join(cheesepi.config.cheesepi_dir, cheesepi.config.get('schedule'))
+    print("Status of CheesePi install (version {})\n--".format(cheesepi.config.version()))
+    print("Install dir:\t{}".format(cheesepi.config.cheesepi_dir))
+    #print("Log file:\t{}".format(cheesepi.config.log_file))
+    print("Config file:\t{}".format(cheesepi.config.config_file))
     print("Schedule file:\t{}".format(schedule_file))
     print("")
-    ip = cp.utils.get_IP()
-    port = cp.config.get_dashboard_port()
+    ip = cheesepi.utils.get_IP()
+    port = cheesepi.config.get_dashboard_port()
     print("Dashboard URL: http://{}:{}".format(ip, port))
 
 def list_data(task="ping"):
-    dao = cp.storage.get_dao()
+    dao = cheesepi.storage.get_dao()
     print(dao.read_op(task))
 
 def start_dispatcher():
@@ -99,10 +99,10 @@ def stop_dispatcher():
     # if not os.path.exists(storage_dir):
         # print("Warning: Default InfluxDB storage dir {} does not exist!".format(storage_dir))
         # print("Make the directory and user editable:\n sudo mkdir {} && chown $USER {}".format(storage_dir, storage_dir))
-    # influx_dir = cp.config.cheesepi_dir + "/bin/tools/influxdb"
+    # influx_dir = cheesepi.config.cheesepi_dir + "/bin/tools/influxdb"
     # default_config = os.path.join(influx_dir, "config.toml")
     # print("Warning: copying from default config: {}".format(default_config))
-    # cp.config.copyfile(default_config, influx_config, replace={"INFLUX_DIR":influx_dir})
+    # cheesepi.config.copyfile(default_config, influx_config, replace={"INFLUX_DIR":influx_dir})
 
 def test_execute(cmd_array):
     """Return true if cmd_array can execute"""
@@ -114,14 +114,14 @@ def test_execute(cmd_array):
 
 # def find_influx_exe():
     # """See which influxdb we should use"""
-    # config_path = cp.config.get("database_exe")
+    # config_path = cheesepi.config.get("database_exe")
     # if config_path: # if database exectable was set in config file
         # return config_path
     # elif (test_execute(["influxdb", "-h"])):
         # return "influxdb"
     # else:
         # if isARM():
-          # return cp.config.cheesepi_dir+"/bin/tools/influxdb/influxdb.arm"
+          # return cheesepi.config.cheesepi_dir+"/bin/tools/influxdb/influxdb.arm"
         # else:
           # print("Error: Can't find a valid InfluxDB binary")
           # print("Install InfluxDB and then set the binary's path as 'database_exe' in cheesepi.conf")
@@ -164,7 +164,7 @@ def test_execute(cmd_array):
     # """Start or stop the webserver that hosts the dashboard"""
     # if action=='start':
         # print("Starting the dashboard...")
-        # cp.bin.webserver.webserver.setup_server()
+        # cheesepi.bin.webserver.webserver.setup_server()
     # else:
         # print("Error: action not yet implemented!")
 
@@ -182,7 +182,7 @@ def reset_install():
     home_dir = os.path.expanduser("~")
     influx_config = os.path.join(home_dir, ".influxconfig.toml")
     copy_influx_config(influx_config)
-    cp.config.ensure_default_config(True)
+    cheesepi.config.ensure_default_config(True)
 
 def upgrade_install():
     """Try and pull new version of the code from PyPi"""
@@ -192,7 +192,7 @@ def upgrade_install():
 
 def make_series():
     """Ensure that database contains series grafana and cheesepi"""
-    dao = cp.config.get_dao()
+    dao = cheesepi.storage.get_dao()
     # TODO: dont make if already exists
     dao.make_database("cheesepi")
     dao.make_database("grafana")
@@ -210,43 +210,43 @@ def build_task(dao, spec):
 
     spec['taskname'] = spec['taskname'].lower()
     if spec['taskname'] == 'ping':
-        return cp.tasks.Ping(dao, spec)
+        return cheesepi.tasks.ping.Ping(dao, spec)
     if spec['taskname'] == 'httping':
-        return cp.tasks.Httping(dao, spec)
+        return cheesepi.tasks.Httping(dao, spec)
     if spec['taskname'] == 'traceroute':
-        return cp.tasks.Traceroute(dao, spec)
+        return cheesepi.tasks.Traceroute(dao, spec)
     if spec['taskname'] == 'dash':
-        return cp.tasks.Dash(dao, spec)
+        return cheesepi.tasks.Dash(dao, spec)
     if spec['taskname'] == 'dns':
-        return cp.tasks.DNS(dao, spec)
+        return cheesepi.tasks.dns.DNS(dao, spec)
     if spec['taskname'] == 'throughput':
-        return cp.tasks.Throughput(dao, spec)
+        return cheesepi.tasks.Throughput(dao, spec)
     if spec['taskname'] == 'iperf':
-        return cp.tasks.iPerf(dao, spec)
+        return cheesepi.tasks.iPerf(dao, spec)
     if spec['taskname'] == 'mtr':
-        return cp.tasks.MTR(dao, spec)
+        return cheesepi.tasks.MTR(dao, spec)
     if spec['taskname'] == 'upload':
-        return cp.tasks.Upload(dao, spec)
+        return cheesepi.tasks.Upload(dao, spec)
     if spec['taskname'] == 'status':
-        return cp.tasks.Status(dao, spec)
+        return cheesepi.tasks.Status(dao, spec)
     if spec['taskname'] == 'wifi':
-        return cp.tasks.Wifi(dao, spec)
+        return cheesepi.tasks.Wifi(dao, spec)
     if spec['taskname'] == 'dummy':
-        return cp.tasks.Dummy(dao, spec)
+        return cheesepi.tasks.Dummy(dao, spec)
     if spec['taskname'] == 'upload':
-        return cp.tasks.Upload(dao, spec)
+        return cheesepi.tasks.Upload(dao, spec)
     if spec['taskname'] == 'upgradecode':
-        return cp.tasks.Upgradecode(dao, spec)
+        return cheesepi.tasks.Upgradecode(dao, spec)
     if spec['taskname'] == 'beacon':
         try:
-            return cp.tasks.Beacon(dao, spec)
+            return cheesepi.tasks.Beacon(dao, spec)
         except: # return dummy Task
-            return cp.tasks.Task(dao)
+            return cheesepi.tasks.Task(dao)
     elif spec['taskname'] == 'updatetasks':
         try:
-            return cp.tasks.Updatetasks(dao, spec)
+            return cheesepi.tasks.Updatetasks(dao, spec)
         except:
-            return cp.tasks.Task(dao)
+            return cheesepi.tasks.Task(dao)
     else:
         raise Exception('Task name not specified! '+str(spec))
 
@@ -274,7 +274,7 @@ def get_MAC():
 
 def get_host_id():
     """Return this host's ID"""
-    return str(hashlib.md5(get_MAC()).hexdigest())
+    return str(hashlib.md5(get_MAC().encode("utf-8")).hexdigest())
 
 #get our currently used MAC address
 def getCurrMAC():
@@ -306,7 +306,7 @@ def get_IP():
     return "127.0.0.1"
 
 def get_SA():
-    """get our percieved remote source address"""
+    """Get our percieved remote source address"""
     try:
         ret = urllib.urlopen('http://ip.42.pl/raw').read()
     except Exception as e: # We may be offline

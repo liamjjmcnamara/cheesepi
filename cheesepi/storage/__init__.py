@@ -2,9 +2,8 @@ import sys
 
 import cheesepi.config
 import cheesepi.storage.dao
-import cheesepi.log
 
-logger = cheesepi.config.get_logger(__name__)
+logger = cheesepi.log.get_logger()
 
 try:
     import cheesepi.storage.dao_mongo
@@ -45,8 +44,7 @@ def get_dao():
     if cheesepi.config.config_equal('database', "null"):
         return cheesepi.storage.dao.DAO()
 
-    msg = "Fatal error: database '{}' type not a valid value in config file, exiting.".format(
-        str(cheesepi.config.config.get('database')))
-    logger.error(msg)
+    msg = "Fatal error: 'database' type not set to a valid value in config file, exiting."
+    logger.error("Database type: " + str(cheesepi.config.get('database')) + "\n" + msg)
     print(msg)
     sys.exit(1)
