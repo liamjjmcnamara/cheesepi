@@ -75,9 +75,9 @@ def show_status():
     print("Config file:\t{}".format(cheesepi.config.config_file))
     print("Schedule file:\t{}".format(schedule_file))
     print("")
-    ip = cheesepi.utils.get_IP()
+    ip_addr = cheesepi.utils.get_IP()
     port = cheesepi.config.get_dashboard_port()
-    print("Dashboard URL: http://{}:{}".format(ip, port))
+    print("Dashboard URL: http://{}:{}".format(ip_addr, port))
 
 def list_data(task="ping"):
     dao = cheesepi.storage.get_dao()
@@ -217,8 +217,8 @@ def build_task(dao, spec):
         return cheesepi.tasks.Traceroute(dao, spec)
     if spec['taskname'] == 'dash':
         return cheesepi.tasks.Dash(dao, spec)
-    if spec['taskname'] == 'dns':
-        return cheesepi.tasks.dns.DNS(dao, spec)
+    # if spec['taskname'] == 'dns':
+        # return cheesepi.tasks.dns.DNS(dao, spec)
     if spec['taskname'] == 'throughput':
         return cheesepi.tasks.Throughput(dao, spec)
     if spec['taskname'] == 'iperf':

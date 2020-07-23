@@ -26,6 +26,7 @@ Authors: ljjm@sics.se
 Testers:
 """
 
+import sys
 import logging
 import hashlib
 
@@ -35,18 +36,19 @@ import gridfs
 import bson
 from bson.json_util import dumps
 
-import cheesepi as cp
-import cheesepi.storage.dao as dao
+import cheesepi.config
+from . import dao
 
 class DAO_mongo(dao.DAO):
     def __init__(self):
+        super().__init__()
         try: # Get a hold of a MongoDB connection
-            self.conn = pymongo.MongoClient('localhost', 27017 )
+            self.conn = pymongo.MongoClient('localhost', 27017)
         except:
             msg = "Error: Connection to Mongo database failed! Ensure MongoDB is running."
             logging.error(msg)
             print(msg)
-            exit(1)
+            sys.exit(1)
         self.db = self.conn.cheesepi
         self.fs = gridfs.GridFS(self.db)
 
@@ -61,20 +63,20 @@ class DAO_mongo(dao.DAO):
         if not self.validate_op(op_type,dic):
             return
         collection = self.db[op_type]
-        if binary!=None:
+        if binary != None:
             # save binary, check its not too big
             dic['binary'] = bson.Binary(binary)
-        config = cp.config.get_config()
+        config = cheesepi.config.get_config()
         dic['version'] = config['version']
         md5 = hashlib.md5(config['secret']+str(dic)).hexdigest()
-        dic['sign']    = md5
+        dic['sign'] = md5
 
         print("Saving %s Operation: {}".format(op_type, dic))
         try:
             id = collection.insert(dic)
         except:
             logging.error("Database PyMongo write failed!")
-            exit(1)
+            sys.exit(1)
         return id
 
 

@@ -28,9 +28,9 @@ Testers:
 
 import cheesepi.log
 import cheesepi.config
-import cheesepi.utils
-#import cheesepi.storage
+import cheesepi.storage
 #import cheesepi.dispatcher
+import cheesepi.utils
 import cheesepi.tasks
 
 # poor form

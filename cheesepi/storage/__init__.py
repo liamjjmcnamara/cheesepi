@@ -1,30 +1,24 @@
 import sys
 
 import cheesepi.config
-import cheesepi.storage.dao
+from . import dao
+from . import dao_influx
 
 logger = cheesepi.log.get_logger()
+
+try:
+    import cheesepi.storage.dao_influx
+except ImportError as exception:
+    print("\nProblem importing InfluxDB python module...")
+    print("Error: " + str(exception))
+    print("Possibly try: 'pip3 install influxdb'")
 
 try:
     import cheesepi.storage.dao_mongo
 except ImportError as exception:
     print("\nProblem importing Mongo python module (or GridFS/bson)...")
     print("Error: " + str(exception))
-    print("Possibly try: 'pip install pymongo'")
-
-try:
-    import cheesepi.storage.dao_influx08
-except ImportError as exception:
-    print("\nProblem importing InfluxDB-08 python module...")
-    print("Error: " + str(exception))
-    print("Possibly try: 'pip install influxdb'")
-
-try:
-    import cheesepi.storage.dao_influx09
-except ImportError as exception:
-    print("\nProblem importing InfluxDB-09 python module...")
-    print("Error: " + str(exception))
-    print("Possibly try: 'pip install influxdb'")
+    print("Possibly try: 'pip3 install pymongo'")
 
 #try:
 #    import dao_mysql
@@ -37,8 +31,8 @@ def get_dao():
         return cheesepi.storage.dao_mongo.DAO_mongo()
     # if cheesepi.config.config_equal('database', "influx08"):
         # return cheesepi.storage.dao_influx08.DAO_influx()
-    if cheesepi.config.config_equal('database', "influx09"):
-        return cheesepi.storage.dao_influx09.DAO_influx()
+    if cheesepi.config.config_equal('database', "influx"):
+        return dao_influx.DAO_influx()
     # if cheesepi.config.config_equal('database', "mysql"):
         # return cheesepi.storage.dao_mysql.DAO_mysql()
     if cheesepi.config.config_equal('database', "null"):

@@ -2,6 +2,7 @@ import time
 import os
 
 import cheesepi
+import cheesepi.log
 import cheesepi.tasks
 from cheesepi.tasks.task import Task
 
@@ -18,8 +19,7 @@ class Dummy(Task):
 
     # actually perform the measurements, no arguments required
     def run(self):
-        logger.info("Dummy: {} @{}, PID: {}".format(self.spec['message'], time.time(), os.getpid()))
-
+        logger.info("Dummy: %s @ %f, PID:%s ", self.spec['message'], time.time(), os.getpid())
 
 if __name__ == "__main__":
     #general logging here? unable to connect etc

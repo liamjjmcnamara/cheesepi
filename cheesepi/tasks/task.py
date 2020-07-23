@@ -17,23 +17,24 @@ class Task:
         self.spec['inititator'] = cp.utils.get_host_id()
         self.spec['downloaded'] = 1 # bytes, placeholder
         # overwrite defauls:
-        for s in spec.keys():
-            self.spec[s] = spec[s]
+        for key in spec.keys():
+            self.spec[key] = spec[key]
 
         # allow random offsets
         if self.spec['offset'] == "rand":
             self.spec['offset'] = random.randint(1, self.spec['period']-1)
 
-    def toDict(self):
+    def to_dict(self):
         return self.spec
 
-    def toJson(self):
-        return json.dumps(self.toDict())
+    def to_json(self):
+        return json.dumps(self.to_dict())
 
     def execute(self, program):
         result = Popen(program, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
         result.stdout.flush()
         output = result.stdout.read()
+        print(output)
         result.poll() # set return code
         return result.returncode, output
 

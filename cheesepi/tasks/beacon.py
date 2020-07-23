@@ -1,24 +1,23 @@
-from __future__ import unicode_literals
+import argparse
 import os
 from time import time
 from builtins import str
 
-enabled = False
+ENABLED = False
 try:
     from twisted.internet import defer
     from twisted.internet import reactor
     from txmsgpackrpc.client import connect
-    enabled = True
-except ImportError as e:
+    ENABLED = True
+except ImportError as exception:
     # twisted import failed
     print("Error: Can not import Twisted/messagepack framework, Beaconing disabled...")
     raise # re-raise the problem
 
-import cheesepi as cp
+import cheesepi
 from cheesepi.tasks.task import Task
 
-logger = cp.config.get_logger(__name__)
-
+LOGGER = cheesepi.config.get_logger(__name__)
 SERVER_PORT = 18080
 
 class Beacon(Task):
@@ -28,18 +27,20 @@ class Beacon(Task):
     def __init__(self, dao, spec):
         Task.__init__(self, dao, spec)
         self.spec['taskname'] = "beacon"
-        if not 'server' in spec: self.spec['server'] = cp.config.get_controller()
+        if not 'server' in spec:
+            self.spec['server'] = cp.config.get_controller()
 
     def run(self):
-        logger.info("Beaconing ID:{} to {} @ {}, PID: {}".format(self.spec['peer_id'], self.spec['server'], time(), os.getpid()))
+        LOGGER.info("Beaconing ID: %d to %s @ %f, PID: %d", self.spec['peer_id'],
+                    self.spec['server'], time(), os.getpid())
         self.beacon(self.spec['peer_id'])
 
     @defer.inlineCallbacks
     def beacon(self, peer_id):
-        if enabled:
-            c = yield connect('localhost', SERVER_PORT, connectTimeout=5, waitTimeout=5)
-            res = yield c.createRequest('beacon', peer_id)
-            c.disconnect()
+        if ENABLED:
+            con = yield connect('localhost', SERVER_PORT, connectTimeout=5, waitTimeout=5)
+            res = yield con.createRequest('beacon', peer_id)
+            con.disconnect()
             defer.returnValue(res)
 
 
@@ -50,19 +51,15 @@ def main(peer_id):
 
 
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--id', type=str, default=None, help='peer id')
-
     args = parser.parse_args()
 
     if args.id is None:
         print("Error: missing --id")
         exit()
-    if enabled:
+    if ENABLED:
         reactor.callWhenRunning(main, args.id)
         reactor.run()
     else:
         print("Error: Can not import Twisted framework, beaconing disabled.")
-

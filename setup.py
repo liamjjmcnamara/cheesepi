@@ -61,7 +61,7 @@ setup(
     ],
 
     # Runtime dependencies
-    python_requires='>=3.6',
+    python_requires='>=3.4',
     install_requires=[
         'setuptools',
         'pip',

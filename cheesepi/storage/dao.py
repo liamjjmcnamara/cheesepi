@@ -2,14 +2,14 @@
   All rights reserved.
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
-	  * Redistributions of source code must retain the above copyright
-		notice, this list of conditions and the following disclaimer.
-	  * Redistributions in binary form must reproduce the above copyright
-		notice, this list of conditions and the following disclaimer in the
-		documentation and/or other materials provided with the distribution.
-	  * Neither the name of The Swedish Institute of Computer Science nor the
-		names of its contributors may be used to endorse or promote products
-		derived from this software without specific prior written permission.
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+  * Neither the name of The Swedish Institute of Computer Science nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -30,53 +30,50 @@ Description: Abstract class to be subclassed by specific database storage engine
 import logging
 
 class DAO:
-	def __init__(self):
-		pass
+    def __init__(self):
+        pass
 
-	def close(self):
-		pass
+    def close(self):
+        pass
 
-	def make_database(self, name):
-		pass
+    def make_database(self, name):
+        pass
 
-	def dump(self, since=None):
-		msg ="Method not implemented in DAO class"
-		logging.error(msg)
-		return msg
+    def dump(self, since=None):
+        msg ="Method not implemented in DAO class"
+        logging.error(msg)
+        return msg
 
-	def slurp(self):
-		"""Ingest many data points at once"""
-		logging.error("Method not implemented in this DAO class")
-		pass
+    def slurp(self):
+        """Ingest many data points at once"""
+        logging.error("Method not implemented in this DAO class")
+        pass
 
-	# Operator interactions
-	def write_op(self, op_type, dic, binary=None):
-		logging.error("Method not implemented in this DAO class")
-		pass
+    # Operator interactions
+    def write_op(self, op_type, dic, binary=None):
+        logging.error("Method not implemented in this DAO class")
+        pass
 
-	def read_op(self, op_type, timestamp=0, limit=100):
-		logging.error("Method not implemented in this DAO class")
-		return None
+    def read_op(self, op_type, timestamp=0, limit=100):
+        logging.error("Method not implemented in this DAO class")
+        return None
 
-	# user level interactions
-	def write_user_attribute(self, attribute, value):
-		pass
+    # user level interactions
+    def write_user_attribute(self, attribute, value):
+        pass
 
-	def read_user_attribute(self, attribute):
-		logging.error("Method not implemented in this DAO class")
-		return None
+    def read_user_attribute(self, attribute):
+        logging.error("Method not implemented in this DAO class")
+        return None
 
-	# misversion formatting!
-	def to_json(self, table, dic):
-		for k in dic.keys():
-			dic[k]=dic[k]
-		json_str = '[{"measurement":"{}", "fields":{}} "database":"cheesepi"]'.format(table,dic)
-		return json_str
+    # misversion formatting!
+    def to_json(self, table, dic):
+        for k in dic.keys():
+            dic[k]=dic[k]
+        json_str = '[{"measurement":"{}", "fields":{}} "database":"cheesepi"]'.format(table,dic)
+        return json_str
 
 # The following need not be reimplemented in subclasses
-
-	def validate_op(self, op_type):
-		# should check the op is structured correctly
-		return True
-
-
+    def validate_op(self, op_type):
+        # should check the op is structured correctly
+        return True

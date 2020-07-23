@@ -151,7 +151,7 @@ class CheeseRPCServer(MsgpackRPCServer):
 
             result = []
             for entity in schedule:
-                result.append(entity.toDict())
+                result.append(entity.to_dict())
 
             #from pprint import pformat
             #self.log.info("returning:\n{result}", result=pformat(result))
